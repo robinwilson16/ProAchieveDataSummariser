@@ -1,19 +1,48 @@
-DECLARE @AcademicYear VARCHAR(5) = '17/18'
+DECLARE @AcademicYear NVARCHAR(5) = '18/19'
 DECLARE @CollegeType INT = 2
 DECLARE @Mode CHAR(1) = 'R'
-DECLARE @ProGeneralDatabaseLocation VARCHAR(200) = 'hegel.ProGeneral.dbo.'
-DECLARE @ProAchieveDatabaseLocation VARCHAR(200) = 'hegel.ProAchieve.dbo.'
-DECLARE @OutputTableLocation VARCHAR(200) = 'wlc.dbo.'
+DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'hegel.ProGeneral.dbo.'
+DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'hegel.ProAchieve.dbo.'
+DECLARE @OutputTableLocation NVARCHAR(200) = 'wlc.dbo.'
 
-DECLARE @SQL VARCHAR(MAX);
+DECLARE @NumRowsChanged INT
+DECLARE @ErrorCode INT
 
-SET @SQL = '
-	EXEC SPR_PRA_GenerateProAchieveSummaryData
-		''' + @AcademicYear  + ''', 
-		''' + CAST ( @CollegeType AS VARCHAR(6) ) + ''', 
-		''' + @Mode + ''', 
-		''' + @ProGeneralDatabaseLocation + ''',
-		''' + @ProAchieveDatabaseLocation + ''',
-		''' + @OutputTableLocation + ''''
+DECLARE @SQLString NVARCHAR(MAX);
+DECLARE @SQLParams NVARCHAR(MAX);
 
-EXEC(@SQL)
+SET @SQLString = N'
+    EXEC SPR_PRA_GenerateProAchieveSummaryData
+        @AcademicYear,
+        @CollegeType,
+        @Mode,
+        @ProGeneralDatabaseLocation,
+        @ProAchieveDatabaseLocation,
+        @OutputTableLocation';
+
+SET @SQLParams = 
+        N'@AcademicYear NVARCHAR(5),
+        @CollegeType INT,
+        @Mode CHAR(1),
+        @ProGeneralDatabaseLocation NVARCHAR(200),
+        @ProAchieveDatabaseLocation NVARCHAR(200),
+        @OutputTableLocation NVARCHAR(200),
+        @NumRowsChanged INT OUTPUT, 
+	    @ErrorCode INT OUTPUT';
+    
+EXECUTE sp_executesql 
+    @SQLString, 
+    @SQLParams, 
+    @AcademicYear = @AcademicYear, 
+    @CollegeType = @CollegeType, 
+    @Mode = @Mode,
+    @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
+    @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+    @OutputTableLocation = @OutputTableLocation,
+    @NumRowsChanged = @NumRowsChanged OUTPUT,
+	@ErrorCode = @ErrorCode OUTPUT;
+
+IF(@ErrorCode > 0)
+    PRINT N'Errors Occurred - Code: ' + CAST ( @ErrorCode AS NVARCHAR(10) )
+ELSE
+    PRINT N'Records Inserted: ' + CAST ( @NumRowsChanged AS NVARCHAR(10) )

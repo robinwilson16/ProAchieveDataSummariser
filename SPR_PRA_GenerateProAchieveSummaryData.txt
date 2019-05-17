@@ -1,24 +1,33 @@
 ALTER PROCEDURE SPR_PRA_GenerateProAchieveSummaryData
-	@AcademicYear VARCHAR(5),
+	@AcademicYear NVARCHAR(5),
 	@CollegeType INT,
-	@Mode CHAR(1),
-	@ProGeneralDatabaseLocation VARCHAR(200),
-	@ProAchieveDatabaseLocation VARCHAR(200),
-	@OutputTableLocation VARCHAR(200)
+	@Mode NCHAR(1),
+	@ProGeneralDatabaseLocation NVARCHAR(200),
+	@ProAchieveDatabaseLocation NVARCHAR(200),
+	@OutputTableLocation NVARCHAR(200),
+    @NumRowsChanged INT OUTPUT, 
+	@ErrorCode INT OUTPUT
+
 AS
 BEGIN
 	SET NOCOUNT ON;
 	DECLARE @TableExists bit = 1;
-	DECLARE @NumExistingRecords int = 0;
-	DECLARE @SQL NVARCHAR(MAX);
+	DECLARE @NumExistingRecords INT = 0;
+	
+    DECLARE @SQLString NVARCHAR(MAX);
+    DECLARE @SQLParams NVARCHAR(MAX);
 
 	IF @Mode = 'R'
 		IF OBJECT_ID('dbo.PRA_ProAchieveSummaryData', 'U') IS NOT NULL 
 			BEGIN
-				SET @SQL = 
-					'DROP TABLE dbo.PRA_ProAchieveSummaryData'
+				SET @SQLString = N'
+					DROP TABLE dbo.PRA_ProAchieveSummaryData';
 
-				EXEC(@SQL)
+                SET @SQLParams = N'';
+
+				EXECUTE sp_executesql 
+                    @SQLString, 
+                    @SQLParams;
 			END
 	ELSE
 		IF OBJECT_ID('dbo.PRA_ProAchieveSummaryData', 'U') IS NULL 
@@ -27,174 +36,178 @@ BEGIN
 	IF @Mode = 'R' OR @TableExists = 0
 		BEGIN
 
-			SET @SQL = '
+			SET @SQLString = N'
 				CREATE TABLE dbo.PRA_ProAchieveSummaryData(
-					EndYear char(5) NULL,
-					AcademicYear varchar(5) NOT NULL,
-					SummaryType varchar(23) NOT NULL,
+					EndYear NCHAR(5) NULL,
+					AcademicYear NVARCHAR(5) NOT NULL,
+					SummaryType NVARCHAR(23) NOT NULL,
 					DefaultSummary bit NULL,
-					ProviderID varchar(8) NOT NULL,
-					ProviderName varchar(255) NULL,
-					Summary varchar(128) NULL,
-					SummaryStatus varchar(20) NULL,
-					AcademicYears varchar(50) NULL,
-					NumYears int NULL,
-					LastAcademicYear varchar(5) NULL,
+					ProviderID NVARCHAR(8) NOT NULL,
+					ProviderName NVARCHAR(255) NULL,
+					Summary NVARCHAR(128) NULL,
+					SummaryStatus NVARCHAR(20) NULL,
+					AcademicYears NVARCHAR(50) NULL,
+					NumYears INT NULL,
+					LastAcademicYear NVARCHAR(5) NULL,
 					RulesApplied bit NULL,
-					LastUpdated varchar(20) NULL,
-					LearnerRef varchar(12) NOT NULL,
-					LearnerName varchar(255) NULL,
-					Gender char(1) NULL,
-					AgeGroup varchar(32) NULL,
-					EthnicityCode char(3) NULL,
-					EthnicityName varchar(62) NULL,
-					EthnicGroupCode char(2) NULL,
-					EthnicGroupName varchar(62) NULL,
-					EthnicGroupQARCode char(2) NOT NULL,
-					EthnicGroupQARName varchar(200) NULL,
-					EthnicGroupSimpleCode varchar(2) NULL,
-					EthnicGroupSimpleName varchar(9) NULL,
-					DiffDissCode char(1) NULL,
-					DiffDissName varchar(40) NULL,
-					IsHighNeeds int NULL,
-					IsFreeMealsEligible int NOT NULL,
+					LastUpdated NVARCHAR(20) NULL,
+					LearnerRef NVARCHAR(12) NOT NULL,
+					LearnerName NVARCHAR(255) NULL,
+					Gender NCHAR(1) NULL,
+					AgeGroup NVARCHAR(32) NULL,
+					EthnicityCode NCHAR(3) NULL,
+					EthnicityName NVARCHAR(62) NULL,
+					EthnicGroupCode NCHAR(2) NULL,
+					EthnicGroupName NVARCHAR(62) NULL,
+					EthnicGroupQARCode NCHAR(2) NOT NULL,
+					EthnicGroupQARName NVARCHAR(200) NULL,
+					EthnicGroupSimpleCode NVARCHAR(2) NULL,
+					EthnicGroupSimpleName NVARCHAR(9) NULL,
+					DiffDissCode NCHAR(1) NULL,
+					DiffDissName NVARCHAR(40) NULL,
+					IsHighNeeds INT NULL,
+					IsFreeMealsEligible INT NOT NULL,
 
-                    IsALSRequired int NULL,
-                    IsCareLeaver int NULL,
-                    IsLookedAfter int NULL,
-                    IsYoungCarer int NULL,
-                    IsYoungParent int NULL,
+                    IsALSRequired INT NULL,
+                    IsCareLeaver INT NULL,
+                    IsLookedAfter INT NULL,
+                    IsYoungCarer INT NULL,
+                    IsYoungParent INT NULL,
                     
-					CampusID varchar(8) NULL,
-					FacCode varchar(24) NULL,
-					FacName varchar(150) NULL,
-					TeamCode varchar(24) NULL,
-					TeamName varchar(150) NULL,
-					CostCentreCode varchar(24) NULL,
-					CostCentreName varchar(150) NULL,
-					SSA1Code varchar(5) NULL,
-					SSA1Name varchar(150) NULL,
-					SSA2Code varchar(5) NULL,
-					SSA2Name varchar(150) NULL,
-					ProgTypeCode char(2) NULL,
-					ProgTypeShortName varchar(32) NULL,
-					ProgTypeName varchar(50) NULL,
-					FrameworkCode varchar(3) NULL,
-					FrameworkName varchar(163) NULL,
-					CourseCode varchar(40) NULL,
-					CourseName varchar(255) NULL,
-					GroupCode varchar(255) NULL,
-					SequenceNo int NOT NULL,
-					AimRef varchar(8) NULL,
-					AimName varchar(254) NULL,
-					QualTypeCode varchar(4) NULL,
-					QualTypeName varchar(64) NULL,
-					LARSAimTypeCode char(4) NULL,
-					LARSAimTypeName varchar(150) NULL,
-					AimTypeCode char(1) NULL,
-					AimTypeName varchar(150) NULL,
-					DurationCode varchar(2) NULL,
-					DurationName varchar(40) NULL,
-					DurationGroupCode varchar(2) NULL,
-					DurationGroupName varchar(32) NULL,
-					DurationTypeCode varchar(16) NULL,
-					DurationTypeName varchar(32) NULL,
-					DurationTypeGroupCode varchar(2) NULL,
-					DurationTypeGroupName varchar(50) NULL,
-					EngOrMathsCode varchar(1) NULL,
-					EngOrMathsName varchar(7) NULL,
-					NVQLevelCode varchar(2) NULL,
-					NVQLevelName varchar(50) NULL,
-					NVQLevelGrpCode char(1) NULL,
-					NVQLevelGrpName varchar(48) NULL,
-					AwardBody varchar(20) NULL,
-					Grade varchar(8) NULL,
-					FundModelCode varchar(5) NOT NULL,
-					FundModelName varchar(16) NOT NULL,
-					IsEFAFunded int NOT NULL,
-					IsAdvLearnLoanFunded int NULL,
-					IsStart int NULL,
-					IsLeaver int NULL,
-					LessonsExpected float NULL,
-					LessonsAttended float NULL,
-					AttendPer float NULL,
-					AttendTar int NULL,
-					LessonsLate float NULL,
-					PuncPer float NULL,
-					PuncTar int NULL,
-					IsXfr int NULL,
-					IsCont int NULL,
-					IsWdr int NULL,
-					IsWdrInQualifyingPeriod int NULL,
-					IsWdrAfterQualifyingPeriod int NULL,
-					IsOutOfFunding30 int NOT NULL,
-					IsOutOfFunding60 int NOT NULL,
-					IsOutOfFunding90 int NOT NULL,
-					IsComp int NULL,
-					IsRetInYr int NULL,
-					IsRet int NULL,
-					IsAch int NULL,
-					IsPassAToC int NULL,
+					CampusID NVARCHAR(8) NULL,
+					FacCode NVARCHAR(24) NULL,
+					FacName NVARCHAR(150) NULL,
+					TeamCode NVARCHAR(24) NULL,
+					TeamName NVARCHAR(150) NULL,
+					CostCentreCode NVARCHAR(24) NULL,
+					CostCentreName NVARCHAR(150) NULL,
+					SSA1Code NVARCHAR(5) NULL,
+					SSA1Name NVARCHAR(150) NULL,
+					SSA2Code NVARCHAR(5) NULL,
+					SSA2Name NVARCHAR(150) NULL,
+					ProgTypeCode NCHAR(2) NULL,
+					ProgTypeShortName NVARCHAR(32) NULL,
+					ProgTypeName NVARCHAR(50) NULL,
+					FrameworkCode NVARCHAR(3) NULL,
+					FrameworkName NVARCHAR(163) NULL,
+					CourseCode NVARCHAR(40) NULL,
+					CourseName NVARCHAR(255) NULL,
+					GroupCode NVARCHAR(255) NULL,
+					SequenceNo INT NOT NULL,
+					AimRef NVARCHAR(8) NULL,
+					AimName NVARCHAR(254) NULL,
+					QualTypeCode NVARCHAR(4) NULL,
+					QualTypeName NVARCHAR(64) NULL,
+					LARSAimTypeCode NCHAR(4) NULL,
+					LARSAimTypeName NVARCHAR(150) NULL,
+					AimTypeCode NCHAR(1) NULL,
+					AimTypeName NVARCHAR(150) NULL,
+					DurationCode NVARCHAR(2) NULL,
+					DurationName NVARCHAR(40) NULL,
+					DurationGroupCode NVARCHAR(2) NULL,
+					DurationGroupName NVARCHAR(32) NULL,
+					DurationTypeCode NVARCHAR(16) NULL,
+					DurationTypeName NVARCHAR(32) NULL,
+					DurationTypeGroupCode NVARCHAR(2) NULL,
+					DurationTypeGroupName NVARCHAR(50) NULL,
+					EngOrMathsCode NVARCHAR(1) NULL,
+					EngOrMathsName NVARCHAR(7) NULL,
+					NVQLevelCode NVARCHAR(2) NULL,
+					NVQLevelName NVARCHAR(50) NULL,
+					NVQLevelGrpCode NCHAR(1) NULL,
+					NVQLevelGrpName NVARCHAR(48) NULL,
+					AwardBody NVARCHAR(20) NULL,
+					Grade NVARCHAR(8) NULL,
+					FundModelCode NVARCHAR(5) NOT NULL,
+					FundModelName NVARCHAR(16) NOT NULL,
+					IsEFAFunded INT NOT NULL,
+					IsAdvLearnLoanFunded INT NULL,
+					IsStart INT NULL,
+					IsLeaver INT NULL,
+					LessonsExpected FLOAT NULL,
+					LessonsAttended FLOAT NULL,
+					AttendPer FLOAT NULL,
+					AttendTar INT NULL,
+					LessonsLate FLOAT NULL,
+					PuncPer FLOAT NULL,
+					PuncTar INT NULL,
+					IsXfr INT NULL,
+					IsCont INT NULL,
+					IsWdr INT NULL,
+					IsWdrInQualifyingPeriod INT NULL,
+					IsWdrAfterQualifyingPeriod INT NULL,
+					IsOutOfFunding30 INT NOT NULL,
+					IsOutOfFunding60 INT NOT NULL,
+					IsOutOfFunding90 INT NOT NULL,
+					IsComp INT NULL,
+					IsRetInYr INT NULL,
+					IsRet INT NULL,
+					IsAch INT NULL,
+					IsPassAToC INT NULL,
 
-					NatRate_Yr_Leave int NULL,
-					NatRate_Yr_Ach int NULL,
-					NatRate_Yr_AchPer float NULL,
-					NatRate_YrGFE_Leave int NULL,
-					NatRate_YrGFE_Ach int NULL,
-					NatRate_YrGFE_AchPer float NULL,
-					NatRate_Aim_Leave int NULL,
-					NatRate_Aim_Ach int NULL,
-					NatRate_Aim_AchPer float NULL,
-					NatRate_FworkPTSSA_Leave int NULL,
-					NatRate_FworkPTSSA_Ach int NULL,
-					NatRate_FworkPTSSA_AchPer float NULL,
-					NatRate_Age_Leave int NULL,
-					NatRate_Age_Ach int NULL,
-					NatRate_Age_AchPer float NULL,
-					NatRate_AgeGender_Leave int NULL,
-					NatRate_AgeGender_Ach int NULL,
-					NatRate_AgeGender_AchPer float NULL,
-					NatRate_Level_Leave int NULL,
-					NatRate_Level_Ach int NULL,
-					NatRate_Level_AchPer float NULL,
-					NatRate_LevelAge_Leave int NULL,
-					NatRate_LevelAge_Ach int NULL,
-					NatRate_LevelAge_AchPer float NULL,
-                    NatRate_LevelGrp_Leave int NULL,
-					NatRate_LevelGrp_Ach int NULL,
-					NatRate_LevelGrp_AchPer float NULL,
-					NatRate_LevelGrpAge_Leave int NULL,
-					NatRate_LevelGrpAge_Ach int NULL,
-					NatRate_LevelGrpAge_AchPer float NULL,
-					NatRate_QualType_Leave int NULL,
-					NatRate_QualType_Ach int NULL,
-					NatRate_QualType_AchPer float NULL,
-					NatRate_QualTypeAge_Leave int NULL,
-					NatRate_QualTypeAge_Ach int NULL,
-					NatRate_QualTypeAge_AchPer float NULL,
-					NatRate_Ethnicity_Leave int NULL,
-					NatRate_Ethnicity_Ach int NULL,
-					NatRate_Ethnicity_AchPer float NULL,
-                    NatRate_EthnicityAge_Leave int NULL,
-					NatRate_EthnicityAge_Ach int NULL,
-					NatRate_EthnicityAge_AchPer float NULL,
-					NatRate_SSA1_Leave int NULL,
-					NatRate_SSA1_Ach int NULL,
-					NatRate_SSA1_AchPer float NULL,
-					NatRate_SSA2_Leave int NULL,
-					NatRate_SSA2_Ach int NULL,
-					NatRate_SSA2_AchPer float NULL,
-					NatRate_DifDis_Leave int NULL,
-					NatRate_DifDis_Ach int NULL,
-					NatRate_DifDis_AchPer float NULL,
-                    NatRate_DifDisAge_Leave int NULL,
-					NatRate_DifDisAge_Ach int NULL,
-					NatRate_DifDisAge_AchPer float NULL
+					NatRate_Yr_Leave INT NULL,
+					NatRate_Yr_Ach INT NULL,
+					NatRate_Yr_AchPer FLOAT NULL,
+					NatRate_YrGFE_Leave INT NULL,
+					NatRate_YrGFE_Ach INT NULL,
+					NatRate_YrGFE_AchPer FLOAT NULL,
+					NatRate_Aim_Leave INT NULL,
+					NatRate_Aim_Ach INT NULL,
+					NatRate_Aim_AchPer FLOAT NULL,
+					NatRate_FworkPTSSA_Leave INT NULL,
+					NatRate_FworkPTSSA_Ach INT NULL,
+					NatRate_FworkPTSSA_AchPer FLOAT NULL,
+					NatRate_Age_Leave INT NULL,
+					NatRate_Age_Ach INT NULL,
+					NatRate_Age_AchPer FLOAT NULL,
+					NatRate_AgeGender_Leave INT NULL,
+					NatRate_AgeGender_Ach INT NULL,
+					NatRate_AgeGender_AchPer FLOAT NULL,
+					NatRate_Level_Leave INT NULL,
+					NatRate_Level_Ach INT NULL,
+					NatRate_Level_AchPer FLOAT NULL,
+					NatRate_LevelAge_Leave INT NULL,
+					NatRate_LevelAge_Ach INT NULL,
+					NatRate_LevelAge_AchPer FLOAT NULL,
+                    NatRate_LevelGrp_Leave INT NULL,
+					NatRate_LevelGrp_Ach INT NULL,
+					NatRate_LevelGrp_AchPer FLOAT NULL,
+					NatRate_LevelGrpAge_Leave INT NULL,
+					NatRate_LevelGrpAge_Ach INT NULL,
+					NatRate_LevelGrpAge_AchPer FLOAT NULL,
+					NatRate_QualType_Leave INT NULL,
+					NatRate_QualType_Ach INT NULL,
+					NatRate_QualType_AchPer FLOAT NULL,
+					NatRate_QualTypeAge_Leave INT NULL,
+					NatRate_QualTypeAge_Ach INT NULL,
+					NatRate_QualTypeAge_AchPer FLOAT NULL,
+					NatRate_Ethnicity_Leave INT NULL,
+					NatRate_Ethnicity_Ach INT NULL,
+					NatRate_Ethnicity_AchPer FLOAT NULL,
+                    NatRate_EthnicityAge_Leave INT NULL,
+					NatRate_EthnicityAge_Ach INT NULL,
+					NatRate_EthnicityAge_AchPer FLOAT NULL,
+					NatRate_SSA1_Leave INT NULL,
+					NatRate_SSA1_Ach INT NULL,
+					NatRate_SSA1_AchPer FLOAT NULL,
+					NatRate_SSA2_Leave INT NULL,
+					NatRate_SSA2_Ach INT NULL,
+					NatRate_SSA2_AchPer FLOAT NULL,
+					NatRate_DifDis_Leave INT NULL,
+					NatRate_DifDis_Ach INT NULL,
+					NatRate_DifDis_AchPer FLOAT NULL,
+                    NatRate_DifDisAge_Leave INT NULL,
+					NatRate_DifDisAge_Ach INT NULL,
+					NatRate_DifDisAge_AchPer FLOAT NULL
 				)'
 
-			EXEC(@SQL)
+			SET @SQLParams = N'';
 
-			SET @SQL = '
+            EXECUTE sp_executesql 
+                @SQLString, 
+                @SQLParams;
+
+			SET @SQLString = N'
 				CREATE CLUSTERED INDEX CI_PRA_ProAchieveSummaryData 
 					ON PRA_ProAchieveSummaryData (
 						EndYear, 
@@ -205,37 +218,73 @@ BEGIN
 						CostCentreCode
 					)'
 
-			EXEC(@SQL)
+			SET @SQLParams = N'';
+
+            EXECUTE sp_executesql 
+                @SQLString, 
+                @SQLParams;
 
 		END
 	ELSE
 		BEGIN
-			SET @SQL = '
+			SET @SQLString = N'
 				SELECT
-					@NumExistingRecords = SUM ( 1 )
+					@NumExistingRecordsOUT = SUM ( 1 )
 				FROM ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData PA
 				WHERE
-					EndYear = ''' + @AcademicYear + ''''
+					EndYear = @AcademicYear';
 
-			EXEC sp_executesql @SQL, N'@NumExistingRecords int out', @NumExistingRecords out
+            SET @SQLParams = 
+                N'@AcademicYear NVARCHAR(5),
+                @NumExistingRecordsOUT INT OUTPUT';
+
+            EXECUTE sp_executesql 
+                @SQLString, 
+                @SQLParams, 
+                @AcademicYear = @AcademicYear, 
+                @NumExistingRecordsOUT = @NumExistingRecords OUTPUT;
 			
 			IF @NumExistingRecords > 0
 				BEGIN
-					SET @SQL = '
+					SET @SQLString = N'
 						DELETE FROM ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
 						WHERE
-							EndYear = ''' + @AcademicYear + ''''
+							EndYear = @AcademicYear';
 
-					EXEC(@SQL)
+					SET @SQLParams = 
+                        N'@AcademicYear NVARCHAR(5)';
+
+                    EXECUTE sp_executesql 
+                        @SQLString, 
+                        @SQLParams, 
+                        @AcademicYear = @AcademicYear;
 				END
 		END
-	SET @SQL = '
+	SET @SQLString = N'
 		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
 		EXEC SPR_PRA_ProAchieveSummaryData
-			''' + @AcademicYear + ''', 
-			''' + CAST ( @CollegeType AS VARCHAR(6) ) + ''', 
-			''' + @ProGeneralDatabaseLocation + ''',
-			''' + @ProAchieveDatabaseLocation + ''''
+			@AcademicYear, 
+			@CollegeType, 
+			@ProGeneralDatabaseLocation,
+			@ProAchieveDatabaseLocation,
+            @NumRowsChanged, 
+	        @ErrorCode';
 
-	EXEC(@SQL)
+    SET @SQLParams = 
+            N'@AcademicYear NVARCHAR(5),
+            @CollegeType INT,
+            @ProGeneralDatabaseLocation NVARCHAR(200),
+            @ProAchieveDatabaseLocation NVARCHAR(200),
+            @NumRowsChanged INT OUTPUT, 
+	        @ErrorCode INT OUTPUT';
+        
+    EXECUTE sp_executesql 
+        @SQLString, 
+        @SQLParams, 
+        @AcademicYear = @AcademicYear, 
+        @CollegeType = @CollegeType, 
+        @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
+        @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+        @NumRowsChanged = @NumRowsChanged OUTPUT, 
+        @ErrorCode = @ErrorCode OUTPUT;
 END

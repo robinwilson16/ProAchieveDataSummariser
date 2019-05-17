@@ -1,24 +1,57 @@
 ALTER PROCEDURE SPR_PRA_ProAchieveSummaryData
-	@AcademicYear NVARCHAR(5),
+	@AcademicYear VARCHAR(5),
 	@CollegeType INT,
-	@ProGeneralDatabaseLocation NVARCHAR(200),
-	@ProAchieveDatabaseLocation NVARCHAR(200),
-    @NumRowsChanged INT OUTPUT, 
-	@ErrorCode INT OUTPUT
+	@ProGeneralDatabaseLocation VARCHAR(200),
+	@ProAchieveDatabaseLocation VARCHAR(200)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- DECLARE @AcademicYear NVARCHAR(7) = '18/19'
-	-- DECLARE @CollegeType INT = 2
-	-- DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
-	-- DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProAchieve.dbo.'
+	--DECLARE @AcademicYear VARCHAR(7) = '18/19'
+	--DECLARE @CollegeType INT = 2
+	--DECLARE @ProGeneralDatabaseLocation VARCHAR(200) = 'ussql01.ProGeneral.dbo.'
+	--DECLARE @ProAchieveDatabaseLocation VARCHAR(200) = 'ussql01.ProAchieve.dbo.'
 
-    DECLARE @SQLString NVARCHAR(MAX);
-    DECLARE @SQLParams NVARCHAR(MAX);
+	DECLARE @SQL1 VARCHAR(MAX);
+	DECLARE @SQL2 VARCHAR(MAX);
+	DECLARE @SQL3 VARCHAR(MAX);
+	DECLARE @SQL4 VARCHAR(MAX);
+	DECLARE @SQL5 VARCHAR(MAX);
+	DECLARE @SQL6 VARCHAR(MAX);
+	DECLARE @SQL7 VARCHAR(MAX);
+	DECLARE @SQL8 VARCHAR(MAX);
+	DECLARE @SQL9 VARCHAR(MAX);
+	DECLARE @SQL10 VARCHAR(MAX);
+	DECLARE @SQL11 VARCHAR(MAX);
+	DECLARE @SQL12 VARCHAR(MAX);
+	DECLARE @SQL13 VARCHAR(MAX);
+	DECLARE @SQL14 VARCHAR(MAX);
+	DECLARE @SQL15 VARCHAR(MAX);
+	DECLARE @SQL16 VARCHAR(MAX);
+	DECLARE @SQL17 VARCHAR(MAX);
+	DECLARE @SQL18 VARCHAR(MAX);
+	DECLARE @SQL19 VARCHAR(MAX);
+	DECLARE @SQL20 VARCHAR(MAX);
+	DECLARE @SQL21 VARCHAR(MAX);
+	DECLARE @SQL22 VARCHAR(MAX);
+	DECLARE @SQL23 VARCHAR(MAX);
+	DECLARE @SQL24 VARCHAR(MAX);
+	DECLARE @SQL25 VARCHAR(MAX);
+	DECLARE @SQL26 VARCHAR(MAX);
+	DECLARE @SQL27 VARCHAR(MAX);
+	DECLARE @SQL28 VARCHAR(MAX);
+	DECLARE @SQL29 VARCHAR(MAX);
+	DECLARE @SQL30 VARCHAR(MAX);
+	DECLARE @SQL31 VARCHAR(MAX);
+	DECLARE @SQL32 VARCHAR(MAX);
+	DECLARE @SQL33 VARCHAR(MAX);
+	DECLARE @SQL34 VARCHAR(MAX);
+	DECLARE @SQL35 VARCHAR(MAX);
+	DECLARE @SQL36 VARCHAR(MAX);
+    DECLARE @SQL37 VARCHAR(MAX);
+    DECLARE @SQL38 VARCHAR(MAX);
 
-	SET @SQLString = 
-        N'
+	SET @SQL1 = '
 		SELECT
 			EndYear = CL.PG_HybridEndYearID,
 			AcademicYear = CL.PG_AcademicYearID,
@@ -102,10 +135,7 @@ BEGIN
 			CourseName = CRS.PG_AggCourseName,
 			GroupCode = CL.EnrolmentUserDefined1,
 			SequenceNo = CL.SequenceNo,
-    '
-    
-    SET @SQLString += 
-        N'
+
 			AimRef = AIM.GN_AimID,
 			AimName = AIM.GN_AimName,
 			QualTypeCode = CL.PG_QualSizeID,
@@ -262,8 +292,7 @@ BEGIN
 			IsPassAToC = CL.CLPassRateAC_Overall,
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL2 = '
 			NatRate_Yr_Leave = NR_YR.Leave,
 			NatRate_Yr_Ach = NR_YR.Ach,
 			NatRate_Yr_AchPer = NR_YR.AchPer,
@@ -320,8 +349,7 @@ BEGIN
 			NatRate_DifDisAge_AchPer = NR_DIFAGE.AchPer
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL3 = '
 		FROM ' + @ProAchieveDatabaseLocation + 'CL_Midpoint CL
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'vCL_MYS_RDS_Seln MYS 
 			ON MYS.CL_MidpointID = CL.CL_MidpointID
@@ -365,9 +393,8 @@ BEGIN
 		INNER JOIN ' + @ProGeneralDatabaseLocation + 'SSA2 SSA2 
 			ON SSA2.SSA_Tier2_code = CL.PG_SSA2ID
 	'
-    
-    SET @SQLString += 
-        N'
+
+	SET @SQL4 = '
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_LearningAimType QT
 			ON QT.PG_LearningAimTypeID = CL.PG_QType1ID
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_ILRAimType AIMT
@@ -445,15 +472,14 @@ BEGIN
 			AND LAC.CollegeID = CL.PG_ProviderID
 			AND LAC.AcademicYearID = CL.PG_AcademicYearID
 	'
-    
-    SET @SQLString += 
-        N'
+
+	SET @SQL5 = '
 		LEFT JOIN (
 			SELECT
 				PG_HybridEndYearID = MAX ( NR.PG_HybridEndYearID )
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_Qual_Overall NR
 			WHERE
-				NR.PG_CollegeTypeID = @CollegeType
+				NR.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 		) NR_L
 			ON 1 = 1
 		LEFT JOIN (
@@ -471,8 +497,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_HybridEndYearID
@@ -535,14 +561,10 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_AIM.PG_CollegeTypeID = @CollegeType
+			AND NR_AIM.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_AIM.PG_AimID = CL.PG_AimID
 			AND NR_AIM.PG_MapID IS NULL
 			AND NR_AIM.PG_AgeLSCID IS NULL
-    '
-    
-    SET @SQLString += 
-        N'
 		LEFT JOIN (
 			SELECT
 				NR.PG_HybridEndYearID,
@@ -559,8 +581,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_HybridEndYearID,
@@ -597,8 +619,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_HybridEndYearID,
@@ -621,9 +643,8 @@ BEGIN
 			AND NR_QSAGE.PG_QualSizeID = CL.PG_QualSizeID
 			AND NR_QSAGE.PG_AgeLSCID = CL.PG_AgeLSCID
 	'
-    
-    SET @SQLString += 
-        N'
+
+	SET @SQL6 = '
 		LEFT JOIN (
 			SELECT
 				NR.PG_HybridEndYearID,
@@ -640,8 +661,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_HybridEndYearID,
@@ -678,8 +699,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_HybridEndYearID,
@@ -717,8 +738,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_HybridEndYearID,
@@ -738,10 +759,6 @@ BEGIN
 						END
 				END = 1
 			AND NR_LEV.PG_NVQLevelCPRID = CL.PG_NVQLevelCPRID
-    '
-    
-    SET @SQLString += 
-        N'
         LEFT JOIN (
 			SELECT
 				NR.PG_HybridEndYearID,
@@ -759,8 +776,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_HybridEndYearID,
@@ -798,8 +815,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_HybridEndYearID,
@@ -836,8 +853,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_HybridEndYearID,
@@ -861,8 +878,7 @@ BEGIN
             AND NR_LEVGAGE.PG_AgeLSCID = CL.PG_AgeLSCID
     '
 
-    SET @SQLString += 
-        N'
+	SET @SQL7 = '
 		LEFT JOIN (
 			SELECT
 				NR.PG_HybridEndYearID,
@@ -879,8 +895,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_HybridEndYearID,
@@ -917,8 +933,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_HybridEndYearID,
@@ -942,8 +958,7 @@ BEGIN
             AND NR_ETHAGE.PG_AgeLSCID = CL.PG_AgeLSCID
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL8 = '
 		LEFT JOIN (
 			SELECT
 				NR.PG_HybridEndYearID,
@@ -960,8 +975,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_HybridEndYearID,
@@ -997,8 +1012,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_HybridEndYearID,
@@ -1018,10 +1033,6 @@ BEGIN
 						END
 				END = 1
 			AND NR_SSA2.PG_SSA2ID = CL.PG_SSA2ID
-    '
-
-    SET @SQLString += 
-        N'
 		LEFT JOIN (
 			SELECT
 				NR.PG_HybridEndYearID,
@@ -1038,8 +1049,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_HybridEndYearID,
@@ -1076,8 +1087,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_HybridEndYearID,
@@ -1101,12 +1112,11 @@ BEGIN
             AND NR_DIFAGE.PG_AgeLSCID = CL.PG_AgeLSCID
 
 		WHERE 
-			CL.PG_HybridEndYearID = @AcademicYear
-			--AND MYS.LastAcademicYearID = @AcademicYear
+			CL.PG_HybridEndYearID = ''' + @AcademicYear + '''
+			--AND MYS.LastAcademicYearID = ''' + @AcademicYear + '''
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL9 = '
 		UNION ALL
 
 		SELECT
@@ -1192,10 +1202,7 @@ BEGIN
 			CourseName = CRS.PG_AggCourseName,
 			GroupCode = CL.EnrolmentUserDefined1,
 			SequenceNo = CL.SequenceNo,
-    '
 
-    SET @SQLString += 
-        N'
 			AimRef = AIM.GN_AimID,
 			AimName = AIM.GN_AimName,
 			QualTypeCode = CL.PG_QualSizeID,
@@ -1298,8 +1305,7 @@ BEGIN
 			IsPassAToC = CL.CLPassRateAC_Timely,
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL10 = '
 			NatRate_Yr_Leave = NR_YR.Leave,
 			NatRate_Yr_Ach = NR_YR.Ach,
 			NatRate_Yr_AchPer = NR_YR.AchPer,
@@ -1356,8 +1362,7 @@ BEGIN
 			NatRate_DifDisAge_AchPer = NR_DIFAGE.AchPer
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL11 = '
 		FROM ' + @ProAchieveDatabaseLocation + 'CL_Midpoint CL
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'vCL_MYS_RDS_Seln MYS 
 			ON MYS.CL_MidpointID = CL.CL_MidpointID
@@ -1402,8 +1407,7 @@ BEGIN
 			ON SSA2.SSA_Tier2_code = CL.PG_SSA2ID
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL12 = '
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_LearningAimType QT
 			ON QT.PG_LearningAimTypeID = CL.PG_QType1ID
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_ILRAimType AIMT
@@ -1483,14 +1487,13 @@ BEGIN
 
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL13 = '
 		LEFT JOIN (
 			SELECT
 				PG_ExpEndYrID = MAX ( NR.PG_ExpEndYrID )
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_Qual_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = @CollegeType
+				NR.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 		) NR_L
 			ON 1 = 1
 		LEFT JOIN (
@@ -1508,8 +1511,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_ExpEndYrID
@@ -1572,14 +1575,10 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_AIM.PG_CollegeTypeID = @CollegeType
+			AND NR_AIM.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_AIM.PG_AimID = CL.PG_AimID
 			AND NR_AIM.PG_MapID IS NULL
 			AND NR_AIM.PG_AgeLSCID IS NULL
-    '
-
-    SET @SQLString += 
-        N'
 		LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
@@ -1596,8 +1595,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_ExpEndYrID,
@@ -1634,8 +1633,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_ExpEndYrID,
@@ -1659,8 +1658,7 @@ BEGIN
 			AND NR_QSAGE.PG_AgeLSCID = CL.PG_AgeLSCID
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL14 = '
 		LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
@@ -1677,8 +1675,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_ExpEndYrID,
@@ -1715,8 +1713,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_ExpEndYrID,
@@ -1754,8 +1752,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_ExpEndYrID,
@@ -1775,10 +1773,6 @@ BEGIN
 						END
 				END = 1
 			AND NR_LEV.PG_NVQLevelCPRID = CL.PG_NVQLevelCPRID
-    '
-
-    SET @SQLString += 
-        N'
         LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
@@ -1796,8 +1790,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_ExpEndYrID,
@@ -1835,8 +1829,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_ExpEndYrID,
@@ -1873,8 +1867,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_ExpEndYrID,
@@ -1898,8 +1892,7 @@ BEGIN
             AND NR_LEVGAGE.PG_AgeLSCID = CL.PG_AgeLSCID
     '
 
-    SET @SQLString += 
-        N'
+	SET @SQL15 = '
 		LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
@@ -1916,8 +1909,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_ExpEndYrID,
@@ -1954,8 +1947,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_ExpEndYrID,
@@ -1979,8 +1972,7 @@ BEGIN
             AND NR_ETHAGE.PG_AgeLSCID = CL.PG_AgeLSCID
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL16 = '
 		LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
@@ -1997,8 +1989,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_ExpEndYrID,
@@ -2034,8 +2026,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_ExpEndYrID,
@@ -2055,10 +2047,6 @@ BEGIN
 						END
 				END = 1
 			AND NR_SSA2.PG_SSA2ID = CL.PG_SSA2ID
-    '
-
-    SET @SQLString += 
-        N'
 		LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
@@ -2075,8 +2063,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_ExpEndYrID,
@@ -2113,8 +2101,8 @@ BEGIN
 			WHERE
 				NR.PG_CollegeTypeID = 
 					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
+						WHEN ' + CAST ( @CollegeType AS VARCHAR(6) ) + ' = 0 THEN NR.PG_CollegeTypeID 
+						ELSE ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 					END
 			GROUP BY
 				NR.PG_ExpEndYrID,
@@ -2138,12 +2126,11 @@ BEGIN
             AND NR_DIFAGE.PG_AgeLSCID = CL.PG_AgeLSCID
 
 		WHERE 
-			CL.PG_ExpEndYrID = @AcademicYear
-			--AND MYS.LastAcademicYearID = @AcademicYear
+			CL.PG_ExpEndYrID = ''' + @AcademicYear + '''
+			--AND MYS.LastAcademicYearID = ''' + @AcademicYear + '''
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL17 = '
 		UNION ALL
 
 		SELECT
@@ -2222,10 +2209,7 @@ BEGIN
 			CourseName = CRS.PG_AggCourseName,
 			GroupCode = ER.EnrolmentUserDefined1,
 			SequenceNo = ER.SequenceNo,
-    '
 
-    SET @SQLString += 
-        N'
 			AimRef = AIM.GN_AimID,
 			AimName = AIM.GN_AimName,
 			QualTypeCode = ER.PG_QualSizeID,
@@ -2324,8 +2308,7 @@ BEGIN
 			IsPassAToC = 0,
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL18 = '
 			NatRate_Yr_Leave = NR_YR.BMLeave,
 			NatRate_Yr_Ach = NR_YR.BMAchFrame,
 			NatRate_Yr_AchPer = CAST ( NR_YR.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
@@ -2382,8 +2365,7 @@ BEGIN
 			NatRate_DifDisAge_AchPer = CAST ( NR_DIFAGE.BMAchFrameOverallLeave AS FLOAT ) / 100.00
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL19 = '
 		FROM ' + @ProAchieveDatabaseLocation + 'vER_Summary_Apprenticeships ER
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_AcademicYear AY
 			ON AY.AcademicYearNumber = ER.AcademicYearNumber
@@ -2424,8 +2406,7 @@ BEGIN
 			ON SSA2.SSA_Tier2_code = ER.PG_SSA2ID
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL20 = '
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'WB_Duration DUR
 			ON DUR.WB_DurationID = ER.WB_DurationID
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_ProgType PT
@@ -2497,14 +2478,13 @@ BEGIN
 			AND LAC.AcademicYearID = ER.WB_HybridEndYearID
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL21 = '
 		LEFT JOIN (
 			SELECT
 				WB_HybridEndYearID = MAX ( NR.WB_HybridEndYearID )
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR
 			WHERE
-				NR.PG_CollegeTypeID = @CollegeType
+				NR.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 		) NR_L
 			ON 1 = 1
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Overall NR_FWPGSSA 
@@ -2520,7 +2500,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_FWPGSSA.PG_CollegeTypeID = @CollegeType
+			AND NR_FWPGSSA.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_FWPGSSA.PG_WBLFundAgeGroupID IS NULL
 			AND NR_FWPGSSA.PG_FrameworkID = ER.PG_FrameworkID
 			AND NR_FWPGSSA.PG_ProgTypeID = ER.PG_ProgTypeID
@@ -2539,7 +2519,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_YR.PG_CollegeTypeID = @CollegeType
+			AND NR_YR.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_YR.PG_WBLFundAgeGroupID IS NULL
 			AND NR_YR.PG_FrameworkID IS NULL
 			AND NR_YR.PG_ProgTypeID IS NULL
@@ -2577,16 +2557,12 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_FW.PG_CollegeTypeID = @CollegeType
+			AND NR_FW.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_FW.PG_WBLFundAgeGroupID IS NULL
 			AND NR_FW.PG_FrameworkID = ER.PG_FrameworkID
 			AND NR_FW.PG_ProgTypeID IS NULL
 			AND NR_FW.PG_SSA1ID IS NULL
 			AND NR_FW.PG_SSA2ID IS NULL
-    '
-
-    SET @SQLString += 
-        N'
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Overall NR_AGE
 			ON CASE
 					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
@@ -2600,7 +2576,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_AGE.PG_CollegeTypeID = @CollegeType
+			AND NR_AGE.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_AGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 			AND NR_AGE.PG_FrameworkID IS NULL
 			AND NR_AGE.PG_ProgTypeID IS NULL
@@ -2620,7 +2596,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_AGEGEN.PG_CollegeTypeID = @CollegeType
+			AND NR_AGEGEN.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_AGEGEN.PG_ProgTypeID IS NULL
 			AND NR_AGEGEN.PG_SSA1ID IS NULL
 			AND NR_AGEGEN.PG_SSA2ID IS NULL
@@ -2632,8 +2608,7 @@ BEGIN
 			AND NR_AGEGEN.PG_EthnicityGroupQARID IS NULL
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL22 = '
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Overall NR_SSA1
 			ON CASE
 					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
@@ -2647,7 +2622,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_SSA1.PG_CollegeTypeID = @CollegeType
+			AND NR_SSA1.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_SSA1.PG_WBLFundAgeGroupID IS NULL
 			AND NR_SSA1.PG_FrameworkID IS NULL
 			AND NR_SSA1.PG_ProgTypeID IS NULL
@@ -2666,16 +2641,12 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_SSA2.PG_CollegeTypeID = @CollegeType
+			AND NR_SSA2.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_SSA2.PG_WBLFundAgeGroupID IS NULL
 			AND NR_SSA2.PG_FrameworkID IS NULL
 			AND NR_SSA2.PG_ProgTypeID IS NULL
 			AND NR_SSA2.PG_SSA1ID IS NULL
 			AND NR_SSA2.PG_SSA2ID = ER.PG_SSA2ID
-    '
-
-    SET @SQLString += 
-        N'
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Overall NR_LEV
 			ON CASE
 					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
@@ -2689,16 +2660,12 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_LEV.PG_CollegeTypeID = @CollegeType
+			AND NR_LEV.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_LEV.PG_WBLFundAgeGroupID IS NULL
 			AND NR_LEV.PG_FrameworkID IS NULL
 			AND NR_LEV.PG_ProgTypeID = ER.PG_ProgTypeID
 			AND NR_LEV.PG_SSA1ID IS NULL
 			AND NR_LEV.PG_SSA2ID IS NULL
-    '
-
-    SET @SQLString += 
-        N'
         LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Overall NR_LEVAGE
 			ON CASE
 					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
@@ -2712,7 +2679,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_LEVAGE.PG_CollegeTypeID = @CollegeType
+			AND NR_LEVAGE.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_LEVAGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 			AND NR_LEVAGE.PG_FrameworkID IS NULL
 			AND NR_LEVAGE.PG_ProgTypeID = ER.PG_ProgTypeID
@@ -2732,7 +2699,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_ETH.PG_CollegeTypeID = @CollegeType
+			AND NR_ETH.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_ETH.PG_ProgTypeID IS NULL
 			AND NR_ETH.PG_SSA1ID IS NULL
 			AND NR_ETH.PG_SSA2ID IS NULL
@@ -2756,7 +2723,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_ETHAGE.PG_CollegeTypeID = @CollegeType
+			AND NR_ETHAGE.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_ETHAGE.PG_ProgTypeID IS NULL
 			AND NR_ETHAGE.PG_SSA1ID IS NULL
 			AND NR_ETHAGE.PG_SSA2ID IS NULL
@@ -2780,7 +2747,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_DIF.PG_CollegeTypeID = @CollegeType
+			AND NR_DIF.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_DIF.PG_ProgTypeID IS NULL
 			AND NR_DIF.PG_SSA1ID IS NULL
 			AND NR_DIF.PG_SSA2ID IS NULL
@@ -2790,10 +2757,6 @@ BEGIN
 			AND NR_DIF.PG_LearningDifficultyID IS NULL
 			AND NR_DIF.PG_EthnicityID IS NULL
 			AND NR_DIF.PG_EthnicityGroupQARID IS NULL
-    '
-
-    SET @SQLString += 
-        N'
         LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_DIFAGE
 			ON 
 				CASE
@@ -2808,7 +2771,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_DIFAGE.PG_CollegeTypeID = @CollegeType
+			AND NR_DIFAGE.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_DIFAGE.PG_ProgTypeID IS NULL
 			AND NR_DIFAGE.PG_SSA1ID IS NULL
 			AND NR_DIFAGE.PG_SSA2ID IS NULL
@@ -2820,15 +2783,14 @@ BEGIN
 			AND NR_DIFAGE.PG_EthnicityGroupQARID IS NULL
 
 		WHERE
-			ER.WB_HybridEndYearID = @AcademicYear
-			--ND MYS.LastAcademicYearID = @AcademicYear
+			ER.WB_HybridEndYearID = ''' + @AcademicYear + '''
+			--ND MYS.LastAcademicYearID = ''' + @AcademicYear + '''
 			--Default filters applied in ProAchieve
 			AND ER.IsNotFundedAllYears = 0
 			AND ER.WB_ProgGroupID = 1
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL23 = '
 		UNION ALL
 
 		SELECT
@@ -2907,10 +2869,7 @@ BEGIN
 			CourseName = CRS.PG_AggCourseName,
 			GroupCode = ER.EnrolmentUserDefined1,
 			SequenceNo = ER.SequenceNo,
-	'
-
-    SET @SQLString += 
-        N'
+			
 			AimRef = AIM.GN_AimID,
 			AimName = AIM.GN_AimName,
 			QualTypeCode = ER.PG_QualSizeID,
@@ -3009,8 +2968,7 @@ BEGIN
 			IsPassAToC = 0,
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL24 = '
 			NatRate_Yr_Leave = NR_YR.BMLeave,
 			NatRate_Yr_Ach = NR_YR.BMAchFrameTimely,
 			NatRate_Yr_AchPer = CAST ( NR_YR.BMAchFrameTimelyLeave AS FLOAT ) / 100.00,
@@ -3067,8 +3025,7 @@ BEGIN
 			NatRate_DifDisAge_AchPer = CAST ( NR_DIFAGE.BMAchFrameTimelyLeave AS FLOAT ) / 100.00
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL25 = '
 		FROM ' + @ProAchieveDatabaseLocation + 'vER_Summary_Apprenticeships ER
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_AcademicYear AY
 			ON AY.AcademicYearNumber = ER.AcademicYearNumber
@@ -3109,8 +3066,7 @@ BEGIN
 			ON SSA2.SSA_Tier2_code = ER.PG_SSA2ID
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL26 = '
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'WB_Duration DUR
 			ON DUR.WB_DurationID = ER.WB_DurationID
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_ProgType PT
@@ -3182,14 +3138,13 @@ BEGIN
 			AND LAC.AcademicYearID = ER.PG_ExpEndYrID
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL27 = '
 		LEFT JOIN (
 			SELECT
 				PG_ExpEndYrID = MAX ( NR.PG_ExpEndYrID )
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = @CollegeType
+				NR.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 		) NR_L
 			ON 1 = 1
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_FWPGSSA 
@@ -3205,7 +3160,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_FWPGSSA.PG_CollegeTypeID = @CollegeType
+			AND NR_FWPGSSA.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_FWPGSSA.PG_WBLFundAgeGroupID IS NULL
 			AND NR_FWPGSSA.PG_FrameworkID = ER.PG_FrameworkID
 			AND NR_FWPGSSA.PG_ProgTypeID = ER.PG_ProgTypeID
@@ -3224,7 +3179,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_YR.PG_CollegeTypeID = @CollegeType
+			AND NR_YR.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_YR.PG_WBLFundAgeGroupID IS NULL
 			AND NR_YR.PG_FrameworkID IS NULL
 			AND NR_YR.PG_ProgTypeID IS NULL
@@ -3262,16 +3217,12 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_FW.PG_CollegeTypeID = @CollegeType
+			AND NR_FW.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_FW.PG_WBLFundAgeGroupID IS NULL
 			AND NR_FW.PG_FrameworkID = ER.PG_FrameworkID
 			AND NR_FW.PG_ProgTypeID IS NULL
 			AND NR_FW.PG_SSA1ID IS NULL
 			AND NR_FW.PG_SSA2ID IS NULL
-    '
-
-    SET @SQLString += 
-        N'
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_AGE
 			ON CASE
 					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
@@ -3285,7 +3236,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_AGE.PG_CollegeTypeID = @CollegeType
+			AND NR_AGE.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_AGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 			AND NR_AGE.PG_FrameworkID IS NULL
 			AND NR_AGE.PG_ProgTypeID IS NULL
@@ -3305,7 +3256,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_AGEGEN.PG_CollegeTypeID = @CollegeType
+			AND NR_AGEGEN.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_AGEGEN.PG_ProgTypeID IS NULL
 			AND NR_AGEGEN.PG_SSA1ID IS NULL
 			AND NR_AGEGEN.PG_SSA2ID IS NULL
@@ -3317,8 +3268,7 @@ BEGIN
 			AND NR_AGEGEN.PG_EthnicityGroupQARID IS NULL
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL28 = '
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_SSA1
 			ON CASE
 					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
@@ -3332,7 +3282,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_SSA1.PG_CollegeTypeID = @CollegeType
+			AND NR_SSA1.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_SSA1.PG_WBLFundAgeGroupID IS NULL
 			AND NR_SSA1.PG_FrameworkID IS NULL
 			AND NR_SSA1.PG_ProgTypeID IS NULL
@@ -3351,16 +3301,12 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_SSA2.PG_CollegeTypeID = @CollegeType
+			AND NR_SSA2.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_SSA2.PG_WBLFundAgeGroupID IS NULL
 			AND NR_SSA2.PG_FrameworkID IS NULL
 			AND NR_SSA2.PG_ProgTypeID IS NULL
 			AND NR_SSA2.PG_SSA1ID IS NULL
 			AND NR_SSA2.PG_SSA2ID = ER.PG_SSA2ID
-    '
-
-    SET @SQLString += 
-        N'
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_LEV
 			ON CASE
 					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
@@ -3374,16 +3320,12 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_LEV.PG_CollegeTypeID = @CollegeType
+			AND NR_LEV.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_LEV.PG_WBLFundAgeGroupID IS NULL
 			AND NR_LEV.PG_FrameworkID IS NULL
 			AND NR_LEV.PG_ProgTypeID = ER.PG_ProgTypeID
 			AND NR_LEV.PG_SSA1ID IS NULL
 			AND NR_LEV.PG_SSA2ID IS NULL
-    '
-    
-    SET @SQLString += 
-        N'
         LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_LEVAGE
 			ON CASE
 					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
@@ -3397,7 +3339,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_LEVAGE.PG_CollegeTypeID = @CollegeType
+			AND NR_LEVAGE.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_LEVAGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 			AND NR_LEVAGE.PG_FrameworkID IS NULL
 			AND NR_LEVAGE.PG_ProgTypeID = ER.PG_ProgTypeID
@@ -3417,7 +3359,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_ETH.PG_CollegeTypeID = @CollegeType
+			AND NR_ETH.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_ETH.PG_ProgTypeID IS NULL
 			AND NR_ETH.PG_SSA1ID IS NULL
 			AND NR_ETH.PG_SSA2ID IS NULL
@@ -3440,7 +3382,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_ETHAGE.PG_CollegeTypeID = @CollegeType
+			AND NR_ETHAGE.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_ETHAGE.PG_ProgTypeID IS NULL
 			AND NR_ETHAGE.PG_SSA1ID IS NULL
 			AND NR_ETHAGE.PG_SSA2ID IS NULL
@@ -3463,7 +3405,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_DIF.PG_CollegeTypeID = @CollegeType
+			AND NR_DIF.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_DIF.PG_ProgTypeID IS NULL
 			AND NR_DIF.PG_SSA1ID IS NULL
 			AND NR_DIF.PG_SSA2ID IS NULL
@@ -3472,10 +3414,6 @@ BEGIN
 			AND NR_DIF.PG_LearningDifficultyID = ER.PG_DifficultyorDisabilityID
 			AND NR_DIF.PG_EthnicityID IS NULL
 			AND NR_DIF.PG_EthnicityGroupQARID IS NULL
-    '
-
-    SET @SQLString += 
-        N'
         LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_DIFAGE
 			ON 
 				CASE
@@ -3490,7 +3428,7 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
-			AND NR_DIFAGE.PG_CollegeTypeID = @CollegeType
+			AND NR_DIFAGE.PG_CollegeTypeID = ' + CAST ( @CollegeType AS VARCHAR(6) ) + '
 			AND NR_DIFAGE.PG_ProgTypeID IS NULL
 			AND NR_DIFAGE.PG_SSA1ID IS NULL
 			AND NR_DIFAGE.PG_SSA2ID IS NULL
@@ -3501,15 +3439,14 @@ BEGIN
 			AND NR_DIFAGE.PG_EthnicityGroupQARID IS NULL
 		
 		WHERE
-			ER.PG_ExpEndYrID = @AcademicYear
-			--AND MYS.LastAcademicYearID = @AcademicYear
+			ER.PG_ExpEndYrID = ''' + @AcademicYear + '''
+			--AND MYS.LastAcademicYearID = ''' + @AcademicYear + '''
 			--Default filters applied in ProAchieve
 			AND ER.IsNotFundedAllYears = 0
 			AND ER.WB_ProgGroupID = 1
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL29 = '
 		UNION ALL
 
 		SELECT
@@ -3580,10 +3517,7 @@ BEGIN
 			CourseName = CRS.PG_AggCourseName,
 			GroupCode = HE.EnrolmentUserDefined1,
 			SequenceNo = HE.SequenceNo,
-    '
 
-    SET @SQLString += 
-        N'
 			AimRef = AIM.GN_AimID,
 			AimName = AIM.GN_AimName,
 			QualTypeCode = HE.PG_QualSizeID,
@@ -3650,8 +3584,7 @@ BEGIN
 			IsPassAToC = 0,
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL30 = '
 			NatRate_Yr_Leave = NULL,
 			NatRate_Yr_Ach = NULL,
 			NatRate_Yr_AchPer = NULL,
@@ -3708,8 +3641,7 @@ BEGIN
 			NatRate_DifDisAge_AchPer = NULL
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL31 = '
 		FROM ' + @ProAchieveDatabaseLocation + 'HE_MYS_Low HE
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'vHE_MYS_RDS_Seln MYS 
 			ON MYS.HE_MYSID = HE.HE_MYSID
@@ -3747,8 +3679,7 @@ BEGIN
 			ON SSA2.SSA_Tier2_code = HE.PG_SSA2ID
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL32 = '
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_Duration DUR
 			ON DUR.PG_DurationID = HE.PG_DurationID
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_DurationGroup DURG
@@ -3817,15 +3748,13 @@ BEGIN
 			AND ATT.SequenceNo = HE.SequenceNo
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL33 = '
 		WHERE 
-			HE.PG_HybridEndYearID = @AcademicYear
-			--AND MYS.LastAcademicYearID = @AcademicYear
+			HE.PG_HybridEndYearID = ''' + @AcademicYear + '''
+			--AND MYS.LastAcademicYearID = ''' + @AcademicYear + '''
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL34 = '
 		UNION ALL
 
 		SELECT
@@ -3896,10 +3825,7 @@ BEGIN
 			CourseName = CRS.PG_AggCourseName,
 			GroupCode = HE.EnrolmentUserDefined1,
 			SequenceNo = HE.SequenceNo,
-    '
 
-    SET @SQLString += 
-        N'
 			AimRef = AIM.GN_AimID,
 			AimName = AIM.GN_AimName,
 			QualTypeCode = HE.PG_QualSizeID,
@@ -3966,8 +3892,7 @@ BEGIN
 			IsPassAToC = 0,
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL35 = '
 			NatRate_Yr_Leave = NULL,
 			NatRate_Yr_Ach = NULL,
 			NatRate_Yr_AchPer = NULL,
@@ -4024,8 +3949,7 @@ BEGIN
 			NatRate_DifDisAge_AchPer = NULL
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL36 = '
 		FROM ' + @ProAchieveDatabaseLocation + 'HE_MYS_Low HE
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'vHE_MYS_RDS_Seln MYS 
 			ON MYS.HE_MYSID = HE.HE_MYSID
@@ -4063,8 +3987,7 @@ BEGIN
 			ON SSA2.SSA_Tier2_code = HE.PG_SSA2ID
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL37 = '
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_Duration DUR
 			ON DUR.PG_DurationID = HE.PG_DurationID
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_DurationGroup DURG
@@ -4133,26 +4056,31 @@ BEGIN
 			AND LAC.AcademicYearID = HE.PG_AcademicYearID
 	'
 
-    SET @SQLString += 
-        N'
+	SET @SQL38 = '
 		WHERE 
-			HE.PG_ExpEndYrID = @AcademicYear
-			--AND MYS.LastAcademicYearID = @AcademicYear'
+			HE.PG_ExpEndYrID = ''' + @AcademicYear + '''
+			--AND MYS.LastAcademicYearID = ''' + @AcademicYear + '''
 
-	SET @SQLParams = 
-        N'@AcademicYear NVARCHAR(5),
-	    @CollegeType INT';
-    
-    EXECUTE sp_executesql 
-        @SQLString, 
-        @SQLParams, 
-        @AcademicYear = @AcademicYear, 
-        @CollegeType = @CollegeType;
+		ORDER BY
+			EndYear,
+			SummaryType,
+			ProviderID,
+			CampusID,
+			FacCode,
+			TeamCode,
+			CostCentreCode,
+			CourseCode,
+			AimRef,
+			LearnerName,
+			LearnerRef'
 
-    -- --SELECT(LEN(@SQLString))
-
-    -- SELECT @SQLString
-
-    SET @NumRowsChanged = @@ROWCOUNT
-	SET @ErrorCode = @@ERROR
+	EXEC(
+		@SQL1 + @SQL2 + @SQL3 + @SQL4 + @SQL5 + @SQL6 + @SQL7 + @SQL8
+        + @SQL9 + @SQL10 + @SQL11 + @SQL12 + @SQL13 + @SQL14 + @SQL15 + @SQL16 
+		+ @SQL17 + @SQL18 + @SQL19 + @SQL20 + @SQL21 + @SQL22
+        + @SQL23 + @SQL24 + @SQL25 + @SQL26 + @SQL27 + @SQL28 
+        + @SQL29 + @SQL30 + @SQL31 + @SQL32 + @SQL33 
+        + @SQL34 + @SQL35 + @SQL36 + @SQL37 + @SQL38
+	)
+	--PRINT(@SQL5)
 END
