@@ -1,0 +1,642 @@
+SELECT
+			EndYear = ER.WB_HybridEndYearID,
+			AcademicYear = AY.PG_AcademicYearID,
+			SummaryType =
+                'ER_Overall_'
+                + CASE
+                    WHEN 
+                        MYS.DefaultSummary = 1
+                        AND MYS.IsArchived = 0
+                        AND MYS.IsQSRSummary = 0
+                        AND MYS.RulesApplied = 0
+                        AND MYS.IncludeAllAimTypes = 1
+                        THEN 'AllAims'
+                    WHEN 
+                        MYS.DefaultSummary = 0
+                        AND MYS.IsArchived = 0
+                        AND MYS.IsQSRSummary = 1
+                        AND MYS.RulesApplied = 0
+                        AND MYS.IncludeAllAimTypes = 1
+                        THEN 'QAR'
+                    ELSE 'ERROR'
+                END,
+			DefaultSummary = MYS.DefaultSummary,
+			ProviderID = MYS.PG_ProviderID,
+			ProviderName = MYS.PG_ProviderName,
+			Summary = MYS.Description,
+			SummaryStatus = MYS.Status,
+			AcademicYears = MYS.ER_MYSName,
+			NumYears = MYS.Years,
+			LastAcademicYear = MYS.LastAcademicYearID,
+			RulesApplied = MYS.RulesApplied,
+			LastUpdated = MYS.LastUpdated,
+
+			LearnerRef = ER.PG_StudentID,
+			LearnerName = STU.Surname + ', ' + STU.Forenames,
+			Gender = ER.PG_SexID,
+			AgeGroup = AGE.PG_WBLFundAgeGroupName,
+			EthnicityCode = ER.PG_EthnicityID,
+			EthnicityName = ETH.PG_EthnicityName,
+			EthnicGroupCode = ER.PG_EthnicGroupID,
+			EthnicGroupName = ETHG.PG_EthnicGroupName,
+			EthnicGroupQARCode = ETHQ.PG_EthnicityGroupQARID,
+			EthnicGroupQARName = ETHQ.PG_EthnicityGroupQARName,
+			EthnicGroupSimpleCode = ETHGS.PG_EthnicGroupSimpleID,
+			EthnicGroupSimpleName = ETHGS.PG_EthnicGroupSimpleName,
+			DiffDissCode = ER.PG_DifficultyOrDisabilityID,
+			DiffDissName = DIF.ShortDescription,
+			IsHighNeeds = COALESCE ( FAM.PG_LearnFAMTypeHNSID, 0 ),
+			IsFreeMealsEligible = CASE WHEN FAM.PG_LearnFAMTypeFMEID IS NOT NULL THEN 1 ELSE 0 END,
+
+            IsALSRequired = CASE WHEN STU.UserDefined1 = 'Y' THEN 1 ELSE 0 END,
+            IsCareLeaver = CASE WHEN STU.UserDefined2 = 'Y' THEN 1 ELSE 0 END,
+            IsLookedAfter = CASE WHEN STU.UserDefined3 = 'Y' THEN 1 ELSE 0 END,
+            IsYoungCarer = CASE WHEN STU.UserDefined4 = 'Y' THEN 1 ELSE 0 END,
+            IsYoungParent = CASE WHEN STU.UserDefined5 = 'Y' THEN 1 ELSE 0 END,
+
+			CampusID = COALESCE ( STU.CampusID, '-' ),
+			FacCode = ER.PG_Structure1ID,
+			FacName = COALESCE(DIV.GN_Structure1IYName, '-- Unknown --'),
+			TeamCode = ER.PG_Structure2ID,
+			TeamName = COALESCE(SUBDIV.GN_Structure2IYName, '-- Unknown --'),
+			CostCentreCode = ER.PG_Structure3ID,
+			CostCentreName = COALESCE(CC.GN_Structure3IYName, '-- Unknown --'),
+			SSA1Code = ER.PG_SSA1ID,
+			SSA1Name = SSA1.SSA_Tier1_Desc,
+			SSA2Code = ER.PG_SSA2ID,
+			SSA2Name = SSA2.SSA_Tier2_Desc,
+			ProgTypeCode = ER.PG_ProgTypeID,
+			ProgTypeShortName = ER.PG_ProgTypeGroupShortName,
+			ProgTypeName = ER.PG_ProgTypeName,
+			FrameworkCode = ER.PG_FrameworkID,
+			FrameworkName = ER.PG_FrameworkName,
+			CourseCode = CRS.PG_AggCourseID,
+			CourseName = CRS.PG_AggCourseName,
+			GroupCode = ER.EnrolmentUserDefined1,
+			SequenceNo = ER.SequenceNo,
+
+			AimRef = AIM.GN_AimID,
+			AimName = AIM.GN_AimName,
+			QualTypeCode = ER.PG_QualSizeID,
+			QualTypeName = QS.PG_QualSizeName,
+			LARSAimTypeCode = NULL,
+			LARSAimTypeName = NULL,
+			AimTypeCode = ER.PG_ILRAimTypeID,
+			AimTypeName = NULL,
+			DurationCode = ER.WB_DurationID,
+			DurationName = DUR.WB_DurationName,
+			DurationGroupCode = NULL,
+			DurationGroupName = NULL,
+			DurationTypeCode = NULL,
+			DurationTypeName = NULL,
+			DurationTypeGroupCode = NULL,
+			DurationTypeGroupName = NULL,
+
+			EngOrMathsCode = 'X',
+			EngOrMathsName = 'Neither',
+			NVQLevelCode = NVQ.PG_NVQLevelCPRID,
+			NVQLevelName = NVQ.PG_NVQLevelCPRName,
+			NVQLevelGrpCode = NVQG.NVQLevelGroupID,
+			NVQLevelGrpName = NVQG.Description,
+			AwardBody = AIM.PG_AwardBodyID,
+			Grade = NULL,
+
+			FundModelCode = 'APP',
+			FundModelName = 'Apprenticeship',
+			IsEFAFunded = 0,
+			IsAdvLearnLoanFunded = 0,
+			IsStart = ER.WBStartOverall,
+			IsLeaver = ER.WBOverallLeave,
+			LessonsExpected = ER.Att_Exp,
+			LessonsAttended = ER.Att_Act,
+			AttendPer = 
+				ROUND (
+					CASE
+						WHEN ER.Att_Exp = 0 THEN 0
+						ELSE CAST ( ER.Att_Act AS FLOAT ) / CAST ( ER.Att_Exp AS FLOAT )
+					END
+				, 4 ),
+			AttendTar = TAR.Attend,
+			LessonsLate = ER.Att_Lat,
+			PuncPer = 
+				ROUND (
+					CASE
+						WHEN ER.Att_Act = 0 THEN 0
+						ELSE 100 - CAST ( ER.Att_Lat AS FLOAT ) / CAST ( ER.Att_Act AS FLOAT )
+					END
+				, 4 ),
+			PuncTar = TAR.Punc,
+			IsXfr = ER.WBXfr,
+			IsCont = ER.WBContOverall,
+			IsWdr = ER.WBLeave,
+			IsWdrInQualifyingPeriod = ER.WBWithdrawnin6Wks,
+			IsWdrAfterQualifyingPeriod = ER.WBWithdrawnAfter6wksOverall,
+			IsOutOfFunding30 = 
+				CASE
+					WHEN ER.WBContinBeyondEnd = 1 THEN
+						CASE
+							WHEN DATEDIFF ( DAY, ER.PlannedEndDate, CAST ( GetDate() AS DATE ) ) <= 30 THEN 1
+							ELSE 0
+						END
+					ELSE 0
+				END,
+			IsOutOfFunding60 = 
+				CASE
+					WHEN ER.WBContinBeyondEnd = 1 THEN
+						CASE
+							WHEN DATEDIFF ( DAY, ER.PlannedEndDate, CAST ( GetDate() AS DATE ) ) BETWEEN 31 AND 60 THEN 1
+							ELSE 0
+						END
+					ELSE 0
+				END,
+			IsOutOfFunding90 = 
+				CASE
+					WHEN ER.WBContinBeyondEnd = 1 THEN
+						CASE
+							WHEN DATEDIFF ( DAY, ER.PlannedEndDate, CAST ( GetDate() AS DATE ) ) BETWEEN 61 AND 90 THEN 1
+							ELSE 0
+						END
+					ELSE 0
+				END,
+			IsComp = ER.WBRet - ER.WBContOverall,
+			IsRetInYr = 
+				CASE
+					WHEN ER.WBOverdue = 1 AND ER.WB_FrameworkStatusID IN (0,5) THEN 0
+					ELSE ER.WBRet
+				END,
+			IsRet = 
+				CASE
+					WHEN ER.WBOverdue = 1 AND ER.WB_FrameworkStatusID IN (0,5) THEN 0
+					ELSE ER.WBRet
+				END,
+			IsAch = ER.WBAchFrameOverallLSCExclude,
+			IsPassAToC = 0,
+	NatRate_Yr_Leave = NR_YR.BMLeave,
+			NatRate_Yr_Ach = NR_YR.BMAchFrame,
+			NatRate_Yr_AchPer = CAST ( NR_YR.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+			NatRate_YrGFE_Leave = NR_YRG.BMLeave,
+			NatRate_YrGFE_Ach = NR_YRG.BMAchFrame,
+			NatRate_YrGFE_AchPer = CAST ( NR_YRG.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+			NatRate_Aim_Leave = NR_FW.BMLeave,
+			NatRate_Aim_Ach = NR_FW.BMAchFrame,
+			NatRate_Aim_AchPer = CAST ( NR_FW.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+			NatRate_FworkPTSSA_Leave = NR_FWPGSSA.BMLeave,
+			NatRate_FworkPTSSA_Ach = NR_FWPGSSA.BMAchFrame,
+			NatRate_FworkPTSSA_AchPer = CAST ( NR_FWPGSSA.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+			NatRate_Age_Leave = NR_AGE.BMLeave,
+			NatRate_Age_Ach = NR_AGE.BMAchFrame,
+			NatRate_Age_AchPer = CAST ( NR_AGE.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+			NatRate_AgeGender_Leave = NR_AGEGEN.BMLeave,
+			NatRate_AgeGender_Ach = NR_AGEGEN.BMAchFrame,
+			NatRate_AgeGender_AchPer = CAST ( NR_AGEGEN.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+			NatRate_Level_Leave = NR_LEV.BMLeave,
+			NatRate_Level_Ach = NR_LEV.BMAchFrame,
+			NatRate_Level_AchPer = CAST ( NR_LEV.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+            NatRate_LevelAge_Leave = NR_LEVAGE.BMLeave,
+			NatRate_LevelAge_Ach = NR_LEVAGE.BMAchFrame,
+			NatRate_LevelAge_AchPer = CAST ( NR_LEVAGE.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+            NatRate_LevelGrp_Leave = NULL,
+			NatRate_LevelGrp_Ach = NULL,
+			NatRate_LevelGrp_AchPer = NULL,
+            NatRate_LevelGrpAge_Leave = NULL,
+			NatRate_LevelGrpAge_Ach = NULL,
+			NatRate_LevelGrpAge_AchPer = NULL,
+			NatRate_QualType_Leave = NULL,
+			NatRate_QualType_Ach = NULL,
+			NatRate_QualType_AchPer = NULL,
+			NatRate_QualTypeAge_Leave = NULL,
+			NatRate_QualTypeAge_Ach = NULL,
+			NatRate_QualTypeAge_AchPer = NULL,
+			NatRate_Ethnicity_Leave = NR_ETH.BMLeave,
+			NatRate_Ethnicity_Ach = NR_ETH.BMAchFrame,
+			NatRate_Ethnicity_AchPer = CAST ( NR_ETH.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+            NatRate_EthnicityAge_Leave = NR_ETHAGE.BMLeave,
+			NatRate_EthnicityAge_Ach = NR_ETHAGE.BMAchFrame,
+			NatRate_EthnicityAge_AchPer = CAST ( NR_ETHAGE.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+			NatRate_SSA1_Leave = NR_SSA1.BMLeave,
+			NatRate_SSA1_Ach = NR_SSA1.BMAchFrame,
+			NatRate_SSA1_AchPer = CAST ( NR_SSA1.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+			NatRate_SSA2_Leave = NR_SSA2.BMLeave,
+			NatRate_SSA2_Ach = NR_SSA2.BMAchFrame,
+			NatRate_SSA2_AchPer = CAST ( NR_SSA2.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+			NatRate_DifDis_Leave = NR_DIF.BMLeave,
+			NatRate_DifDis_Ach = NR_DIF.BMAchFrame,
+			NatRate_DifDis_AchPer = CAST ( NR_DIF.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+            NatRate_DifDisAge_Leave = NR_DIFAGE.BMLeave,
+			NatRate_DifDisAge_Ach = NR_DIFAGE.BMAchFrame,
+			NatRate_DifDisAge_AchPer = CAST ( NR_DIFAGE.BMAchFrameOverallLeave AS FLOAT ) / 100.00
+	FROM ussql01.ProAchieve.dbo.vER_Summary_Apprenticeships ER
+		INNER JOIN ussql01.ProAchieve.dbo.PG_AcademicYear AY
+			ON AY.AcademicYearNumber = ER.AcademicYearNumber
+		INNER JOIN ussql01.ProAchieve.dbo.vER_MYS_RDS_Seln MYS
+			ON MYS.ER_MYSID = ER.ER_MYSID
+            --AND MYS.DefaultSummary = 1
+            AND MYS.IsArchived = 0
+            -- AND MYS.IsQSRSummary = 0
+            --AND MYS.RulesApplied = 0
+            --AND MYS.IncludeAllAimTypes = 1
+            AND MYS.LastAcademicYearID = (
+                SELECT 
+                    MaxYear = MAX ( MYS2.LastAcademicYearID )
+                FROM ussql01.ProAchieve.dbo.vER_MYS_RDS_Seln MYS2
+                WHERE
+                    MYS2.DefaultSummary = MYS.DefaultSummary
+                    AND MYS2.IsArchived = MYS.IsArchived
+                    AND MYS2.IsQSRSummary = MYS.IsQSRSummary
+                    AND MYS2.RulesApplied = MYS.RulesApplied
+                    AND MYS2.IncludeAllAimTypes = MYS.IncludeAllAimTypes
+            )
+		INNER JOIN ussql01.ProGeneral.dbo.Student STU
+			ON STU.StudentID = ER.PG_StudentID
+			AND STU.AcademicYearID = AY.PG_AcademicYearID
+		LEFT JOIN ussql01.ProAchieve.dbo.GN_Aim AIM 
+			ON AIM.GN_AimID = ER.PG_AimID
+		INNER JOIN ussql01.ProAchieve.dbo.PG_Ethnicity ETH
+			ON ETH.PG_EthnicityID = ER.PG_EthnicityID
+		INNER JOIN ussql01.ProAchieve.dbo.PG_EthnicityGroupQAR ETHQ
+			ON ETHQ.PG_EthnicityGroupQARID = ETH.PG_EthnicityGroupQARID
+		INNER JOIN ussql01.ProAchieve.dbo.PG_EthnicGroup ETHG
+			ON ETHG.PG_EthnicGroupID = ER.PG_EthnicGroupID
+		INNER JOIN ussql01.ProAchieve.dbo.PG_EthnicGroupSimple ETHGS
+			ON ETHGS.PG_EthnicGroupSimpleID = ETHG.PG_EthnicGroupSimpleID
+		INNER JOIN ussql01.ProGeneral.dbo.SSA1 SSA1 
+			ON SSA1.SSA_Tier1_code = ER.PG_SSA1ID
+		INNER JOIN ussql01.ProGeneral.dbo.SSA2 SSA2 
+			ON SSA2.SSA_Tier2_code = ER.PG_SSA2ID
+
+			INNER JOIN ussql01.ProAchieve.dbo.WB_Duration DUR
+			ON DUR.WB_DurationID = ER.WB_DurationID
+		INNER JOIN ussql01.ProAchieve.dbo.PG_ProgType PT
+			ON PT.PG_ProgTypeID = ER.PG_ProgTypeID
+		INNER JOIN (
+			SELECT
+				TAR.Attend,
+				TAR.Punc
+			FROM (
+				SELECT
+					TargetType = 'Attend',
+					TargetValue = 90
+
+				UNION ALL
+
+				SELECT
+					TargetType = 'Punc',
+					TargetValue = 90
+			) T
+			PIVOT (
+				SUM ( T.TargetValue )
+				FOR
+					T.TargetType IN ( [Attend], [Punc] )
+			) AS TAR
+		) TAR
+			ON 1 = 1
+		LEFT JOIN ussql01.ProAchieve.dbo.PG_WBLFundAgeGroup AGE 
+			ON AGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
+		LEFT JOIN ussql01.ProAchieve.dbo.PG_QualSize QS
+			ON QS.PG_QualSizeID = ER.PG_QualSizeID
+		LEFT JOIN ussql01.ProAchieve.dbo.PM_MS_ThresholdValue MINS
+			ON MINS.PG_QualSizeID = ER.PG_QualSizeID
+			AND MINS.ThresholdID = 1
+		LEFT JOIN ussql01.ProAchieve.dbo.PG_Learner_FAM_Pivoted FAM
+			ON FAM.PG_StudentID = ER.PG_StudentID
+			AND FAM.PG_ProviderID = ER.PG_ProviderID
+			AND FAM.PG_AcademicYearID = ER.WB_HybridEndYearID
+		LEFT JOIN ussql01.ProAchieve.dbo.PG_NVQLevelCPR NVQ 
+			ON NVQ.PG_NVQLevelCPRID = ER.PG_NVQLevelID
+		LEFT JOIN ussql01.ProAchieve.dbo.NVQLevelGroup NVQG
+			ON NVQG.NVQLevelGroupID = ER.PG_NVQLevelGroupID
+		LEFT JOIN ussql01.ProAchieve.dbo.GN_Structure1IY DIV 
+			ON DIV.GN_Structure1IYID = ER.PG_Structure1ID
+			AND DIV.PG_AcademicYearID = ER.WB_HybridEndYearID
+		LEFT JOIN ussql01.ProAchieve.dbo.GN_Structure2IY SUBDIV
+			ON SUBDIV.GN_Structure2IYID = ER.PG_Structure2ID
+			AND SUBDIV.PG_AcademicYearID = ER.WB_HybridEndYearID
+		LEFT JOIN ussql01.ProAchieve.dbo.GN_Structure3IY CC
+			ON CC.GN_Structure3IYID = ER.PG_Structure3ID
+			AND CC.PG_AcademicYearID = ER.WB_HybridEndYearID
+		LEFT JOIN ussql01.ProAchieve.dbo.GN_Structure4IY GRP
+			ON GRP.GN_Structure4IYID = ER.PG_Structure4ID
+			AND GRP.PG_AcademicYearID = ER.WB_HybridEndYearID
+		--LEFT JOIN ussql01.ProAchieve.dbo.GN_CourseStructureIY CRS 
+		--	ON CRS.PG_CourseID = ER.PG_AggCourseID
+		--	AND CRS.PG_AcademicYearID = ER.PG_HybridEndYearID
+		LEFT JOIN ussql01.ProAchieve.dbo.PG_AggCourse CRS 
+			ON CRS.PG_AggCourseID = ER.PG_AggCourseID
+		LEFT JOIN ussql01.ProGeneral.dbo.DifficultyOrDisability DIF
+			ON DIF.DifficultyOrDisabilityID = ER.PG_DifficultyOrDisabilityID
+		LEFT JOIN ussql01.ProGeneral.dbo.Enrolment_Attendance ATT 
+			ON ATT.StudentID = ER.PG_StudentID
+			AND ATT.CollegeID = ER.PG_ProviderID
+			AND ATT.AcademicYearID = ER.WB_HybridEndYearID
+			AND ATT.SequenceNo = ER.SequenceNo
+		LEFT JOIN ussql01.ProGeneral.dbo.Student_UDF LAC
+			ON LAC.StudentID = ER.PG_StudentID
+			AND LAC.CollegeID = ER.PG_ProviderID
+			AND LAC.AcademicYearID = ER.WB_HybridEndYearID
+	LEFT JOIN (
+			SELECT
+				WB_HybridEndYearID = MAX ( NR.WB_HybridEndYearID )
+			FROM ussql01.ProAchieve.dbo.PG_NationalRates_APP_Demo_Overall NR
+			WHERE
+				NR.PG_CollegeTypeID = 0
+		) NR_L
+			ON 1 = 1
+		LEFT JOIN ussql01.ProAchieve.dbo.PG_NationalRates_APP_Fwrk_Overall NR_FWPGSSA 
+			ON CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_FWPGSSA.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_FWPGSSA.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_FWPGSSA.PG_CollegeTypeID = 0
+			AND NR_FWPGSSA.PG_WBLFundAgeGroupID IS NULL
+			AND NR_FWPGSSA.PG_FrameworkID = ER.PG_FrameworkID
+			AND NR_FWPGSSA.PG_ProgTypeID = ER.PG_ProgTypeID
+			AND NR_FWPGSSA.PG_SSA1ID = ER.PG_SSA1ID
+			AND NR_FWPGSSA.PG_SSA2ID = ER.PG_SSA2ID
+		LEFT JOIN ussql01.ProAchieve.dbo.PG_NationalRates_APP_Fwrk_Overall NR_YR
+			ON CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_YR.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_YR.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_YR.PG_CollegeTypeID = 0
+			AND NR_YR.PG_WBLFundAgeGroupID IS NULL
+			AND NR_YR.PG_FrameworkID IS NULL
+			AND NR_YR.PG_ProgTypeID IS NULL
+			AND NR_YR.PG_SSA1ID IS NULL
+			AND NR_YR.PG_SSA2ID IS NULL
+		LEFT JOIN ussql01.ProAchieve.dbo.PG_NationalRates_APP_Fwrk_Overall NR_YRG
+			ON CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_YRG.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_YRG.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_YRG.PG_CollegeTypeID = 2
+			AND NR_YRG.PG_WBLFundAgeGroupID IS NULL
+			AND NR_YRG.PG_FrameworkID IS NULL
+			AND NR_YRG.PG_ProgTypeID IS NULL
+			AND NR_YRG.PG_SSA1ID IS NULL
+			AND NR_YRG.PG_SSA2ID IS NULL
+		LEFT JOIN ussql01.ProAchieve.dbo.PG_NationalRates_APP_Fwrk_Overall NR_FW
+			ON CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_FW.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_FW.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_FW.PG_CollegeTypeID = 0
+			AND NR_FW.PG_WBLFundAgeGroupID IS NULL
+			AND NR_FW.PG_FrameworkID = ER.PG_FrameworkID
+			AND NR_FW.PG_ProgTypeID IS NULL
+			AND NR_FW.PG_SSA1ID IS NULL
+			AND NR_FW.PG_SSA2ID IS NULL
+		LEFT JOIN ussql01.ProAchieve.dbo.PG_NationalRates_APP_Fwrk_Overall NR_AGE
+			ON CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_AGE.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_AGE.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_AGE.PG_CollegeTypeID = 0
+			AND NR_AGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
+			AND NR_AGE.PG_FrameworkID IS NULL
+			AND NR_AGE.PG_ProgTypeID IS NULL
+			AND NR_AGE.PG_SSA1ID IS NULL
+			AND NR_AGE.PG_SSA2ID IS NULL
+		LEFT JOIN ussql01.ProAchieve.dbo.PG_NationalRates_APP_Demo_Overall NR_AGEGEN
+			ON 
+				CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_AGEGEN.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_AGEGEN.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_AGEGEN.PG_CollegeTypeID = 0
+			AND NR_AGEGEN.PG_ProgTypeID IS NULL
+			AND NR_AGEGEN.PG_SSA1ID IS NULL
+			AND NR_AGEGEN.PG_SSA2ID IS NULL
+			AND NR_AGEGEN.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
+			AND NR_AGEGEN.PG_SexID = ER.PG_SexID
+			AND NR_AGEGEN.PG_DifficultyorDisabilityID IS NULL
+			AND NR_AGEGEN.PG_LearningDifficultyID IS NULL
+			AND NR_AGEGEN.PG_EthnicityID IS NULL
+			AND NR_AGEGEN.PG_EthnicityGroupQARID IS NULL
+	LEFT JOIN ussql01.ProAchieve.dbo.PG_NationalRates_APP_Fwrk_Overall NR_SSA1
+			ON CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_SSA1.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_SSA1.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_SSA1.PG_CollegeTypeID = 0
+			AND NR_SSA1.PG_WBLFundAgeGroupID IS NULL
+			AND NR_SSA1.PG_FrameworkID IS NULL
+			AND NR_SSA1.PG_ProgTypeID IS NULL
+			AND NR_SSA1.PG_SSA1ID = ER.PG_SSA1ID
+			AND NR_SSA1.PG_SSA2ID IS NULL
+		LEFT JOIN ussql01.ProAchieve.dbo.PG_NationalRates_APP_Fwrk_Overall NR_SSA2
+			ON CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_SSA2.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_SSA2.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_SSA2.PG_CollegeTypeID = 0
+			AND NR_SSA2.PG_WBLFundAgeGroupID IS NULL
+			AND NR_SSA2.PG_FrameworkID IS NULL
+			AND NR_SSA2.PG_ProgTypeID IS NULL
+			AND NR_SSA2.PG_SSA1ID IS NULL
+			AND NR_SSA2.PG_SSA2ID = ER.PG_SSA2ID
+		LEFT JOIN ussql01.ProAchieve.dbo.PG_NationalRates_APP_Fwrk_Overall NR_LEV
+			ON CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_LEV.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_LEV.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_LEV.PG_CollegeTypeID = 0
+			AND NR_LEV.PG_WBLFundAgeGroupID IS NULL
+			AND NR_LEV.PG_FrameworkID IS NULL
+			AND NR_LEV.PG_ProgTypeID = ER.PG_ProgTypeID
+			AND NR_LEV.PG_SSA1ID IS NULL
+			AND NR_LEV.PG_SSA2ID IS NULL
+        LEFT JOIN ussql01.ProAchieve.dbo.PG_NationalRates_APP_Fwrk_Overall NR_LEVAGE
+			ON CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_LEVAGE.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_LEVAGE.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_LEVAGE.PG_CollegeTypeID = 0
+			AND NR_LEVAGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
+			AND NR_LEVAGE.PG_FrameworkID IS NULL
+			AND NR_LEVAGE.PG_ProgTypeID = ER.PG_ProgTypeID
+			AND NR_LEVAGE.PG_SSA1ID IS NULL
+			AND NR_LEVAGE.PG_SSA2ID IS NULL
+        LEFT JOIN ussql01.ProAchieve.dbo.PG_NationalRates_APP_Demo_Overall NR_ETH
+			ON 
+				CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_ETH.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_ETH.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_ETH.PG_CollegeTypeID = 0
+			AND NR_ETH.PG_ProgTypeID IS NULL
+			AND NR_ETH.PG_SSA1ID IS NULL
+			AND NR_ETH.PG_SSA2ID IS NULL
+			AND NR_ETH.PG_WBLFundAgeGroupID IS NULL
+			AND NR_ETH.PG_SexID IS NULL
+			AND NR_ETH.PG_DifficultyorDisabilityID IS NULL
+			AND NR_ETH.PG_LearningDifficultyID IS NULL
+			AND NR_ETH.PG_EthnicityID = ER.PG_EthnicityID
+			AND NR_ETH.PG_EthnicityGroupQARID IS NULL
+        LEFT JOIN ussql01.ProAchieve.dbo.PG_NationalRates_APP_Demo_Overall NR_ETHAGE
+			ON 
+				CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_ETHAGE.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_ETHAGE.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_ETHAGE.PG_CollegeTypeID = 0
+			AND NR_ETHAGE.PG_ProgTypeID IS NULL
+			AND NR_ETHAGE.PG_SSA1ID IS NULL
+			AND NR_ETHAGE.PG_SSA2ID IS NULL
+			AND NR_ETHAGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
+			AND NR_ETHAGE.PG_SexID IS NULL
+			AND NR_ETHAGE.PG_DifficultyorDisabilityID IS NULL
+			AND NR_ETHAGE.PG_LearningDifficultyID IS NULL
+			AND NR_ETHAGE.PG_EthnicityID = ER.PG_EthnicityID
+			AND NR_ETHAGE.PG_EthnicityGroupQARID IS NULL
+		LEFT JOIN ussql01.ProAchieve.dbo.PG_NationalRates_APP_Demo_Overall NR_DIF
+			ON 
+				CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_DIF.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_DIF.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_DIF.PG_CollegeTypeID = 0
+			AND NR_DIF.PG_ProgTypeID IS NULL
+			AND NR_DIF.PG_SSA1ID IS NULL
+			AND NR_DIF.PG_SSA2ID IS NULL
+			AND NR_DIF.PG_WBLFundAgeGroupID IS NULL
+			AND NR_DIF.PG_SexID IS NULL
+			AND NR_DIF.PG_DifficultyorDisabilityID = ER.PG_DifficultyorDisabilityID
+			AND NR_DIF.PG_LearningDifficultyID IS NULL
+			AND NR_DIF.PG_EthnicityID IS NULL
+			AND NR_DIF.PG_EthnicityGroupQARID IS NULL
+        LEFT JOIN ussql01.ProAchieve.dbo.PG_NationalRates_APP_Demo_Overall NR_DIFAGE
+			ON 
+				CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_DIFAGE.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_DIFAGE.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_DIFAGE.PG_CollegeTypeID = 0
+			AND NR_DIFAGE.PG_ProgTypeID IS NULL
+			AND NR_DIFAGE.PG_SSA1ID IS NULL
+			AND NR_DIFAGE.PG_SSA2ID IS NULL
+			AND NR_DIFAGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
+			AND NR_DIFAGE.PG_SexID IS NULL
+			AND NR_DIFAGE.PG_DifficultyorDisabilityID = ER.PG_DifficultyorDisabilityID
+			AND NR_DIF.PG_LearningDifficultyID IS NULL
+			AND NR_DIFAGE.PG_EthnicityID IS NULL
+			AND NR_DIFAGE.PG_EthnicityGroupQARID IS NULL
+
+		WHERE
+			ER.WB_HybridEndYearID = '18/19'
+			--ND MYS.LastAcademicYearID = '18/19'
+			--Default filters applied in ProAchieve
+			AND ER.IsNotFundedAllYears = 0
+			AND ER.WB_ProgGroupID = 1
+	

@@ -1,0 +1,235 @@
+SELECT
+	NatRate_Yr_Leave = NR_YR.BMLeave,
+	NatRate_Yr_Ach = NR_YR.BMAchFrame,
+	NatRate_Yr_AchPer = CAST ( NR_YR.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+	NatRate_Aim_Leave = NR_FW.BMLeave,
+	NatRate_Aim_Ach = NR_FW.BMAchFrame,
+	NatRate_Aim_AchPer = CAST ( NR_FW.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+	NatRate_FworkPTSSA_Leave = NR_FWPGSSA.BMLeave,
+	NatRate_FworkPTSSA_Ach = NR_FWPGSSA.BMAchFrame,
+	NatRate_FworkPTSSA_AchPer = CAST ( NR_FWPGSSA.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+	NatRate_Age2_Leave = NULL,
+	NatRate_Age2_Ach = NULL,
+	NatRate_Age2_AchPer = NULL,
+	NatRate_QualSize_Leave = NR_PT.BMLeave,
+	NatRate_QualSize_Ach = NR_PT.BMAchFrame,
+	NatRate_QualSize_AchPer = CAST ( NR_PT.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+	NatRate_Age_Leave = NR_AGE.BMLeave,
+	NatRate_Age_Ach = NR_AGE.BMAchFrame,
+	NatRate_Age_AchPer = CAST ( NR_AGE.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+	NatRate_AgeGender_Leave = NULL,
+	NatRate_AgeGender_Ach = NULL,
+	NatRate_AgeGender_AchPer = NULL,
+	NatRate_Level_Leave = NULL,
+	NatRate_Level_Ach = NULL,
+	NatRate_Level_AchPer = NULL,
+	NatRate_Ethnicity_Leave = NR_ETH.BMLeave,
+	NatRate_Ethnicity_Ach = NR_ETH.BMAchFrame,
+	NatRate_Ethnicity_AchPer = CAST ( NR_ETH.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+	NatRate_SSA1_Leave = NR_SSA1.BMLeave,
+	NatRate_SSA1_Ach = NR_SSA1.BMAchFrame,
+	NatRate_SSA1_AchPer = CAST ( NR_SSA1.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+	NatRate_SSA2_Leave = NR_SSA2.BMLeave,
+	NatRate_SSA2_Ach = NR_SSA2.BMAchFrame,
+	NatRate_SSA2_AchPer = CAST ( NR_SSA2.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+	NatRate_DifDis_Leave = NR_DIF.BMLeave,
+	NatRate_DifDis_Ach = NR_DIF.BMAchFrame,
+	NatRate_DifDis_AchPer = CAST ( NR_DIF.BMAchFrameOverallLeave AS FLOAT ) / 100.00
+FROM vER_Summary_Apprenticeships ER
+INNER JOIN PG_AcademicYear AY
+	ON AY.AcademicYearNumber = ER.AcademicYearNumber
+INNER JOIN vER_MYS_RDS_Seln MYS
+	ON MYS.ER_MYSID = ER.ER_MYSID
+	AND MYS.IsArchived = 0
+	AND MYS.DefaultSummary = 1
+LEFT JOIN (
+	SELECT
+		WB_HybridEndYearID = MAX ( NR.WB_HybridEndYearID )
+	FROM PG_NationalRates_APP_Demo_Overall NR
+	WHERE
+		NR.PG_CollegeTypeID = 0
+) NR_L
+	ON 1 = 1
+LEFT JOIN PG_NationalRates_APP_Fwrk_Overall NR_FWPGSSA 
+	ON CASE
+			WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+				CASE
+					WHEN NR_FWPGSSA.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+			ELSE 
+				CASE
+					WHEN ER.WB_HybridEndYearID = NR_FWPGSSA.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+		END = 1
+	AND NR_FWPGSSA.PG_CollegeTypeID = 0
+	AND NR_FWPGSSA.PG_WBLFundAgeGroupID IS NULL
+	AND NR_FWPGSSA.PG_FrameworkID = ER.PG_FrameworkID
+	AND NR_FWPGSSA.PG_ProgTypeID = ER.PG_ProgTypeID
+	AND NR_FWPGSSA.PG_SSA1ID = ER.PG_SSA1ID
+	AND NR_FWPGSSA.PG_SSA2ID = ER.PG_SSA2ID
+LEFT JOIN PG_NationalRates_APP_Fwrk_Overall NR_YR
+	ON CASE
+			WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+				CASE
+					WHEN NR_YR.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+			ELSE 
+				CASE
+					WHEN ER.WB_HybridEndYearID = NR_YR.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+		END = 1
+	AND NR_YR.PG_CollegeTypeID = 0
+	AND NR_YR.PG_WBLFundAgeGroupID IS NULL
+	AND NR_YR.PG_FrameworkID IS NULL
+	AND NR_YR.PG_ProgTypeID IS NULL
+	AND NR_YR.PG_SSA1ID IS NULL
+	AND NR_YR.PG_SSA2ID IS NULL
+LEFT JOIN PG_NationalRates_APP_Fwrk_Overall NR_FW
+	ON CASE
+			WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+				CASE
+					WHEN NR_FW.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+			ELSE 
+				CASE
+					WHEN ER.WB_HybridEndYearID = NR_FW.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+		END = 1
+	AND NR_FW.PG_CollegeTypeID = 0
+	AND NR_FW.PG_WBLFundAgeGroupID IS NULL
+	AND NR_FW.PG_FrameworkID = ER.PG_FrameworkID
+	AND NR_FW.PG_ProgTypeID IS NULL
+	AND NR_FW.PG_SSA1ID IS NULL
+	AND NR_FW.PG_SSA2ID IS NULL
+LEFT JOIN PG_NationalRates_APP_Fwrk_Overall NR_AGE
+	ON CASE
+			WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+				CASE
+					WHEN NR_AGE.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+			ELSE 
+				CASE
+					WHEN ER.WB_HybridEndYearID = NR_AGE.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+		END = 1
+	AND NR_AGE.PG_CollegeTypeID = 0
+	AND NR_AGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
+	AND NR_AGE.PG_FrameworkID IS NULL
+	AND NR_AGE.PG_ProgTypeID IS NULL
+	AND NR_AGE.PG_SSA1ID IS NULL
+	AND NR_AGE.PG_SSA2ID IS NULL
+LEFT JOIN PG_NationalRates_APP_Fwrk_Overall NR_SSA1
+	ON CASE
+			WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+				CASE
+					WHEN NR_SSA1.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+			ELSE 
+				CASE
+					WHEN ER.WB_HybridEndYearID = NR_SSA1.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+		END = 1
+	AND NR_SSA1.PG_CollegeTypeID = 0
+	AND NR_SSA1.PG_WBLFundAgeGroupID IS NULL
+	AND NR_SSA1.PG_FrameworkID IS NULL
+	AND NR_SSA1.PG_ProgTypeID IS NULL
+	AND NR_SSA1.PG_SSA1ID = ER.PG_SSA1ID
+	AND NR_SSA1.PG_SSA2ID IS NULL
+LEFT JOIN PG_NationalRates_APP_Fwrk_Overall NR_SSA2
+	ON CASE
+			WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+				CASE
+					WHEN NR_SSA2.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+			ELSE 
+				CASE
+					WHEN ER.WB_HybridEndYearID = NR_SSA2.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+		END = 1
+	AND NR_SSA2.PG_CollegeTypeID = 0
+	AND NR_SSA2.PG_WBLFundAgeGroupID IS NULL
+	AND NR_SSA2.PG_FrameworkID IS NULL
+	AND NR_SSA2.PG_ProgTypeID IS NULL
+	AND NR_SSA2.PG_SSA1ID IS NULL
+	AND NR_SSA2.PG_SSA2ID = ER.PG_SSA2ID
+LEFT JOIN PG_NationalRates_APP_Fwrk_Overall NR_PT
+	ON CASE
+			WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+				CASE
+					WHEN NR_PT.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+			ELSE 
+				CASE
+					WHEN ER.WB_HybridEndYearID = NR_PT.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+		END = 1
+	AND NR_PT.PG_CollegeTypeID = 0
+	AND NR_PT.PG_WBLFundAgeGroupID IS NULL
+	AND NR_PT.PG_FrameworkID IS NULL
+	AND NR_PT.PG_ProgTypeID = ER.PG_ProgTypeID
+	AND NR_PT.PG_SSA1ID IS NULL
+	AND NR_PT.PG_SSA2ID IS NULL
+LEFT JOIN PG_NationalRates_APP_Demo_Overall NR_DIF
+	ON 
+		CASE
+			WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+				CASE
+					WHEN NR_DIF.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+			ELSE 
+				CASE
+					WHEN ER.WB_HybridEndYearID = NR_DIF.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+		END = 1
+	AND NR_DIF.PG_CollegeTypeID = 0
+	AND NR_DIF.BMAchFrame IS NULL
+	AND NR_DIF.PG_ProgTypeID IS NULL
+	AND NR_DIF.PG_SSA1ID IS NULL
+	AND NR_DIF.PG_SSA2ID IS NULL
+	AND NR_DIF.PG_WBLFundAgeGroupID IS NULL
+	AND NR_DIF.PG_SexID IS NULL
+	AND NR_DIF.PG_LearningDifficultyID = ER.PG_DifficultyorDisabilityID
+	AND NR_DIF.PG_EthnicityID IS NULL
+	AND NR_DIF.PG_EthnicityGroupQARID IS NULL
+LEFT JOIN PG_NationalRates_APP_Demo_Overall NR_ETH
+	ON 
+		CASE
+			WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+				CASE
+					WHEN NR_ETH.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+			ELSE 
+				CASE
+					WHEN ER.WB_HybridEndYearID = NR_ETH.WB_HybridEndYearID THEN 1
+					ELSE 0 
+				END
+		END = 1
+	AND NR_ETH.PG_CollegeTypeID = 0
+	AND NR_ETH.BMAchFrame IS NULL
+	AND NR_ETH.PG_ProgTypeID IS NULL
+	AND NR_ETH.PG_SSA1ID IS NULL
+	AND NR_ETH.PG_SSA2ID IS NULL
+	AND NR_ETH.PG_WBLFundAgeGroupID IS NULL
+	AND NR_ETH.PG_SexID IS NULL
+	AND NR_ETH.PG_LearningDifficultyID = 9 --Has to be 1 or 9 so would need a sub-query
+	AND NR_ETH.PG_EthnicityID = ER.PG_EthnicityID
+	AND NR_ETH.PG_EthnicityGroupQARID IS NULL
+WHERE
+	ER.WB_HybridEndYearID = '17/18'

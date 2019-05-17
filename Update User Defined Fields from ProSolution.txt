@@ -1,0 +1,56 @@
+DECLARE @AcademicYear VARCHAR(5) = '18/19'
+
+UPDATE S
+SET
+    /*UserDefined1 = CASE WHEN SD.ALSRequired = 1 THEN 'Y' ELSE 'N' END,*/--Not using flag here but checking costs instead
+    UserDefined1 = CASE WHEN COALESCE ( ALS.EstimatedCosts, 0 ) + COALESCE ( ALS.ActualCosts, 0 ) > 1 THEN 'Y' ELSE 'N' END,
+    UserDefined2 = CASE WHEN SD.CareLeaver = 1 THEN 'Y' ELSE 'N' END,
+    UserDefined3 = CASE WHEN SD.LookedAfter = 1 THEN 'Y' ELSE 'N' END,
+    UserDefined4 = CASE WHEN SD.YoungCarer = 1 THEN 'Y' ELSE 'N' END,
+    UserDefined5 = CASE WHEN SD.YoungParent = 1 THEN 'Y' ELSE 'N' END
+FROM ussql01.ProGeneral.dbo.Student S
+INNER JOIN ProSolution.dbo.StudentDetail SD
+    ON SD.RefNo = S.StudentID
+    AND SD.AcademicYearID = S.AcademicYearID
+LEFT JOIN (
+    SELECT
+        SD.StudentDetailID,
+        EstimatedCosts = 
+            ROUND (
+                COALESCE (
+                    SUM (
+                        CASE
+                            WHEN ALSI.Estimated = 1 THEN ALSI.Cost
+                            ELSE 0
+                        END
+                    ),
+                    0
+                )
+            , 2 ),
+        ActualCosts = 
+            ROUND (
+                COALESCE (
+                    SUM (
+                        CASE
+                            WHEN ALSI.Estimated = 0 THEN ALSI.Cost
+                            ELSE 0
+                        END
+                    ),
+                    0
+                )
+            , 2 )
+    FROM ProSolution.dbo.StudentDetail SD
+    INNER JOIN ProSolution.dbo.SupportAssessment ALS
+        ON ALS.StudentDetailID = SD.StudentDetailID
+    INNER JOIN ProSolution.dbo.SupportAssessmentLink ALSL
+        ON ALSL.SupportAssessmentID = ALS.SupportAssessmentID
+    INNER JOIN ProSolution.dbo.SupportAssessmentItem ALSI
+        ON ALSI.SupportAssessmentItemID = ALSL.SupportAssessmentItemID
+    WHERE  
+        SD.AcademicYearID = '18/19'
+    GROUP BY
+        SD.StudentDetailID
+) ALS
+    ON ALS.StudentDetailID = SD.StudentDetailID
+WHERE
+    S.AcademicYearID = @AcademicYear
