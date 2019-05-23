@@ -1,4 +1,4 @@
-ALTER PROCEDURE SPR_PRA_GenerateProAchieveSummaryData
+CREATE PROCEDURE SPR_PRA_GenerateProAchieveSummaryData
 	@AcademicYear NVARCHAR(5),
 	@CollegeType INT,
 	@Mode NCHAR(1),

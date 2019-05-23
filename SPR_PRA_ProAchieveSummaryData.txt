@@ -1,4 +1,4 @@
-ALTER PROCEDURE SPR_PRA_ProAchieveSummaryData
+CREATE PROCEDURE SPR_PRA_ProAchieveSummaryData
 	@AcademicYear NVARCHAR(5),
 	@CollegeType INT,
 	@ProGeneralDatabaseLocation NVARCHAR(200),
@@ -503,7 +503,6 @@ BEGIN
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
-				--GFE
 				NR.PG_CollegeTypeID = 2
 			GROUP BY
 				NR.PG_HybridEndYearID
@@ -1540,7 +1539,6 @@ BEGIN
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				--GFE
 				NR.PG_CollegeTypeID = 2
 			GROUP BY
 				NR.PG_ExpEndYrID
@@ -4139,19 +4137,17 @@ BEGIN
 			HE.PG_ExpEndYrID = @AcademicYear
 			--AND MYS.LastAcademicYearID = @AcademicYear'
 
+	--SELECT @SQLString AS [processing-instruction(x)] FOR XML PATH('')
+
 	SET @SQLParams = 
         N'@AcademicYear NVARCHAR(5),
 	    @CollegeType INT';
-    
+
     EXECUTE sp_executesql 
         @SQLString, 
         @SQLParams, 
         @AcademicYear = @AcademicYear, 
         @CollegeType = @CollegeType;
-
-    -- --SELECT(LEN(@SQLString))
-
-    -- SELECT @SQLString
 
     SET @NumRowsChanged = @@ROWCOUNT
 	SET @ErrorCode = @@ERROR

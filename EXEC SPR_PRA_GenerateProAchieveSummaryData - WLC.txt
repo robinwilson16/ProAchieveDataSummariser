@@ -1,8 +1,8 @@
 DECLARE @AcademicYear NVARCHAR(5) = '18/19'
 DECLARE @CollegeType INT = 2
 DECLARE @Mode CHAR(1) = 'R'
-DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'hegel.ProGeneral.dbo.'
-DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'hegel.ProAchieve.dbo.'
+DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = '[WLCBA-PGPA001A].ProGeneral.dbo.'
+DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = '[WLCBA-PGPA001A].ProAchieve.dbo.'
 DECLARE @OutputTableLocation NVARCHAR(200) = 'wlc.dbo.'
 
 DECLARE @NumRowsChanged INT
@@ -18,7 +18,9 @@ SET @SQLString = N'
         @Mode,
         @ProGeneralDatabaseLocation,
         @ProAchieveDatabaseLocation,
-        @OutputTableLocation';
+        @OutputTableLocation,
+		@NumRowsChanged, 
+	    @ErrorCode';
 
 SET @SQLParams = 
         N'@AcademicYear NVARCHAR(5),
