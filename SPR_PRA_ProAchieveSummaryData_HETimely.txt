@@ -1,0 +1,323 @@
+CREATE PROCEDURE SPR_PRA_ProAchieveSummaryData_HETimely
+	@AcademicYear NVARCHAR(5),
+	@CollegeType INT,
+	@ProGeneralDatabaseLocation NVARCHAR(200),
+	@ProAchieveDatabaseLocation NVARCHAR(200),
+    @NumRowsChanged INT OUTPUT, 
+	@ErrorCode INT OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	-- DECLARE @AcademicYear NVARCHAR(7) = '18/19'
+	-- DECLARE @CollegeType INT = 2
+	-- DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
+	-- DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProAchieve.dbo.'
+
+    DECLARE @SQLString NVARCHAR(MAX);
+    DECLARE @SQLParams NVARCHAR(MAX);
+
+    SET @SQLString = 
+        N'
+		SELECT
+			EndYear = HE.PG_ExpEndYrID,
+			AcademicYear = HE.PG_AcademicYearID,
+			SummaryType =
+                ''HE_Timely_''
+                + CASE
+                    WHEN 
+                        MYS.DefaultSummary = 1
+                        AND MYS.IsArchived = 0
+                        AND MYS.RulesApplied = 0
+                        AND MYS.IncludeAllAimTypes = 1
+                        THEN ''AllAims''
+                    ELSE ''ERROR''
+                END,
+			DefaultSummary = MYS.DefaultSummary,
+			ProviderID = MYS.PG_ProviderID,
+			ProviderName = MYS.PG_ProviderName,
+			Summary = MYS.Description,
+			SummaryStatus = MYS.Status,
+			AcademicYears = MYS.HE_MYSName,
+			NumYears = 0,
+			LastAcademicYear = MYS.LastAcademicYearID,
+			RulesApplied = MYS.RulesApplied,
+			LastUpdated = MYS.LastUpdated,
+
+			LearnerRef = HE.PG_StudentID,
+			LearnerName = HE.StudentName,
+			Gender = HE.PG_SexID,
+			AgeGroup = AGE.HE_AgeGroupName,
+			EthnicityCode = HE.PG_EthnicityID,
+			EthnicityName = ETH.PG_EthnicityName,
+			EthnicGroupCode = HE.PG_EthnicGroupID,
+			EthnicGroupName = ETHG.PG_EthnicGroupName,
+			EthnicGroupQARCode = ETHQ.PG_EthnicityGroupQARID,
+			EthnicGroupQARName = ETHQ.PG_EthnicityGroupQARName,
+			EthnicGroupSimpleCode = ETHGS.PG_EthnicGroupSimpleID,
+			EthnicGroupSimpleName = ETHGS.PG_EthnicGroupSimpleName,
+			DiffDissCode = HE.PG_DifficultyOrDisabilityID,
+			DiffDissName = DIF.ShortDescription,
+			IsHighNeeds = COALESCE ( FAM.PG_LearnFAMTypeHNSID, 0 ),
+			IsFreeMealsEligible = CASE WHEN FAM.PG_LearnFAMTypeFMEID IS NOT NULL THEN 1 ELSE 0 END,
+			
+            IsALSRequired = CASE WHEN STU.UserDefined1 = ''Y'' THEN 1 ELSE 0 END,
+            IsCareLeaver = CASE WHEN STU.UserDefined2 = ''Y'' THEN 1 ELSE 0 END,
+            IsLookedAfter = CASE WHEN STU.UserDefined3 = ''Y'' THEN 1 ELSE 0 END,
+            IsYoungCarer = CASE WHEN STU.UserDefined4 = ''Y'' THEN 1 ELSE 0 END,
+            IsYoungParent = CASE WHEN STU.UserDefined5 = ''Y'' THEN 1 ELSE 0 END,
+            
+			CampusID = COALESCE ( STU.CampusID, ''-'' ),
+			FacCode = HE.PG_Structure1ID,
+			FacName = COALESCE(DIV.GN_Structure1IYName, ''-- Unknown --''),
+			TeamCode = HE.PG_Structure2ID,
+			TeamName = COALESCE(SUBDIV.GN_Structure2IYName, ''-- Unknown --''),
+			CostCentreCode = HE.PG_Structure3ID,
+			CostCentreName = COALESCE(CC.GN_Structure3IYName, ''-- Unknown --''),
+			SSA1Code = HE.PG_SSA1ID,
+			SSA1Name = SSA1.SSA_Tier1_Desc,
+			SSA2Code = HE.PG_SSA2ID,
+			SSA2Name = SSA2.SSA_Tier2_Desc,
+			ProgTypeCode = NULL,
+			ProgTypeShortName = NULL,
+			ProgTypeName = NULL,
+			FrameworkCode = NULL,
+			FrameworkName = NULL,
+			CourseCode = CRS.PG_AggCourseID,
+			CourseName = CRS.PG_AggCourseName,
+			GroupCode = HE.EnrolmentUserDefined1,
+			SequenceNo = HE.SequenceNo,
+    '
+
+    SET @SQLString += 
+        N'
+			AimRef = AIM.GN_AimID,
+			AimName = AIM.GN_AimName,
+			QualTypeCode = HE.PG_QualSizeID,
+			QualTypeName = QS.PG_QualSizeName,
+			LARSAimTypeCode = NULL,
+			LARSAimTypeName = NULL,
+			AimTypeCode = NULL,
+			AimTypeName = NULL,
+			DurationCode = HE.PG_DurationID,
+			DurationName = DUR.PG_DurationName,
+			DurationGroupCode = HE.PG_DurationGroupID,
+			DurationGroupName = DURG.PG_DurationGroupName,
+			DurationTypeCode = HE.PG_DurationTypeID,
+			DurationTypeName = DURT.PG_DurationTypeName,
+			DurationTypeGroupCode = NULL,
+			DurationTypeGroupName = NULL,
+
+			EngOrMathsCode = ''X'',
+			EngOrMathsName = ''Neither'',
+			NVQLevelCode = NVQ.PG_NVQLevelCPRID,
+			NVQLevelName = NVQ.PG_NVQLevelCPRName,
+			NVQLevelGrpCode = NULL,
+			NVQLevelGrpName = NULL,
+			AwardBody = AIM.PG_AwardBodyID,
+			Grade = HE.PG_GradeID,
+
+			FundModelCode = ''HE'',
+			FundModelName = ''Higher Education'',
+			IsEFAFunded = 0,
+			IsAdvLearnLoanFunded = 0,
+			IsStart = HE.P_Count_TimelyQSRExclude,
+			IsLeaver = HE.P_Count_TimelyQSRExclude,
+			LessonsExpected = HE.Att_Exp,
+			LessonsAttended = HE.Att_Act,
+			AttendPer = 
+				ROUND (
+					CASE
+						WHEN HE.Att_Exp = 0 THEN 0
+						ELSE CAST ( HE.Att_Act AS FLOAT ) / CAST ( HE.Att_Exp AS FLOAT )
+					END
+				, 4 ),
+			LessonsLate = ATT.TotalLates,
+			PuncPer = 
+				ROUND (
+					CASE
+						WHEN HE.Att_Act = 0 THEN 0
+						ELSE 100 - CAST ( ATT.TotalLates AS FLOAT ) / CAST ( HE.Att_Act AS FLOAT )
+					END
+				, 4 ),
+			IsXfr = HE.PVXfr,
+			IsCont = HE.PVCont,
+			IsWdr = HE.PVWithdrawn + HE.PVWithdrawn1stNov,
+			IsWdrInQualifyingPeriod = HE.PVWithdrawn,
+			IsWdrAfterQualifyingPeriod = HE.PVWithdrawn1stNov,
+			OutOfFunding30 = 0,
+			OutOfFunding60 = 0,
+			OutOfFunding90 = 0,
+			IsComp = HE.P_Complete_TimelyQSRExclude,
+			IsRetInYr = HE.PVCont + HE.P_Complete_TimelyQSRExclude,
+			IsRet = HE.PVCont + HE.P_Complete_TimelyQSRExclude,
+			IsAch = HE.P_Ach_TimelyQSRExclude,
+			IsPassAToC = 0,
+	'
+
+    SET @SQLString += 
+        N'
+			NatRate_Yr_Leave = NULL,
+			NatRate_Yr_Ach = NULL,
+			NatRate_Yr_AchPer = NULL,
+			NatRate_YrGFE_Leave = NULL,
+			NatRate_YrGFE_Ach = NULL,
+			NatRate_YrGFE_AchPer = NULL,
+			NatRate_Aim_Leave = NULL,
+			NatRate_Aim_Ach = NULL,
+			NatRate_Aim_AchPer = NULL,
+			NatRate_FworkPTSSA_Leave = NULL,
+			NatRate_FworkPTSSA_Ach = NULL,
+			NatRate_FworkPTSSA_AchPer = NULL,
+			NatRate_Age_Leave = NULL,
+			NatRate_Age_Ach = NULL,
+			NatRate_Age_AchPer = NULL,
+			NatRate_AgeGender_Leave = NULL,
+			NatRate_AgeGender_Ach = NULL,
+			NatRate_AgeGender_AchPer = NULL,
+			NatRate_Level_Leave = NULL,
+			NatRate_Level_Ach = NULL,
+			NatRate_Level_AchPer = NULL,
+            NatRate_LevelAge_Leave = NULL,
+			NatRate_LevelAge_Ach = NULL,
+			NatRate_LevelAge_AchPer = NULL,
+            NatRate_LevelGrp_Leave = NULL,
+			NatRate_LevelGrp_Ach = NULL,
+			NatRate_LevelGrp_AchPer = NULL,
+            NatRate_LevelGrpAge_Leave = NULL,
+			NatRate_LevelGrpAge_Ach = NULL,
+			NatRate_LevelGrpAge_AchPer = NULL,
+			NatRate_QualType_Leave = NULL,
+			NatRate_QualType_Ach = NULL,
+			NatRate_QualType_AchPer = NULL,
+			NatRate_QualTypeAge_Leave = NULL,
+			NatRate_QualTypeAge_Ach = NULL,
+			NatRate_QualTypeAge_AchPer = NULL,
+			NatRate_Ethnicity_Leave = NULL,
+			NatRate_Ethnicity_Ach = NULL,
+			NatRate_Ethnicity_AchPer = NULL,
+            NatRate_EthnicityAge_Leave = NULL,
+			NatRate_EthnicityAge_Ach = NULL,
+			NatRate_EthnicityAge_AchPer = NULL,
+			NatRate_SSA1_Leave = NULL,
+			NatRate_SSA1_Ach = NULL,
+			NatRate_SSA1_AchPer = NULL,
+			NatRate_SSA2_Leave = NULL,
+			NatRate_SSA2_Ach = NULL,
+			NatRate_SSA2_AchPer = NULL,
+			NatRate_DifDis_Leave = NULL,
+			NatRate_DifDis_Ach = NULL,
+			NatRate_DifDis_AchPer = NULL,
+            NatRate_DifDisAge_Leave = NULL,
+			NatRate_DifDisAge_Ach = NULL,
+			NatRate_DifDisAge_AchPer = NULL
+	'
+
+    SET @SQLString += 
+        N'
+		FROM ' + @ProAchieveDatabaseLocation + 'HE_MYS_Low HE
+		INNER JOIN ' + @ProAchieveDatabaseLocation + 'vHE_MYS_RDS_Seln MYS 
+			ON MYS.HE_MYSID = HE.HE_MYSID
+			AND MYS.PG_ProviderID = HE.PG_ProviderID
+			--AND MYS.DefaultSummary = 1
+            AND MYS.IsArchived = 0
+            --AND MYS.RulesApplied = 0
+            --AND MYS.IncludeAllAimTypes = 1
+            AND MYS.LastAcademicYearID = (
+                SELECT 
+                    MaxYear = MAX ( MYS2.LastAcademicYearID )
+                FROM ' + @ProAchieveDatabaseLocation + 'vHE_MYS_RDS_Seln MYS2
+                WHERE
+                    MYS2.DefaultSummary = MYS.DefaultSummary
+                    AND MYS2.IsArchived = MYS.IsArchived
+                    AND MYS2.RulesApplied = MYS.RulesApplied
+                    AND MYS2.IncludeAllAimTypes = MYS.IncludeAllAimTypes
+            )
+		INNER JOIN ' + @ProGeneralDatabaseLocation + 'Student STU
+			ON STU.StudentID = HE.PG_StudentID
+			AND STU.AcademicYearID = HE.PG_AcademicYearID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Aim AIM 
+			ON AIM.GN_AimID = HE.PG_AimID
+		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_Ethnicity ETH
+			ON ETH.PG_EthnicityID = HE.PG_EthnicityID
+		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_EthnicityGroupQAR ETHQ
+			ON ETHQ.PG_EthnicityGroupQARID = ETH.PG_EthnicityGroupQARID
+		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_EthnicGroup ETHG
+			ON ETHG.PG_EthnicGroupID = HE.PG_EthnicGroupID
+		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_EthnicGroupSimple ETHGS
+			ON ETHGS.PG_EthnicGroupSimpleID = ETHG.PG_EthnicGroupSimpleID
+		INNER JOIN ' + @ProGeneralDatabaseLocation + 'SSA1 SSA1 
+			ON SSA1.SSA_Tier1_code = HE.PG_SSA1ID
+		INNER JOIN ' + @ProGeneralDatabaseLocation + 'SSA2 SSA2 
+			ON SSA2.SSA_Tier2_code = HE.PG_SSA2ID
+	'
+
+    SET @SQLString += 
+        N'
+		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_Duration DUR
+			ON DUR.PG_DurationID = HE.PG_DurationID
+		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_DurationGroup DURG
+			ON DURG.PG_DurationGroupID = HE.PG_DurationGroupID
+		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_DurationType DURT
+			ON DURT.PG_DurationTypeID = HE.PG_DurationTypeID
+		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_QualSize QS
+			ON QS.PG_QualSizeID = HE.PG_QualSizeID
+		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PM_MS_ThresholdValue MINS
+			ON MINS.PG_QualSizeID = HE.PG_QualSizeID
+			AND MINS.ThresholdID = 1
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'HE_AgeGroup AGE 
+			ON AGE.HE_AgeGroupID = HE.HE_AgeGroupID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_Learner_FAM_Pivoted FAM
+			ON FAM.PG_StudentID = HE.PG_StudentID
+			AND FAM.PG_ProviderID = HE.PG_ProviderID
+			AND FAM.PG_AcademicYearID = HE.PG_AcademicYearID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NVQLevelCPR NVQ 
+			ON NVQ.PG_NVQLevelCPRID = HE.PG_NVQLevelID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure1IY DIV 
+			ON DIV.GN_Structure1IYID = HE.PG_Structure1ID
+			AND DIV.PG_AcademicYearID = HE.PG_AcademicYearID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure2IY SUBDIV
+			ON SUBDIV.GN_Structure2IYID = HE.PG_Structure2ID
+			AND SUBDIV.PG_AcademicYearID = HE.PG_AcademicYearID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure3IY CC
+			ON CC.GN_Structure3IYID = HE.PG_Structure3ID
+			AND CC.PG_AcademicYearID = HE.PG_AcademicYearID
+		--LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_CourseStructureIY CRS 
+		--	ON CRS.PG_CourseID = HE.PG_AggCourseID
+		--	AND CRS.PG_AcademicYearID = HE.PG_ExpEndYrID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_AggCourse CRS 
+			ON CRS.PG_AggCourseID = HE.PG_AggCourseID
+		LEFT JOIN ' + @ProGeneralDatabaseLocation + 'DifficultyOrDisability DIF
+			ON DIF.DifficultyOrDisabilityID = HE.PG_DifficultyOrDisabilityID
+		LEFT JOIN ' + @ProGeneralDatabaseLocation + 'Enrolment_Attendance ATT 
+			ON ATT.StudentID = HE.PG_StudentID
+			AND ATT.CollegeID = HE.PG_ProviderID
+			AND ATT.AcademicYearID = HE.PG_AcademicYearID
+			AND ATT.SequenceNo = HE.SequenceNo
+		LEFT JOIN ' + @ProGeneralDatabaseLocation + 'Student_UDF LAC
+			ON LAC.StudentID = HE.PG_StudentID
+			AND LAC.CollegeID = HE.PG_ProviderID
+			AND LAC.AcademicYearID = HE.PG_AcademicYearID
+	'
+
+    SET @SQLString += 
+        N'
+		WHERE 
+			HE.PG_ExpEndYrID = @AcademicYear
+			--AND MYS.LastAcademicYearID = @AcademicYear'
+
+	--SELECT @SQLString AS [processing-instruction(x)] FOR XML PATH('')
+
+	SET @SQLParams = 
+        N'@AcademicYear NVARCHAR(5),
+	    @CollegeType INT';
+
+    EXECUTE sp_executesql 
+        @SQLString, 
+        @SQLParams, 
+        @AcademicYear = @AcademicYear, 
+        @CollegeType = @CollegeType;
+
+    SET @NumRowsChanged = @@ROWCOUNT
+	SET @ErrorCode = @@ERROR
+END

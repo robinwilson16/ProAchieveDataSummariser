@@ -1,4 +1,4 @@
-CREATE PROCEDURE SPR_PRA_ProAchieveSummaryData
+CREATE PROCEDURE SPR_PRA_ProAchieveSummaryData_All
 	@AcademicYear NVARCHAR(5),
 	@CollegeType INT,
 	@ProGeneralDatabaseLocation NVARCHAR(200),
@@ -168,7 +168,6 @@ BEGIN
 						ELSE CAST ( CL.Att_Act AS FLOAT ) / CAST ( CL.Att_Exp AS FLOAT )
 					END
 				, 4 ),
-			AttendTar = TAR.Attend,
 			LessonsLate = CL.Att_Lat,
 			PuncPer = 
 				ROUND (
@@ -177,7 +176,6 @@ BEGIN
 						ELSE 100 - CAST ( CL.Att_Lat AS FLOAT ) / CAST ( CL.Att_Act AS FLOAT )
 					END
 				, 4 ),
-			PuncTar = TAR.Punc,
 			IsXfr = CL.PVXfr,
 			IsCont = 
 				CASE 
@@ -385,28 +383,6 @@ BEGIN
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PM_MS_ThresholdValue MINS
 			ON MINS.PG_QualSizeID = CL.PG_QualSizeID
 			AND MINS.ThresholdID = 1
-		INNER JOIN (
-			SELECT
-				TAR.Attend,
-				TAR.Punc
-			FROM (
-				SELECT
-					TargetType = ''Attend'',
-					TargetValue = 90
-
-				UNION ALL
-
-				SELECT
-					TargetType = ''Punc'',
-					TargetValue = 90
-			) T
-			PIVOT (
-				SUM ( T.TargetValue )
-				FOR
-					T.TargetType IN ( [Attend], [Punc] )
-			) AS TAR
-		) TAR
-			ON 1 = 1
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_AgeLSC AGE
 			ON AGE.PG_AgeLSCID = CL.PG_AgeLSCID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_Learner_FAM_Pivoted FAM
@@ -1248,7 +1224,6 @@ BEGIN
 						ELSE CAST ( CL.Att_Act AS FLOAT ) / CAST ( CL.Att_Exp AS FLOAT )
 					END
 				, 4 ),
-			AttendTar = TAR.Attend,
 			LessonsLate = CL.Att_Lat,
 			PuncPer = 
 				ROUND (
@@ -1257,7 +1232,6 @@ BEGIN
 						ELSE 100 - CAST ( CL.Att_Lat AS FLOAT ) / CAST ( CL.Att_Act AS FLOAT )
 					END
 				, 4 ),
-			PuncTar = TAR.Punc,
 			IsXfr = CL.PVXfr,
 			IsCont = CL.PVCont,
 			IsWdr = CASE WHEN CL.IsWithdrawnAll = ''Y'' THEN 1 ELSE 0 END,
@@ -1420,28 +1394,6 @@ BEGIN
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PM_MS_ThresholdValue MINS
 			ON MINS.PG_QualSizeID = CL.PG_QualSizeID
 			AND MINS.ThresholdID = 1
-		INNER JOIN (
-			SELECT
-				TAR.Attend,
-				TAR.Punc
-			FROM (
-				SELECT
-					TargetType = ''Attend'',
-					TargetValue = 90
-
-				UNION ALL
-
-				SELECT
-					TargetType = ''Punc'',
-					TargetValue = 90
-			) T
-			PIVOT (
-				SUM ( T.TargetValue )
-				FOR
-					T.TargetType IN ( [Attend], [Punc] )
-			) AS TAR
-		) TAR
-			ON 1 = 1
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_AgeLSC AGE
 			ON AGE.PG_AgeLSCID = CL.PG_AgeLSCID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_Learner_FAM_Pivoted FAM
@@ -2265,7 +2217,6 @@ BEGIN
 						ELSE CAST ( ER.Att_Act AS FLOAT ) / CAST ( ER.Att_Exp AS FLOAT )
 					END
 				, 4 ),
-			AttendTar = TAR.Attend,
 			LessonsLate = ER.Att_Lat,
 			PuncPer = 
 				ROUND (
@@ -2274,7 +2225,6 @@ BEGIN
 						ELSE 100 - CAST ( ER.Att_Lat AS FLOAT ) / CAST ( ER.Att_Act AS FLOAT )
 					END
 				, 4 ),
-			PuncTar = TAR.Punc,
 			IsXfr = ER.WBXfr,
 			IsCont = ER.WBContOverall,
 			IsWdr = ER.WBLeave,
@@ -2428,27 +2378,6 @@ BEGIN
 			ON DUR.WB_DurationID = ER.WB_DurationID
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_ProgType PT
 			ON PT.PG_ProgTypeID = ER.PG_ProgTypeID
-		INNER JOIN (
-			SELECT
-				TAR.Attend,
-				TAR.Punc
-			FROM (
-				SELECT
-					TargetType = ''Attend'',
-					TargetValue = 90
-
-				UNION ALL
-
-				SELECT
-					TargetType = ''Punc'',
-					TargetValue = 90
-			) T
-			PIVOT (
-				SUM ( T.TargetValue )
-				FOR
-					T.TargetType IN ( [Attend], [Punc] )
-			) AS TAR
-		) TAR
 			ON 1 = 1
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_WBLFundAgeGroup AGE 
 			ON AGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
@@ -2950,7 +2879,6 @@ BEGIN
 						ELSE CAST ( ER.Att_Act AS FLOAT ) / CAST ( ER.Att_Exp AS FLOAT )
 					END
 				, 4 ),
-			AttendTar = TAR.Attend,
 			LessonsLate = ER.Att_Lat,
 			PuncPer = 
 				ROUND (
@@ -2959,7 +2887,6 @@ BEGIN
 						ELSE 100 - CAST ( ER.Att_Lat AS FLOAT ) / CAST ( ER.Att_Act AS FLOAT )
 					END
 				, 4 ),
-			PuncTar = TAR.Punc,
 			IsXfr = ER.WBXfr,
 			IsCont = ER.WBContTimely,
 			IsWdr = ER.WBLeave,
@@ -3113,28 +3040,6 @@ BEGIN
 			ON DUR.WB_DurationID = ER.WB_DurationID
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_ProgType PT
 			ON PT.PG_ProgTypeID = ER.PG_ProgTypeID
-		INNER JOIN (
-			SELECT
-				TAR.Attend,
-				TAR.Punc
-			FROM (
-				SELECT
-					TargetType = ''Attend'',
-					TargetValue = 90
-
-				UNION ALL
-
-				SELECT
-					TargetType = ''Punc'',
-					TargetValue = 90
-			) T
-			PIVOT (
-				SUM ( T.TargetValue )
-				FOR
-					T.TargetType IN ( [Attend], [Punc] )
-			) AS TAR
-		) TAR
-			ON 1 = 1
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_WBLFundAgeGroup AGE 
 			ON AGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_QualSize QS
@@ -3623,7 +3528,6 @@ BEGIN
 						ELSE CAST ( HE.Att_Act AS FLOAT ) / CAST ( HE.Att_Exp AS FLOAT )
 					END
 				, 4 ),
-			AttendTar = TAR.Attend,
 			LessonsLate = ATT.TotalLates,
 			PuncPer = 
 				ROUND (
@@ -3632,7 +3536,6 @@ BEGIN
 						ELSE 100 - CAST ( ATT.TotalLates AS FLOAT ) / CAST ( HE.Att_Act AS FLOAT )
 					END
 				, 4 ),
-			PuncTar = TAR.Punc,
 			IsXfr = HE.PVXfr,
 			IsCont = HE.PVCont,
 			IsWdr = HE.PVWithdrawn + HE.PVWithdrawn1stNov,
@@ -3758,28 +3661,6 @@ BEGIN
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PM_MS_ThresholdValue MINS
 			ON MINS.PG_QualSizeID = HE.PG_QualSizeID
 			AND MINS.ThresholdID = 1
-		INNER JOIN (
-			SELECT
-				TAR.Attend,
-				TAR.Punc
-			FROM (
-				SELECT
-					TargetType = ''Attend'',
-					TargetValue = 90
-
-				UNION ALL
-
-				SELECT
-					TargetType = ''Punc'',
-					TargetValue = 90
-			) T
-			PIVOT (
-				SUM ( T.TargetValue )
-				FOR
-					T.TargetType IN ( [Attend], [Punc] )
-			) AS TAR
-		) TAR
-			ON 1 = 1
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'HE_AgeGroup AGE 
 			ON AGE.HE_AgeGroupID = HE.HE_AgeGroupID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_Learner_FAM_Pivoted FAM
@@ -3939,7 +3820,6 @@ BEGIN
 						ELSE CAST ( HE.Att_Act AS FLOAT ) / CAST ( HE.Att_Exp AS FLOAT )
 					END
 				, 4 ),
-			AttendTar = TAR.Attend,
 			LessonsLate = ATT.TotalLates,
 			PuncPer = 
 				ROUND (
@@ -3948,7 +3828,6 @@ BEGIN
 						ELSE 100 - CAST ( ATT.TotalLates AS FLOAT ) / CAST ( HE.Att_Act AS FLOAT )
 					END
 				, 4 ),
-			PuncTar = TAR.Punc,
 			IsXfr = HE.PVXfr,
 			IsCont = HE.PVCont,
 			IsWdr = HE.PVWithdrawn + HE.PVWithdrawn1stNov,
@@ -4074,28 +3953,6 @@ BEGIN
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PM_MS_ThresholdValue MINS
 			ON MINS.PG_QualSizeID = HE.PG_QualSizeID
 			AND MINS.ThresholdID = 1
-		INNER JOIN (
-			SELECT
-				TAR.Attend,
-				TAR.Punc
-			FROM (
-				SELECT
-					TargetType = ''Attend'',
-					TargetValue = 90
-
-				UNION ALL
-
-				SELECT
-					TargetType = ''Punc'',
-					TargetValue = 90
-			) T
-			PIVOT (
-				SUM ( T.TargetValue )
-				FOR
-					T.TargetType IN ( [Attend], [Punc] )
-			) AS TAR
-		) TAR
-			ON 1 = 1
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'HE_AgeGroup AGE 
 			ON AGE.HE_AgeGroupID = HE.HE_AgeGroupID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_Learner_FAM_Pivoted FAM

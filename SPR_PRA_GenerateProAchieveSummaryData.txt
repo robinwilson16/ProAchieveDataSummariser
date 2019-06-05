@@ -127,10 +127,8 @@ BEGIN
 					LessonsExpected FLOAT NULL,
 					LessonsAttended FLOAT NULL,
 					AttendPer FLOAT NULL,
-					AttendTar INT NULL,
 					LessonsLate FLOAT NULL,
 					PuncPer FLOAT NULL,
-					PuncTar INT NULL,
 					IsXfr INT NULL,
 					IsCont INT NULL,
 					IsWdr INT NULL,
@@ -260,9 +258,156 @@ BEGIN
                         @AcademicYear = @AcademicYear;
 				END
 		END
+
+	--Insert CL Overall
 	SET @SQLString = N'
 		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
-		EXEC SPR_PRA_ProAchieveSummaryData
+		EXEC SPR_PRA_ProAchieveSummaryData_CLOverall
+			@AcademicYear, 
+			@CollegeType, 
+			@ProGeneralDatabaseLocation,
+			@ProAchieveDatabaseLocation,
+            @NumRowsChanged, 
+	        @ErrorCode';
+
+    SET @SQLParams = 
+            N'@AcademicYear NVARCHAR(5),
+            @CollegeType INT,
+            @ProGeneralDatabaseLocation NVARCHAR(200),
+            @ProAchieveDatabaseLocation NVARCHAR(200),
+            @NumRowsChanged INT OUTPUT, 
+	        @ErrorCode INT OUTPUT';
+        
+    EXECUTE sp_executesql 
+        @SQLString, 
+        @SQLParams, 
+        @AcademicYear = @AcademicYear, 
+        @CollegeType = @CollegeType, 
+        @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
+        @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+        @NumRowsChanged = @NumRowsChanged OUTPUT, 
+        @ErrorCode = @ErrorCode OUTPUT;
+
+	--Insert CL Timely
+	SET @SQLString = N'
+		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
+		EXEC SPR_PRA_ProAchieveSummaryData_CLTimely
+			@AcademicYear, 
+			@CollegeType, 
+			@ProGeneralDatabaseLocation,
+			@ProAchieveDatabaseLocation,
+            @NumRowsChanged, 
+	        @ErrorCode';
+
+    SET @SQLParams = 
+            N'@AcademicYear NVARCHAR(5),
+            @CollegeType INT,
+            @ProGeneralDatabaseLocation NVARCHAR(200),
+            @ProAchieveDatabaseLocation NVARCHAR(200),
+            @NumRowsChanged INT OUTPUT, 
+	        @ErrorCode INT OUTPUT';
+        
+    EXECUTE sp_executesql 
+        @SQLString, 
+        @SQLParams, 
+        @AcademicYear = @AcademicYear, 
+        @CollegeType = @CollegeType, 
+        @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
+        @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+        @NumRowsChanged = @NumRowsChanged OUTPUT, 
+        @ErrorCode = @ErrorCode OUTPUT;
+
+	--Insert ER Overall
+	SET @SQLString = N'
+		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
+		EXEC SPR_PRA_ProAchieveSummaryData_EROverall
+			@AcademicYear, 
+			@CollegeType, 
+			@ProGeneralDatabaseLocation,
+			@ProAchieveDatabaseLocation,
+            @NumRowsChanged, 
+	        @ErrorCode';
+
+    SET @SQLParams = 
+            N'@AcademicYear NVARCHAR(5),
+            @CollegeType INT,
+            @ProGeneralDatabaseLocation NVARCHAR(200),
+            @ProAchieveDatabaseLocation NVARCHAR(200),
+            @NumRowsChanged INT OUTPUT, 
+	        @ErrorCode INT OUTPUT';
+        
+    EXECUTE sp_executesql 
+        @SQLString, 
+        @SQLParams, 
+        @AcademicYear = @AcademicYear, 
+        @CollegeType = @CollegeType, 
+        @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
+        @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+        @NumRowsChanged = @NumRowsChanged OUTPUT, 
+        @ErrorCode = @ErrorCode OUTPUT;
+
+	--Insert ER Timely
+	SET @SQLString = N'
+		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
+		EXEC SPR_PRA_ProAchieveSummaryData_ERTimely
+			@AcademicYear, 
+			@CollegeType, 
+			@ProGeneralDatabaseLocation,
+			@ProAchieveDatabaseLocation,
+            @NumRowsChanged, 
+	        @ErrorCode';
+
+    SET @SQLParams = 
+            N'@AcademicYear NVARCHAR(5),
+            @CollegeType INT,
+            @ProGeneralDatabaseLocation NVARCHAR(200),
+            @ProAchieveDatabaseLocation NVARCHAR(200),
+            @NumRowsChanged INT OUTPUT, 
+	        @ErrorCode INT OUTPUT';
+        
+    EXECUTE sp_executesql 
+        @SQLString, 
+        @SQLParams, 
+        @AcademicYear = @AcademicYear, 
+        @CollegeType = @CollegeType, 
+        @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
+        @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+        @NumRowsChanged = @NumRowsChanged OUTPUT, 
+        @ErrorCode = @ErrorCode OUTPUT;
+
+	--Insert HE Overall
+	SET @SQLString = N'
+		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
+		EXEC SPR_PRA_ProAchieveSummaryData_CLOverall
+			@AcademicYear, 
+			@CollegeType, 
+			@ProGeneralDatabaseLocation,
+			@ProAchieveDatabaseLocation,
+            @NumRowsChanged, 
+	        @ErrorCode';
+
+    SET @SQLParams = 
+            N'@AcademicYear NVARCHAR(5),
+            @CollegeType INT,
+            @ProGeneralDatabaseLocation NVARCHAR(200),
+            @ProAchieveDatabaseLocation NVARCHAR(200),
+            @NumRowsChanged INT OUTPUT, 
+	        @ErrorCode INT OUTPUT';
+        
+    EXECUTE sp_executesql 
+        @SQLString, 
+        @SQLParams, 
+        @AcademicYear = @AcademicYear, 
+        @CollegeType = @CollegeType, 
+        @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
+        @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+        @NumRowsChanged = @NumRowsChanged OUTPUT, 
+        @ErrorCode = @ErrorCode OUTPUT;
+
+	--Insert HE Timely
+	SET @SQLString = N'
+		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
+		EXEC SPR_PRA_ProAchieveSummaryData_CLOverall
 			@AcademicYear, 
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
