@@ -1,3 +1,0 @@
-ALTER TABLE ProAchieveLearnerData
-ADD CONSTRAINT PK_ProAchieveLearnerData PRIMARY KEY CLUSTERED (EndYear, SummaryType, ProviderID, SequenceNo, StudentRef)
-DOES NOT WORK AS NOT DISTINCT DUE TO HYBRID END YEAR!

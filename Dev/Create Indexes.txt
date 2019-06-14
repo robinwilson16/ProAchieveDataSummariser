@@ -1,1 +1,0 @@
-CREATE CLUSTERED INDEX CI_ProAchieveLearnerData ON ProAchieveLearnerData (EndYear, SummaryType, ProviderID, DivisionCode, SubDivisionCode, CostCentreCode)

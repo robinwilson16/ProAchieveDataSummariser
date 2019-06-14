@@ -5,6 +5,9 @@ CREATE PROCEDURE SPR_PRA_GenerateProAchieveSummaryData
 	@ProGeneralDatabaseLocation NVARCHAR(200),
 	@ProAchieveDatabaseLocation NVARCHAR(200),
 	@OutputTableLocation NVARCHAR(200),
+	@FacStructureLevel INT,
+	@TeamStructureLevel INT,
+	@CostCentreStructureLevel INT,
     @NumRowsChanged INT OUTPUT, 
 	@ErrorCode INT OUTPUT
 
@@ -267,6 +270,9 @@ BEGIN
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
 			@ProAchieveDatabaseLocation,
+			@FacStructureLevel,
+			@TeamStructureLevel,
+			@CostCentreStructureLevel,
             @NumRowsChanged, 
 	        @ErrorCode';
 
@@ -275,6 +281,9 @@ BEGIN
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
+			@FacStructureLevel INT,
+			@TeamStructureLevel INT,
+			@CostCentreStructureLevel INT,
             @NumRowsChanged INT OUTPUT, 
 	        @ErrorCode INT OUTPUT';
         
@@ -285,6 +294,9 @@ BEGIN
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
         @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+		@FacStructureLevel = @FacStructureLevel,
+		@TeamStructureLevel = @TeamStructureLevel,
+		@CostCentreStructureLevel = @CostCentreStructureLevel,
         @NumRowsChanged = @NumRowsChanged OUTPUT, 
         @ErrorCode = @ErrorCode OUTPUT;
 
@@ -296,6 +308,9 @@ BEGIN
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
 			@ProAchieveDatabaseLocation,
+			@FacStructureLevel,
+			@TeamStructureLevel,
+			@CostCentreStructureLevel,
             @NumRowsChanged, 
 	        @ErrorCode';
 
@@ -304,6 +319,9 @@ BEGIN
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
+			@FacStructureLevel INT,
+			@TeamStructureLevel INT,
+			@CostCentreStructureLevel INT,
             @NumRowsChanged INT OUTPUT, 
 	        @ErrorCode INT OUTPUT';
         
@@ -314,6 +332,9 @@ BEGIN
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
         @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+		@FacStructureLevel = @FacStructureLevel,
+		@TeamStructureLevel = @TeamStructureLevel,
+		@CostCentreStructureLevel = @CostCentreStructureLevel,
         @NumRowsChanged = @NumRowsChanged OUTPUT, 
         @ErrorCode = @ErrorCode OUTPUT;
 
@@ -325,6 +346,9 @@ BEGIN
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
 			@ProAchieveDatabaseLocation,
+			@FacStructureLevel,
+			@TeamStructureLevel,
+			@CostCentreStructureLevel,
             @NumRowsChanged, 
 	        @ErrorCode';
 
@@ -333,6 +357,9 @@ BEGIN
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
+			@FacStructureLevel INT,
+			@TeamStructureLevel INT,
+			@CostCentreStructureLevel INT,
             @NumRowsChanged INT OUTPUT, 
 	        @ErrorCode INT OUTPUT';
         
@@ -343,6 +370,9 @@ BEGIN
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
         @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+		@FacStructureLevel = @FacStructureLevel,
+		@TeamStructureLevel = @TeamStructureLevel,
+		@CostCentreStructureLevel = @CostCentreStructureLevel,
         @NumRowsChanged = @NumRowsChanged OUTPUT, 
         @ErrorCode = @ErrorCode OUTPUT;
 
@@ -354,6 +384,9 @@ BEGIN
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
 			@ProAchieveDatabaseLocation,
+			@FacStructureLevel,
+			@TeamStructureLevel,
+			@CostCentreStructureLevel,
             @NumRowsChanged, 
 	        @ErrorCode';
 
@@ -362,6 +395,9 @@ BEGIN
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
+			@FacStructureLevel INT,
+			@TeamStructureLevel INT,
+			@CostCentreStructureLevel INT,
             @NumRowsChanged INT OUTPUT, 
 	        @ErrorCode INT OUTPUT';
         
@@ -372,17 +408,23 @@ BEGIN
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
         @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+		@FacStructureLevel = @FacStructureLevel,
+		@TeamStructureLevel = @TeamStructureLevel,
+		@CostCentreStructureLevel = @CostCentreStructureLevel,
         @NumRowsChanged = @NumRowsChanged OUTPUT, 
         @ErrorCode = @ErrorCode OUTPUT;
 
 	--Insert HE Overall
 	SET @SQLString = N'
 		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
-		EXEC SPR_PRA_ProAchieveSummaryData_CLOverall
+		EXEC SPR_PRA_ProAchieveSummaryData_HEOverall
 			@AcademicYear, 
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
 			@ProAchieveDatabaseLocation,
+			@FacStructureLevel,
+			@TeamStructureLevel,
+			@CostCentreStructureLevel,
             @NumRowsChanged, 
 	        @ErrorCode';
 
@@ -391,6 +433,9 @@ BEGIN
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
+			@FacStructureLevel INT,
+			@TeamStructureLevel INT,
+			@CostCentreStructureLevel INT,
             @NumRowsChanged INT OUTPUT, 
 	        @ErrorCode INT OUTPUT';
         
@@ -401,17 +446,23 @@ BEGIN
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
         @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+		@FacStructureLevel = @FacStructureLevel,
+		@TeamStructureLevel = @TeamStructureLevel,
+		@CostCentreStructureLevel = @CostCentreStructureLevel,
         @NumRowsChanged = @NumRowsChanged OUTPUT, 
         @ErrorCode = @ErrorCode OUTPUT;
 
 	--Insert HE Timely
 	SET @SQLString = N'
 		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
-		EXEC SPR_PRA_ProAchieveSummaryData_CLOverall
+		EXEC SPR_PRA_ProAchieveSummaryData_HETimely
 			@AcademicYear, 
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
 			@ProAchieveDatabaseLocation,
+			@FacStructureLevel,
+			@TeamStructureLevel,
+			@CostCentreStructureLevel,
             @NumRowsChanged, 
 	        @ErrorCode';
 
@@ -420,6 +471,9 @@ BEGIN
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
+			@FacStructureLevel INT,
+			@TeamStructureLevel INT,
+			@CostCentreStructureLevel INT,
             @NumRowsChanged INT OUTPUT, 
 	        @ErrorCode INT OUTPUT';
         
@@ -430,6 +484,9 @@ BEGIN
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
         @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+		@FacStructureLevel = @FacStructureLevel,
+		@TeamStructureLevel = @TeamStructureLevel,
+		@CostCentreStructureLevel = @CostCentreStructureLevel,
         @NumRowsChanged = @NumRowsChanged OUTPUT, 
         @ErrorCode = @ErrorCode OUTPUT;
 END

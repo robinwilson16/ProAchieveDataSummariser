@@ -47,7 +47,7 @@ LEFT JOIN (
     INNER JOIN ProSolution.dbo.SupportAssessmentItem ALSI
         ON ALSI.SupportAssessmentItemID = ALSL.SupportAssessmentItemID
     WHERE  
-        SD.AcademicYearID = '18/19'
+        SD.AcademicYearID = @AcademicYear
     GROUP BY
         SD.StudentDetailID
 ) ALS

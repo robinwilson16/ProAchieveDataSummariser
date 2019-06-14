@@ -1,8 +1,11 @@
-CREATE PROCEDURE SPR_PRA_ProAchieveSummaryData_ERTimely
+CREATE PROCEDURE SPR_PRA_ProAchieveSummaryData_EROverall
 	@AcademicYear NVARCHAR(5),
 	@CollegeType INT,
 	@ProGeneralDatabaseLocation NVARCHAR(200),
 	@ProAchieveDatabaseLocation NVARCHAR(200),
+	@FacStructureLevel INT,
+	@TeamStructureLevel INT,
+	@CostCentreStructureLevel INT,
     @NumRowsChanged INT OUTPUT, 
 	@ErrorCode INT OUTPUT
 AS
@@ -13,17 +16,44 @@ BEGIN
 	-- DECLARE @CollegeType INT = 2
 	-- DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
 	-- DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProAchieve.dbo.'
+	--DECLARE @FacStructureLevel INT = 2
+	--DECLARE @TeamStructureLevel INT = 3
+	--DECLARE @CostCentreStructureLevel INT = 4
 
     DECLARE @SQLString NVARCHAR(MAX);
     DECLARE @SQLParams NVARCHAR(MAX);
 
-    SET @SQLString = 
+	SET @SQLString = 
         N'
 		SELECT
-			EndYear = ER.PG_ExpEndYrID,
+			NR.WB_HybridEndYearID,
+			NR.PG_CollegeTypeID,
+			NR.PG_WBLFundAgeGroupID,
+			NR.PG_SSA1ID,
+			NR.PG_SSA2ID,
+			NR.PG_ProgTypeID,
+			NR.PG_FrameworkID,
+			BMLeave = SUM ( NR.BMLeave ),
+			BMAchFrame = SUM ( NR.BMAchFrame ),
+			BMAchFrameOverallLeave = CEILING ( ROUND ( CAST ( SUM ( NR.BMAchFrame ) AS FLOAT ) / CAST ( SUM ( NR.BMLeave ) AS FLOAT ), 4 ) * 100 * 10 ) / 10
+			INTO #NatRate_ER_Overall
+		FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Overall NR
+		GROUP BY
+			NR.WB_HybridEndYearID,
+			NR.PG_CollegeTypeID,
+			NR.PG_WBLFundAgeGroupID,
+			NR.PG_SSA1ID,
+			NR.PG_SSA2ID,
+			NR.PG_ProgTypeID,
+			NR.PG_FrameworkID';
+
+    SET @SQLString += 
+        N'
+		SELECT
+			EndYear = ER.WB_HybridEndYearID,
 			AcademicYear = AY.PG_AcademicYearID,
 			SummaryType =
-                ''ER_Timely_''
+                ''ER_Overall_''
                 + CASE
                     WHEN 
                         MYS.DefaultSummary = 1
@@ -68,7 +98,7 @@ BEGIN
 			DiffDissName = DIF.ShortDescription,
 			IsHighNeeds = COALESCE ( FAM.PG_LearnFAMTypeHNSID, 0 ),
 			IsFreeMealsEligible = CASE WHEN FAM.PG_LearnFAMTypeFMEID IS NOT NULL THEN 1 ELSE 0 END,
-			
+
             IsALSRequired = CASE WHEN STU.UserDefined1 = ''Y'' THEN 1 ELSE 0 END,
             IsCareLeaver = CASE WHEN STU.UserDefined2 = ''Y'' THEN 1 ELSE 0 END,
             IsLookedAfter = CASE WHEN STU.UserDefined3 = ''Y'' THEN 1 ELSE 0 END,
@@ -76,12 +106,66 @@ BEGIN
             IsYoungParent = CASE WHEN STU.UserDefined5 = ''Y'' THEN 1 ELSE 0 END,
 
 			CampusID = COALESCE ( STU.CampusID, ''-'' ),
-			FacCode = ER.PG_Structure1ID,
-			FacName = COALESCE(DIV.GN_Structure1IYName, ''-- Unknown --''),
-			TeamCode = ER.PG_Structure2ID,
-			TeamName = COALESCE(SUBDIV.GN_Structure2IYName, ''-- Unknown --''),
-			CostCentreCode = ER.PG_Structure3ID,
-			CostCentreName = COALESCE(CC.GN_Structure3IYName, ''-- Unknown --''),
+			FacCode = 
+				COALESCE ( 
+					CASE 
+						WHEN @FacStructureLevel = 1 THEN L1.GN_Structure1IYID
+						WHEN @FacStructureLevel = 2 THEN L2.GN_Structure2IYID
+						WHEN @FacStructureLevel = 3 THEN L3.GN_Structure3IYID
+						WHEN @FacStructureLevel = 4 THEN L4.GN_Structure4IYID
+					END,
+					''-''
+				),
+			FacName = 
+				COALESCE ( 
+					CASE 
+						WHEN @FacStructureLevel = 1 THEN L1.GN_Structure1IYName
+						WHEN @FacStructureLevel = 2 THEN L2.GN_Structure2IYName
+						WHEN @FacStructureLevel = 3 THEN L3.GN_Structure3IYName
+						WHEN @FacStructureLevel = 4 THEN L4.GN_Structure4IYName
+					END,
+					''-- Unknown --''
+				),
+			TeamCode = 
+				COALESCE ( 
+					CASE 
+						WHEN @TeamStructureLevel = 1 THEN L1.GN_Structure1IYID
+						WHEN @TeamStructureLevel = 2 THEN L2.GN_Structure2IYID
+						WHEN @TeamStructureLevel = 3 THEN L3.GN_Structure3IYID
+						WHEN @TeamStructureLevel = 4 THEN L4.GN_Structure4IYID
+					END,
+					''-''
+				),
+			TeamName = 
+				COALESCE ( 
+					CASE 
+						WHEN @FacStructureLevel = 1 THEN L1.GN_Structure1IYName
+						WHEN @FacStructureLevel = 2 THEN L2.GN_Structure2IYName
+						WHEN @FacStructureLevel = 3 THEN L3.GN_Structure3IYName
+						WHEN @FacStructureLevel = 4 THEN L4.GN_Structure4IYName
+					END,
+					''-- Unknown --''
+				),
+			CostCentreCode = 
+				COALESCE ( 
+					CASE 
+						WHEN @CostCentreStructureLevel = 1 THEN L1.GN_Structure1IYID
+						WHEN @CostCentreStructureLevel = 2 THEN L2.GN_Structure2IYID
+						WHEN @CostCentreStructureLevel = 3 THEN L3.GN_Structure3IYID
+						WHEN @CostCentreStructureLevel = 4 THEN L4.GN_Structure4IYID
+					END,
+					''-''
+				),
+			CostCentreName = 
+				COALESCE ( 
+					CASE 
+						WHEN @CostCentreStructureLevel = 1 THEN L1.GN_Structure1IYName
+						WHEN @CostCentreStructureLevel = 2 THEN L2.GN_Structure2IYName
+						WHEN @CostCentreStructureLevel = 3 THEN L3.GN_Structure3IYName
+						WHEN @CostCentreStructureLevel = 4 THEN L4.GN_Structure4IYName
+					END,
+					''-- Unknown --''
+				),
 			SSA1Code = ER.PG_SSA1ID,
 			SSA1Name = SSA1.SSA_Tier1_Desc,
 			SSA2Code = ER.PG_SSA2ID,
@@ -95,7 +179,7 @@ BEGIN
 			CourseName = CRS.PG_AggCourseName,
 			GroupCode = ER.EnrolmentUserDefined1,
 			SequenceNo = ER.SequenceNo,
-	'
+    '
 
     SET @SQLString += 
         N'
@@ -129,8 +213,8 @@ BEGIN
 			FundModelName = ''Apprenticeship'',
 			IsEFAFunded = 0,
 			IsAdvLearnLoanFunded = 0,
-			IsStart = ER.WBStartTimely,
-			IsLeaver = ER.WBTimelyLeave,
+			IsStart = ER.WBStartOverall,
+			IsLeaver = ER.WBOverallLeave,
 			LessonsExpected = ER.Att_Exp,
 			LessonsAttended = ER.Att_Act,
 			AttendPer = 
@@ -149,13 +233,13 @@ BEGIN
 					END
 				, 4 ),
 			IsXfr = ER.WBXfr,
-			IsCont = ER.WBContTimely,
+			IsCont = ER.WBContOverall,
 			IsWdr = ER.WBLeave,
 			IsWdrInQualifyingPeriod = ER.WBWithdrawnin6Wks,
-			IsWdrAfterQualifyingPeriod = ER.WBWithdrawnAfter6wksTimely,
+			IsWdrAfterQualifyingPeriod = ER.WBWithdrawnAfter6wksOverall,
 			IsOutOfFunding30 = 
 				CASE
-					WHEN ER.WBContinBeyondEndTimely = 1 THEN
+					WHEN ER.WBContinBeyondEnd = 1 THEN
 						CASE
 							WHEN DATEDIFF ( DAY, ER.PlannedEndDate, CAST ( GetDate() AS DATE ) ) <= 30 THEN 1
 							ELSE 0
@@ -164,7 +248,7 @@ BEGIN
 				END,
 			IsOutOfFunding60 = 
 				CASE
-					WHEN ER.WBContinBeyondEndTimely = 1 THEN
+					WHEN ER.WBContinBeyondEnd = 1 THEN
 						CASE
 							WHEN DATEDIFF ( DAY, ER.PlannedEndDate, CAST ( GetDate() AS DATE ) ) BETWEEN 31 AND 60 THEN 1
 							ELSE 0
@@ -173,14 +257,14 @@ BEGIN
 				END,
 			IsOutOfFunding90 = 
 				CASE
-					WHEN ER.WBContinBeyondEndTimely = 1 THEN
+					WHEN ER.WBContinBeyondEnd = 1 THEN
 						CASE
 							WHEN DATEDIFF ( DAY, ER.PlannedEndDate, CAST ( GetDate() AS DATE ) ) BETWEEN 61 AND 90 THEN 1
 							ELSE 0
 						END
 					ELSE 0
 				END,
-			IsComp = ER.WBRet - ER.WBContTimely,
+			IsComp = ER.WBRet - ER.WBContOverall,
 			IsRetInYr = 
 				CASE
 					WHEN ER.WBOverdue = 1 AND ER.WB_FrameworkStatusID IN (0,5) THEN 0
@@ -191,36 +275,36 @@ BEGIN
 					WHEN ER.WBOverdue = 1 AND ER.WB_FrameworkStatusID IN (0,5) THEN 0
 					ELSE ER.WBRet
 				END,
-			IsAch = ER.WBAchFrameTimelyLSCExclude,
+			IsAch = ER.WBAchFrameOverallLSCExclude,
 			IsPassAToC = 0,
 	'
 
     SET @SQLString += 
         N'
 			NatRate_Yr_Leave = NR_YR.BMLeave,
-			NatRate_Yr_Ach = NR_YR.BMAchFrameTimely,
-			NatRate_Yr_AchPer = CAST ( NR_YR.BMAchFrameTimelyLeave AS FLOAT ) / 100.00,
+			NatRate_Yr_Ach = NR_YR.BMAchFrame,
+			NatRate_Yr_AchPer = CAST ( NR_YR.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
 			NatRate_YrGFE_Leave = NR_YRG.BMLeave,
-			NatRate_YrGFE_Ach = NR_YRG.BMAchFrameTimely,
-			NatRate_YrGFE_AchPer = CAST ( NR_YRG.BMAchFrameTimelyLeave AS FLOAT ) / 100.00,
+			NatRate_YrGFE_Ach = NR_YRG.BMAchFrame,
+			NatRate_YrGFE_AchPer = CAST ( NR_YRG.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
 			NatRate_Aim_Leave = NR_FW.BMLeave,
-			NatRate_Aim_Ach = NR_FW.BMAchFrameTimely,
-			NatRate_Aim_AchPer = CAST ( NR_FW.BMAchFrameTimelyLeave AS FLOAT ) / 100.00,
+			NatRate_Aim_Ach = NR_FW.BMAchFrame,
+			NatRate_Aim_AchPer = CAST ( NR_FW.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
 			NatRate_FworkPTSSA_Leave = NR_FWPGSSA.BMLeave,
-			NatRate_FworkPTSSA_Ach = NR_FWPGSSA.BMAchFrameTimely,
-			NatRate_FworkPTSSA_AchPer = CAST ( NR_FWPGSSA.BMAchFrameTimelyLeave AS FLOAT ) / 100.00,
+			NatRate_FworkPTSSA_Ach = NR_FWPGSSA.BMAchFrame,
+			NatRate_FworkPTSSA_AchPer = CAST ( NR_FWPGSSA.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
 			NatRate_Age_Leave = NR_AGE.BMLeave,
-			NatRate_Age_Ach = NR_AGE.BMAchFrameTimely,
-			NatRate_Age_AchPer = CAST ( NR_AGE.BMAchFrameTimelyLeave AS FLOAT ) / 100.00,
+			NatRate_Age_Ach = NR_AGE.BMAchFrame,
+			NatRate_Age_AchPer = CAST ( NR_AGE.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
 			NatRate_AgeGender_Leave = NR_AGEGEN.BMLeave,
-			NatRate_AgeGender_Ach = NR_AGEGEN.BMAchFrameTimely,
-			NatRate_AgeGender_AchPer = CAST ( NR_AGEGEN.BMAchFrameTimelyLeave AS FLOAT ) / 100.00,
+			NatRate_AgeGender_Ach = NR_AGEGEN.BMAchFrame,
+			NatRate_AgeGender_AchPer = CAST ( NR_AGEGEN.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
 			NatRate_Level_Leave = NR_LEV.BMLeave,
-			NatRate_Level_Ach = NR_LEV.BMAchFrameTimely,
-			NatRate_Level_AchPer = CAST ( NR_LEV.BMAchFrameTimelyLeave AS FLOAT ) / 100.00,
+			NatRate_Level_Ach = NR_LEV.BMAchFrame,
+			NatRate_Level_AchPer = CAST ( NR_LEV.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
             NatRate_LevelAge_Leave = NR_LEVAGE.BMLeave,
-			NatRate_LevelAge_Ach = NR_LEVAGE.BMAchFrameTimely,
-			NatRate_LevelAge_AchPer = CAST ( NR_LEVAGE.BMAchFrameTimelyLeave AS FLOAT ) / 100.00,
+			NatRate_LevelAge_Ach = NR_LEVAGE.BMAchFrame,
+			NatRate_LevelAge_AchPer = CAST ( NR_LEVAGE.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
             NatRate_LevelGrp_Leave = NULL,
 			NatRate_LevelGrp_Ach = NULL,
 			NatRate_LevelGrp_AchPer = NULL,
@@ -234,23 +318,23 @@ BEGIN
 			NatRate_QualTypeAge_Ach = NULL,
 			NatRate_QualTypeAge_AchPer = NULL,
 			NatRate_Ethnicity_Leave = NR_ETH.BMLeave,
-			NatRate_Ethnicity_Ach = NR_ETH.BMAchFrameTimely,
-			NatRate_Ethnicity_AchPer = CAST ( NR_ETH.BMAchFrameTimelyLeave AS FLOAT ) / 100.00,
+			NatRate_Ethnicity_Ach = NR_ETH.BMAchFrame,
+			NatRate_Ethnicity_AchPer = CAST ( NR_ETH.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
             NatRate_EthnicityAge_Leave = NR_ETHAGE.BMLeave,
-			NatRate_EthnicityAge_Ach = NR_ETHAGE.BMAchFrameTimely,
-			NatRate_EthnicityAge_AchPer = CAST ( NR_ETHAGE.BMAchFrameTimelyLeave AS FLOAT ) / 100.00,
+			NatRate_EthnicityAge_Ach = NR_ETHAGE.BMAchFrame,
+			NatRate_EthnicityAge_AchPer = CAST ( NR_ETHAGE.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
 			NatRate_SSA1_Leave = NR_SSA1.BMLeave,
-			NatRate_SSA1_Ach = NR_SSA1.BMAchFrameTimely,
-			NatRate_SSA1_AchPer = CAST ( NR_SSA1.BMAchFrameTimelyLeave AS FLOAT ) / 100.00,
+			NatRate_SSA1_Ach = NR_SSA1.BMAchFrame,
+			NatRate_SSA1_AchPer = CAST ( NR_SSA1.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
 			NatRate_SSA2_Leave = NR_SSA2.BMLeave,
-			NatRate_SSA2_Ach = NR_SSA2.BMAchFrameTimely,
-			NatRate_SSA2_AchPer = CAST ( NR_SSA2.BMAchFrameTimelyLeave AS FLOAT ) / 100.00,
+			NatRate_SSA2_Ach = NR_SSA2.BMAchFrame,
+			NatRate_SSA2_AchPer = CAST ( NR_SSA2.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
 			NatRate_DifDis_Leave = NR_DIF.BMLeave,
-			NatRate_DifDis_Ach = NR_DIF.BMAchFrameTimely,
-			NatRate_DifDis_AchPer = CAST ( NR_DIF.BMAchFrameTimelyLeave AS FLOAT ) / 100.00,
+			NatRate_DifDis_Ach = NR_DIF.BMAchFrame,
+			NatRate_DifDis_AchPer = CAST ( NR_DIF.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
             NatRate_DifDisAge_Leave = NR_DIFAGE.BMLeave,
-			NatRate_DifDisAge_Ach = NR_DIFAGE.BMAchFrameTimely,
-			NatRate_DifDisAge_AchPer = CAST ( NR_DIFAGE.BMAchFrameTimelyLeave AS FLOAT ) / 100.00
+			NatRate_DifDisAge_Ach = NR_DIFAGE.BMAchFrame,
+			NatRate_DifDisAge_AchPer = CAST ( NR_DIFAGE.BMAchFrameOverallLeave AS FLOAT ) / 100.00
 	'
 
     SET @SQLString += 
@@ -311,26 +395,26 @@ BEGIN
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_Learner_FAM_Pivoted FAM
 			ON FAM.PG_StudentID = ER.PG_StudentID
 			AND FAM.PG_ProviderID = ER.PG_ProviderID
-			AND FAM.PG_AcademicYearID = ER.PG_ExpEndYrID
+			AND FAM.PG_AcademicYearID = ER.WB_HybridEndYearID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NVQLevelCPR NVQ 
 			ON NVQ.PG_NVQLevelCPRID = ER.PG_NVQLevelID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'NVQLevelGroup NVQG
 			ON NVQG.NVQLevelGroupID = ER.PG_NVQLevelGroupID
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure1IY DIV 
-			ON DIV.GN_Structure1IYID = ER.PG_Structure1ID
-			AND DIV.PG_AcademicYearID = ER.PG_ExpEndYrID
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure2IY SUBDIV
-			ON SUBDIV.GN_Structure2IYID = ER.PG_Structure2ID
-			AND SUBDIV.PG_AcademicYearID = ER.PG_ExpEndYrID
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure3IY CC
-			ON CC.GN_Structure3IYID = ER.PG_Structure3ID
-			AND CC.PG_AcademicYearID = ER.PG_ExpEndYrID
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure4IY GRP
-			ON GRP.GN_Structure4IYID = ER.PG_Structure4ID
-			AND GRP.PG_AcademicYearID = ER.PG_ExpEndYrID
-		--LEFT JOIN ProAchieve.dbo.GN_CourseStructureIY CRS 
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure1IY L1 
+			ON L1.GN_Structure1IYID = ER.PG_Structure1ID
+			AND L1.PG_AcademicYearID = AY.PG_AcademicYearID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure2IY L2
+			ON L2.GN_Structure2IYID = ER.PG_Structure2ID
+			AND L2.PG_AcademicYearID = AY.PG_AcademicYearID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure3IY L3
+			ON L3.GN_Structure3IYID = ER.PG_Structure3ID
+			AND L3.PG_AcademicYearID = AY.PG_AcademicYearID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure4IY L4
+			ON L4.GN_Structure4IYID = ER.PG_Structure4ID
+			AND L4.PG_AcademicYearID = AY.PG_AcademicYearID
+		--LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_CourseStructureIY CRS 
 		--	ON CRS.PG_CourseID = ER.PG_AggCourseID
-		--	AND CRS.PG_AcademicYearID = ER.PG_ExpEndYrID
+		--	AND CRS.PG_AcademicYearID = ER.PG_HybridEndYearID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_AggCourse CRS 
 			ON CRS.PG_AggCourseID = ER.PG_AggCourseID
 		LEFT JOIN ' + @ProGeneralDatabaseLocation + 'DifficultyOrDisability DIF
@@ -338,34 +422,34 @@ BEGIN
 		LEFT JOIN ' + @ProGeneralDatabaseLocation + 'Enrolment_Attendance ATT 
 			ON ATT.StudentID = ER.PG_StudentID
 			AND ATT.CollegeID = ER.PG_ProviderID
-			AND ATT.AcademicYearID = ER.PG_ExpEndYrID
+			AND ATT.AcademicYearID = ER.WB_HybridEndYearID
 			AND ATT.SequenceNo = ER.SequenceNo
 		LEFT JOIN ' + @ProGeneralDatabaseLocation + 'Student_UDF LAC
 			ON LAC.StudentID = ER.PG_StudentID
 			AND LAC.CollegeID = ER.PG_ProviderID
-			AND LAC.AcademicYearID = ER.PG_ExpEndYrID
+			AND LAC.AcademicYearID = ER.WB_HybridEndYearID
 	'
 
     SET @SQLString += 
         N'
 		LEFT JOIN (
 			SELECT
-				PG_ExpEndYrID = MAX ( NR.PG_ExpEndYrID )
-			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR
+				WB_HybridEndYearID = MAX ( NR.WB_HybridEndYearID )
+			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR
 			WHERE
 				NR.PG_CollegeTypeID = @CollegeType
 		) NR_L
 			ON 1 = 1
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_FWPGSSA 
+		LEFT JOIN #NatRate_ER_Overall NR_FWPGSSA 
 			ON CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
-							WHEN NR_FWPGSSA.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
+							WHEN NR_FWPGSSA.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 					ELSE 
 						CASE
-							WHEN ER.PG_ExpEndYrID = NR_FWPGSSA.PG_ExpEndYrID THEN 1
+							WHEN ER.WB_HybridEndYearID = NR_FWPGSSA.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 				END = 1
@@ -375,17 +459,16 @@ BEGIN
 			AND NR_FWPGSSA.PG_ProgTypeID = ER.PG_ProgTypeID
 			AND NR_FWPGSSA.PG_SSA1ID = ER.PG_SSA1ID
 			AND NR_FWPGSSA.PG_SSA2ID = ER.PG_SSA2ID
-			AND NR_FWPGSSA.PG_AppStandardID IS NULL
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_YR
+		LEFT JOIN #NatRate_ER_Overall NR_YR
 			ON CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
-							WHEN NR_YR.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
+							WHEN NR_YR.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 					ELSE 
 						CASE
-							WHEN ER.PG_ExpEndYrID = NR_YR.PG_ExpEndYrID THEN 1
+							WHEN ER.WB_HybridEndYearID = NR_YR.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 				END = 1
@@ -395,17 +478,16 @@ BEGIN
 			AND NR_YR.PG_ProgTypeID IS NULL
 			AND NR_YR.PG_SSA1ID IS NULL
 			AND NR_YR.PG_SSA2ID IS NULL
-			AND NR_YR.PG_AppStandardID IS NULL
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_YRG
+		LEFT JOIN #NatRate_ER_Overall NR_YRG
 			ON CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
-							WHEN NR_YRG.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
+							WHEN NR_YRG.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 					ELSE 
 						CASE
-							WHEN ER.PG_ExpEndYrID = NR_YRG.PG_ExpEndYrID THEN 1
+							WHEN ER.WB_HybridEndYearID = NR_YRG.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 				END = 1
@@ -415,17 +497,16 @@ BEGIN
 			AND NR_YRG.PG_ProgTypeID IS NULL
 			AND NR_YRG.PG_SSA1ID IS NULL
 			AND NR_YRG.PG_SSA2ID IS NULL
-			AND NR_YRG.PG_AppStandardID IS NULL
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_FW
+		LEFT JOIN #NatRate_ER_Overall NR_FW
 			ON CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
-							WHEN NR_FW.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
+							WHEN NR_FW.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 					ELSE 
 						CASE
-							WHEN ER.PG_ExpEndYrID = NR_FW.PG_ExpEndYrID THEN 1
+							WHEN ER.WB_HybridEndYearID = NR_FW.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 				END = 1
@@ -435,21 +516,20 @@ BEGIN
 			AND NR_FW.PG_ProgTypeID IS NULL
 			AND NR_FW.PG_SSA1ID IS NULL
 			AND NR_FW.PG_SSA2ID IS NULL
-			AND NR_FW.PG_AppStandardID IS NULL
     '
 
     SET @SQLString += 
         N'
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_AGE
+		LEFT JOIN #NatRate_ER_Overall NR_AGE
 			ON CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
-							WHEN NR_AGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
+							WHEN NR_AGE.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 					ELSE 
 						CASE
-							WHEN ER.PG_ExpEndYrID = NR_AGE.PG_ExpEndYrID THEN 1
+							WHEN ER.WB_HybridEndYearID = NR_AGE.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 				END = 1
@@ -459,18 +539,17 @@ BEGIN
 			AND NR_AGE.PG_ProgTypeID IS NULL
 			AND NR_AGE.PG_SSA1ID IS NULL
 			AND NR_AGE.PG_SSA2ID IS NULL
-			AND NR_AGE.PG_AppStandardID IS NULL
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_AGEGEN
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_AGEGEN
 			ON 
 				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
-							WHEN NR_AGEGEN.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
+							WHEN NR_AGEGEN.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 					ELSE 
 						CASE
-							WHEN ER.PG_ExpEndYrID = NR_AGEGEN.PG_ExpEndYrID THEN 1
+							WHEN ER.WB_HybridEndYearID = NR_AGEGEN.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 				END = 1
@@ -488,16 +567,16 @@ BEGIN
 
     SET @SQLString += 
         N'
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_SSA1
+		LEFT JOIN #NatRate_ER_Overall NR_SSA1
 			ON CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
-							WHEN NR_SSA1.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
+							WHEN NR_SSA1.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 					ELSE 
 						CASE
-							WHEN ER.PG_ExpEndYrID = NR_SSA1.PG_ExpEndYrID THEN 1
+							WHEN ER.WB_HybridEndYearID = NR_SSA1.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 				END = 1
@@ -507,17 +586,16 @@ BEGIN
 			AND NR_SSA1.PG_ProgTypeID IS NULL
 			AND NR_SSA1.PG_SSA1ID = ER.PG_SSA1ID
 			AND NR_SSA1.PG_SSA2ID IS NULL
-			AND NR_SSA1.PG_AppStandardID IS NULL
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_SSA2
+		LEFT JOIN #NatRate_ER_Overall NR_SSA2
 			ON CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
-							WHEN NR_SSA2.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
+							WHEN NR_SSA2.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 					ELSE 
 						CASE
-							WHEN ER.PG_ExpEndYrID = NR_SSA2.PG_ExpEndYrID THEN 1
+							WHEN ER.WB_HybridEndYearID = NR_SSA2.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 				END = 1
@@ -527,21 +605,20 @@ BEGIN
 			AND NR_SSA2.PG_ProgTypeID IS NULL
 			AND NR_SSA2.PG_SSA1ID IS NULL
 			AND NR_SSA2.PG_SSA2ID = ER.PG_SSA2ID
-			AND NR_SSA2.PG_AppStandardID IS NULL
     '
 
     SET @SQLString += 
         N'
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_LEV
+		LEFT JOIN #NatRate_ER_Overall NR_LEV
 			ON CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
-							WHEN NR_LEV.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
+							WHEN NR_LEV.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 					ELSE 
 						CASE
-							WHEN ER.PG_ExpEndYrID = NR_LEV.PG_ExpEndYrID THEN 1
+							WHEN ER.WB_HybridEndYearID = NR_LEV.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 				END = 1
@@ -551,21 +628,20 @@ BEGIN
 			AND NR_LEV.PG_ProgTypeID = ER.PG_ProgTypeID
 			AND NR_LEV.PG_SSA1ID IS NULL
 			AND NR_LEV.PG_SSA2ID IS NULL
-			AND NR_LEV.PG_AppStandardID IS NULL
     '
-    
+
     SET @SQLString += 
         N'
-        LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_LEVAGE
+        LEFT JOIN #NatRate_ER_Overall NR_LEVAGE
 			ON CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
-							WHEN NR_LEVAGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
+							WHEN NR_LEVAGE.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 					ELSE 
 						CASE
-							WHEN ER.PG_ExpEndYrID = NR_LEVAGE.PG_ExpEndYrID THEN 1
+							WHEN ER.WB_HybridEndYearID = NR_LEVAGE.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 				END = 1
@@ -575,18 +651,17 @@ BEGIN
 			AND NR_LEVAGE.PG_ProgTypeID = ER.PG_ProgTypeID
 			AND NR_LEVAGE.PG_SSA1ID IS NULL
 			AND NR_LEVAGE.PG_SSA2ID IS NULL
-			AND NR_LEVAGE.PG_AppStandardID IS NULL
-        LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_ETH
+        LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_ETH
 			ON 
 				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
-							WHEN NR_ETH.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
+							WHEN NR_ETH.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 					ELSE 
 						CASE
-							WHEN ER.PG_ExpEndYrID = NR_ETH.PG_ExpEndYrID THEN 1
+							WHEN ER.WB_HybridEndYearID = NR_ETH.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 				END = 1
@@ -597,19 +672,20 @@ BEGIN
 			AND NR_ETH.PG_WBLFundAgeGroupID IS NULL
 			AND NR_ETH.PG_SexID IS NULL
 			AND NR_ETH.PG_DifficultyorDisabilityID IS NULL
+			AND NR_ETH.PG_LearningDifficultyID IS NULL
 			AND NR_ETH.PG_EthnicityID = ER.PG_EthnicityID
 			AND NR_ETH.PG_EthnicityGroupQARID IS NULL
-        LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_ETHAGE
+        LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_ETHAGE
 			ON 
 				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
-							WHEN NR_ETHAGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
+							WHEN NR_ETHAGE.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 					ELSE 
 						CASE
-							WHEN ER.PG_ExpEndYrID = NR_ETHAGE.PG_ExpEndYrID THEN 1
+							WHEN ER.WB_HybridEndYearID = NR_ETHAGE.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 				END = 1
@@ -620,19 +696,20 @@ BEGIN
 			AND NR_ETHAGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 			AND NR_ETHAGE.PG_SexID IS NULL
 			AND NR_ETHAGE.PG_DifficultyorDisabilityID IS NULL
+			AND NR_ETHAGE.PG_LearningDifficultyID IS NULL
 			AND NR_ETHAGE.PG_EthnicityID = ER.PG_EthnicityID
 			AND NR_ETHAGE.PG_EthnicityGroupQARID IS NULL
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_DIF
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_DIF
 			ON 
 				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
-							WHEN NR_DIF.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
+							WHEN NR_DIF.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 					ELSE 
 						CASE
-							WHEN ER.PG_ExpEndYrID = NR_DIF.PG_ExpEndYrID THEN 1
+							WHEN ER.WB_HybridEndYearID = NR_DIF.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 				END = 1
@@ -642,24 +719,25 @@ BEGIN
 			AND NR_DIF.PG_SSA2ID IS NULL
 			AND NR_DIF.PG_WBLFundAgeGroupID IS NULL
 			AND NR_DIF.PG_SexID IS NULL
-			AND NR_DIF.PG_LearningDifficultyID = ER.PG_DifficultyorDisabilityID
+			AND NR_DIF.PG_DifficultyorDisabilityID = ER.PG_DifficultyorDisabilityID
+			AND NR_DIF.PG_LearningDifficultyID IS NULL
 			AND NR_DIF.PG_EthnicityID IS NULL
 			AND NR_DIF.PG_EthnicityGroupQARID IS NULL
     '
 
     SET @SQLString += 
         N'
-        LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_DIFAGE
+        LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_DIFAGE
 			ON 
 				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
-							WHEN NR_DIFAGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
+							WHEN NR_DIFAGE.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 					ELSE 
 						CASE
-							WHEN ER.PG_ExpEndYrID = NR_DIFAGE.PG_ExpEndYrID THEN 1
+							WHEN ER.WB_HybridEndYearID = NR_DIFAGE.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 				END = 1
@@ -670,12 +748,13 @@ BEGIN
 			AND NR_DIFAGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 			AND NR_DIFAGE.PG_SexID IS NULL
 			AND NR_DIFAGE.PG_DifficultyorDisabilityID = ER.PG_DifficultyorDisabilityID
+			AND NR_DIFAGE.PG_LearningDifficultyID IS NULL
 			AND NR_DIFAGE.PG_EthnicityID IS NULL
 			AND NR_DIFAGE.PG_EthnicityGroupQARID IS NULL
-		
+
 		WHERE
-			ER.PG_ExpEndYrID = @AcademicYear
-			--AND MYS.LastAcademicYearID = @AcademicYear
+			ER.WB_HybridEndYearID = @AcademicYear
+			--ND MYS.LastAcademicYearID = @AcademicYear
 			--Default filters applied in ProAchieve
 			AND ER.IsNotFundedAllYears = 0
 			AND ER.WB_ProgGroupID = 1
@@ -685,13 +764,19 @@ BEGIN
 
 	SET @SQLParams = 
         N'@AcademicYear NVARCHAR(5),
-	    @CollegeType INT';
+	    @CollegeType INT,
+		@FacStructureLevel INT,
+		@TeamStructureLevel INT,
+		@CostCentreStructureLevel INT';
 
     EXECUTE sp_executesql 
         @SQLString, 
         @SQLParams, 
         @AcademicYear = @AcademicYear, 
-        @CollegeType = @CollegeType;
+        @CollegeType = @CollegeType,
+		@FacStructureLevel = @FacStructureLevel,
+		@TeamStructureLevel = @TeamStructureLevel,
+		@CostCentreStructureLevel = @CostCentreStructureLevel;
 
     SET @NumRowsChanged = @@ROWCOUNT
 	SET @ErrorCode = @@ERROR

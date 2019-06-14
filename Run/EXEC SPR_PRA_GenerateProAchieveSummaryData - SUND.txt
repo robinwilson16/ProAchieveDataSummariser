@@ -1,9 +1,12 @@
 DECLARE @AcademicYear NVARCHAR(5) = '18/19'
-DECLARE @CollegeType INT = 2
+DECLARE @CollegeType INT = 0
 DECLARE @Mode CHAR(1) = 'R'
-DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = '[WLCBA-PGPA001A].ProGeneral.dbo.'
-DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = '[WLCBA-PGPA001A].ProAchieve.dbo.'
-DECLARE @OutputTableLocation NVARCHAR(200) = 'wlc.dbo.'
+DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
+DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProAchieve.dbo.'
+DECLARE @OutputTableLocation NVARCHAR(200) = 'ProSolutionReports.dbo.'
+DECLARE @FacStructureLevel INT = 2
+DECLARE @TeamStructureLevel INT = 3
+DECLARE @CostCentreStructureLevel INT = 4
 
 DECLARE @NumRowsChanged INT
 DECLARE @ErrorCode INT
@@ -19,7 +22,10 @@ SET @SQLString = N'
         @ProGeneralDatabaseLocation,
         @ProAchieveDatabaseLocation,
         @OutputTableLocation,
-		@NumRowsChanged, 
+		@FacStructureLevel,
+		@TeamStructureLevel,
+		@CostCentreStructureLevel,
+        @NumRowsChanged, 
 	    @ErrorCode';
 
 SET @SQLParams = 
@@ -29,6 +35,9 @@ SET @SQLParams =
         @ProGeneralDatabaseLocation NVARCHAR(200),
         @ProAchieveDatabaseLocation NVARCHAR(200),
         @OutputTableLocation NVARCHAR(200),
+		@FacStructureLevel INT,
+		@TeamStructureLevel INT,
+		@CostCentreStructureLevel INT,
         @NumRowsChanged INT OUTPUT, 
 	    @ErrorCode INT OUTPUT';
     
@@ -41,8 +50,11 @@ EXECUTE sp_executesql
     @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
     @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
     @OutputTableLocation = @OutputTableLocation,
+	@FacStructureLevel = @FacStructureLevel,
+	@TeamStructureLevel = @TeamStructureLevel,
+	@CostCentreStructureLevel = @CostCentreStructureLevel,
     @NumRowsChanged = @NumRowsChanged OUTPUT,
-	@ErrorCode = @ErrorCode OUTPUT;
+	@ErrorCode = @ErrorCode OUTPUT
 
 IF(@ErrorCode > 0)
     PRINT N'Errors Occurred - Code: ' + CAST ( @ErrorCode AS NVARCHAR(10) )

@@ -3,6 +3,9 @@ CREATE PROCEDURE SPR_PRA_ProAchieveSummaryData_HEOverall
 	@CollegeType INT,
 	@ProGeneralDatabaseLocation NVARCHAR(200),
 	@ProAchieveDatabaseLocation NVARCHAR(200),
+	@FacStructureLevel INT,
+	@TeamStructureLevel INT,
+	@CostCentreStructureLevel INT,
     @NumRowsChanged INT OUTPUT, 
 	@ErrorCode INT OUTPUT
 AS
@@ -13,6 +16,9 @@ BEGIN
 	-- DECLARE @CollegeType INT = 2
 	-- DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
 	-- DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProAchieve.dbo.'
+	--DECLARE @FacStructureLevel INT = 2
+	--DECLARE @TeamStructureLevel INT = 3
+	--DECLARE @CostCentreStructureLevel INT = 4
 
     DECLARE @SQLString NVARCHAR(MAX);
     DECLARE @SQLParams NVARCHAR(MAX);
@@ -68,12 +74,66 @@ BEGIN
             IsYoungParent = CASE WHEN STU.UserDefined5 = ''Y'' THEN 1 ELSE 0 END,
 
 			CampusID = COALESCE ( STU.CampusID, ''-'' ),
-			FacCode = HE.PG_Structure1ID,
-			FacName = COALESCE(DIV.GN_Structure1IYName, ''-- Unknown --''),
-			TeamCode = HE.PG_Structure2ID,
-			TeamName = COALESCE(SUBDIV.GN_Structure2IYName, ''-- Unknown --''),
-			CostCentreCode = HE.PG_Structure3ID,
-			CostCentreName = COALESCE(CC.GN_Structure3IYName, ''-- Unknown --''),
+			FacCode = 
+				COALESCE ( 
+					CASE 
+						WHEN @FacStructureLevel = 1 THEN L1.GN_Structure1IYID
+						WHEN @FacStructureLevel = 2 THEN L2.GN_Structure2IYID
+						WHEN @FacStructureLevel = 3 THEN L3.GN_Structure3IYID
+						WHEN @FacStructureLevel = 4 THEN L4.GN_Structure4IYID
+					END,
+					''-''
+				),
+			FacName = 
+				COALESCE ( 
+					CASE 
+						WHEN @FacStructureLevel = 1 THEN L1.GN_Structure1IYName
+						WHEN @FacStructureLevel = 2 THEN L2.GN_Structure2IYName
+						WHEN @FacStructureLevel = 3 THEN L3.GN_Structure3IYName
+						WHEN @FacStructureLevel = 4 THEN L4.GN_Structure4IYName
+					END,
+					''-- Unknown --''
+				),
+			TeamCode = 
+				COALESCE ( 
+					CASE 
+						WHEN @TeamStructureLevel = 1 THEN L1.GN_Structure1IYID
+						WHEN @TeamStructureLevel = 2 THEN L2.GN_Structure2IYID
+						WHEN @TeamStructureLevel = 3 THEN L3.GN_Structure3IYID
+						WHEN @TeamStructureLevel = 4 THEN L4.GN_Structure4IYID
+					END,
+					''-''
+				),
+			TeamName = 
+				COALESCE ( 
+					CASE 
+						WHEN @FacStructureLevel = 1 THEN L1.GN_Structure1IYName
+						WHEN @FacStructureLevel = 2 THEN L2.GN_Structure2IYName
+						WHEN @FacStructureLevel = 3 THEN L3.GN_Structure3IYName
+						WHEN @FacStructureLevel = 4 THEN L4.GN_Structure4IYName
+					END,
+					''-- Unknown --''
+				),
+			CostCentreCode = 
+				COALESCE ( 
+					CASE 
+						WHEN @CostCentreStructureLevel = 1 THEN L1.GN_Structure1IYID
+						WHEN @CostCentreStructureLevel = 2 THEN L2.GN_Structure2IYID
+						WHEN @CostCentreStructureLevel = 3 THEN L3.GN_Structure3IYID
+						WHEN @CostCentreStructureLevel = 4 THEN L4.GN_Structure4IYID
+					END,
+					''-''
+				),
+			CostCentreName = 
+				COALESCE ( 
+					CASE 
+						WHEN @CostCentreStructureLevel = 1 THEN L1.GN_Structure1IYName
+						WHEN @CostCentreStructureLevel = 2 THEN L2.GN_Structure2IYName
+						WHEN @CostCentreStructureLevel = 3 THEN L3.GN_Structure3IYName
+						WHEN @CostCentreStructureLevel = 4 THEN L4.GN_Structure4IYName
+					END,
+					''-- Unknown --''
+				),
 			SSA1Code = HE.PG_SSA1ID,
 			SSA1Name = SSA1.SSA_Tier1_Desc,
 			SSA2Code = HE.PG_SSA2ID,
@@ -273,15 +333,18 @@ BEGIN
 			AND FAM.PG_AcademicYearID = HE.PG_AcademicYearID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NVQLevelCPR NVQ 
 			ON NVQ.PG_NVQLevelCPRID = HE.PG_NVQLevelID
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure1IY DIV 
-			ON DIV.GN_Structure1IYID = HE.PG_Structure1ID
-			AND DIV.PG_AcademicYearID = HE.PG_AcademicYearID
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure2IY SUBDIV
-			ON SUBDIV.GN_Structure2IYID = HE.PG_Structure2ID
-			AND SUBDIV.PG_AcademicYearID = HE.PG_AcademicYearID
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure3IY CC
-			ON CC.GN_Structure3IYID = HE.PG_Structure3ID
-			AND CC.PG_AcademicYearID = HE.PG_AcademicYearID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure1IY L1 
+			ON L1.GN_Structure1IYID = HE.PG_Structure1ID
+			AND L1.PG_AcademicYearID = HE.PG_AcademicYearID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure2IY L2
+			ON L2.GN_Structure2IYID = HE.PG_Structure2ID
+			AND L2.PG_AcademicYearID = HE.PG_AcademicYearID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure3IY L3
+			ON L3.GN_Structure3IYID = HE.PG_Structure3ID
+			AND L3.PG_AcademicYearID = HE.PG_AcademicYearID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure4IY L4
+			ON L4.GN_Structure4IYID = HE.PG_Structure4ID
+			AND L4.PG_AcademicYearID = HE.PG_AcademicYearID
 		--LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_CourseStructureIY CRS 
 		--	ON CRS.PG_CourseID = HE.PG_AggCourseID
 		--	AND CRS.PG_AcademicYearID = HE.PG_HybridEndYearID
@@ -311,13 +374,19 @@ BEGIN
 
 	SET @SQLParams = 
         N'@AcademicYear NVARCHAR(5),
-	    @CollegeType INT';
+	    @CollegeType INT,
+		@FacStructureLevel INT,
+		@TeamStructureLevel INT,
+		@CostCentreStructureLevel INT';
 
     EXECUTE sp_executesql 
         @SQLString, 
         @SQLParams, 
         @AcademicYear = @AcademicYear, 
-        @CollegeType = @CollegeType;
+        @CollegeType = @CollegeType,
+		@FacStructureLevel = @FacStructureLevel,
+		@TeamStructureLevel = @TeamStructureLevel,
+		@CostCentreStructureLevel = @CostCentreStructureLevel;
 
     SET @NumRowsChanged = @@ROWCOUNT
 	SET @ErrorCode = @@ERROR
