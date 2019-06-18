@@ -12,18 +12,42 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- DECLARE @AcademicYear NVARCHAR(7) = '18/19'
-	-- DECLARE @CollegeType INT = 2
-	-- DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
-	-- DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProAchieve.dbo.'
+	--DECLARE @AcademicYear NVARCHAR(7) = '18/19'
+	--DECLARE @CollegeType INT = 2
+	--DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
+	--DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProAchieve.dbo.'
 	--DECLARE @FacStructureLevel INT = 2
 	--DECLARE @TeamStructureLevel INT = 3
 	--DECLARE @CostCentreStructureLevel INT = 4
 
-    DECLARE @SQLString NVARCHAR(MAX);
-    DECLARE @SQLParams NVARCHAR(MAX);
+	DECLARE @SQLString NVARCHAR(MAX);
+	DECLARE @SQLParams NVARCHAR(MAX);
 
     SET @SQLString = 
+        N'
+		SELECT
+			NR.PG_ExpEndYrID,
+			NR.PG_CollegeTypeID,
+			NR.PG_WBLFundAgeGroupID,
+			NR.PG_SSA1ID,
+			NR.PG_SSA2ID,
+			NR.PG_ProgTypeID,
+			NR.PG_FrameworkID,
+			BMLeave = SUM ( NR.BMLeave ),
+			BMAchFrameTimely = SUM ( NR.BMAchFrameTimely ),
+			BMAchFrameTimelyLeave = ROUND ( CAST ( SUM ( NR.BMAchFrameTimely ) AS FLOAT ) / CAST ( SUM ( NR.BMLeave ) AS FLOAT ), 4 ) * 100
+			INTO #NatRate_ER_Timely
+		FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR
+		GROUP BY
+			NR.PG_ExpEndYrID,
+			NR.PG_CollegeTypeID,
+			NR.PG_WBLFundAgeGroupID,
+			NR.PG_SSA1ID,
+			NR.PG_SSA2ID,
+			NR.PG_ProgTypeID,
+			NR.PG_FrameworkID';
+
+    SET @SQLString += 
         N'
 		SELECT
 			EndYear = ER.PG_ExpEndYrID,
@@ -416,7 +440,7 @@ BEGIN
 				NR.PG_CollegeTypeID = @CollegeType
 		) NR_L
 			ON 1 = 1
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_FWPGSSA 
+		LEFT JOIN #NatRate_ER_Timely NR_FWPGSSA 
 			ON CASE
 					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
 						CASE
@@ -435,8 +459,7 @@ BEGIN
 			AND NR_FWPGSSA.PG_ProgTypeID = ER.PG_ProgTypeID
 			AND NR_FWPGSSA.PG_SSA1ID = ER.PG_SSA1ID
 			AND NR_FWPGSSA.PG_SSA2ID = ER.PG_SSA2ID
-			AND NR_FWPGSSA.PG_AppStandardID IS NULL
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_YR
+		LEFT JOIN #NatRate_ER_Timely NR_YR
 			ON CASE
 					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
 						CASE
@@ -455,8 +478,7 @@ BEGIN
 			AND NR_YR.PG_ProgTypeID IS NULL
 			AND NR_YR.PG_SSA1ID IS NULL
 			AND NR_YR.PG_SSA2ID IS NULL
-			AND NR_YR.PG_AppStandardID IS NULL
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_YRG
+		LEFT JOIN #NatRate_ER_Timely NR_YRG
 			ON CASE
 					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
 						CASE
@@ -475,8 +497,7 @@ BEGIN
 			AND NR_YRG.PG_ProgTypeID IS NULL
 			AND NR_YRG.PG_SSA1ID IS NULL
 			AND NR_YRG.PG_SSA2ID IS NULL
-			AND NR_YRG.PG_AppStandardID IS NULL
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_FW
+		LEFT JOIN #NatRate_ER_Timely NR_FW
 			ON CASE
 					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
 						CASE
@@ -495,12 +516,11 @@ BEGIN
 			AND NR_FW.PG_ProgTypeID IS NULL
 			AND NR_FW.PG_SSA1ID IS NULL
 			AND NR_FW.PG_SSA2ID IS NULL
-			AND NR_FW.PG_AppStandardID IS NULL
     '
 
     SET @SQLString += 
         N'
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_AGE
+		LEFT JOIN #NatRate_ER_Timely NR_AGE
 			ON CASE
 					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
 						CASE
@@ -519,7 +539,6 @@ BEGIN
 			AND NR_AGE.PG_ProgTypeID IS NULL
 			AND NR_AGE.PG_SSA1ID IS NULL
 			AND NR_AGE.PG_SSA2ID IS NULL
-			AND NR_AGE.PG_AppStandardID IS NULL
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_AGEGEN
 			ON 
 				CASE
@@ -548,7 +567,7 @@ BEGIN
 
     SET @SQLString += 
         N'
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_SSA1
+		LEFT JOIN #NatRate_ER_Timely NR_SSA1
 			ON CASE
 					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
 						CASE
@@ -567,8 +586,7 @@ BEGIN
 			AND NR_SSA1.PG_ProgTypeID IS NULL
 			AND NR_SSA1.PG_SSA1ID = ER.PG_SSA1ID
 			AND NR_SSA1.PG_SSA2ID IS NULL
-			AND NR_SSA1.PG_AppStandardID IS NULL
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_SSA2
+		LEFT JOIN #NatRate_ER_Timely NR_SSA2
 			ON CASE
 					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
 						CASE
@@ -587,12 +605,11 @@ BEGIN
 			AND NR_SSA2.PG_ProgTypeID IS NULL
 			AND NR_SSA2.PG_SSA1ID IS NULL
 			AND NR_SSA2.PG_SSA2ID = ER.PG_SSA2ID
-			AND NR_SSA2.PG_AppStandardID IS NULL
     '
 
     SET @SQLString += 
         N'
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_LEV
+		LEFT JOIN #NatRate_ER_Timely NR_LEV
 			ON CASE
 					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
 						CASE
@@ -611,12 +628,11 @@ BEGIN
 			AND NR_LEV.PG_ProgTypeID = ER.PG_ProgTypeID
 			AND NR_LEV.PG_SSA1ID IS NULL
 			AND NR_LEV.PG_SSA2ID IS NULL
-			AND NR_LEV.PG_AppStandardID IS NULL
     '
     
     SET @SQLString += 
         N'
-        LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_LEVAGE
+        LEFT JOIN #NatRate_ER_Timely NR_LEVAGE
 			ON CASE
 					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
 						CASE
@@ -635,7 +651,6 @@ BEGIN
 			AND NR_LEVAGE.PG_ProgTypeID = ER.PG_ProgTypeID
 			AND NR_LEVAGE.PG_SSA1ID IS NULL
 			AND NR_LEVAGE.PG_SSA2ID IS NULL
-			AND NR_LEVAGE.PG_AppStandardID IS NULL
         LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_ETH
 			ON 
 				CASE
@@ -759,6 +774,6 @@ BEGIN
 		@TeamStructureLevel = @TeamStructureLevel,
 		@CostCentreStructureLevel = @CostCentreStructureLevel;
 
-    SET @NumRowsChanged = @@ROWCOUNT
+	SET @NumRowsChanged = @@ROWCOUNT
 	SET @ErrorCode = @@ERROR
 END

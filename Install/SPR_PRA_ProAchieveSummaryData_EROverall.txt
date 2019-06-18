@@ -35,7 +35,7 @@ BEGIN
 			NR.PG_FrameworkID,
 			BMLeave = SUM ( NR.BMLeave ),
 			BMAchFrame = SUM ( NR.BMAchFrame ),
-			BMAchFrameOverallLeave = CEILING ( ROUND ( CAST ( SUM ( NR.BMAchFrame ) AS FLOAT ) / CAST ( SUM ( NR.BMLeave ) AS FLOAT ), 4 ) * 100 * 10 ) / 10
+			BMAchFrameOverallLeave = ROUND ( CAST ( SUM ( NR.BMAchFrame ) AS FLOAT ) / CAST ( SUM ( NR.BMLeave ) AS FLOAT ), 4 ) * 100
 			INTO #NatRate_ER_Overall
 		FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Overall NR
 		GROUP BY
