@@ -440,7 +440,7 @@ BEGIN
 				NR.PG_CollegeTypeID = @CollegeType
 		) NR_L
 			ON 1 = 1
-		LEFT JOIN #NatRate_ER_Overall NR_FWPGSSA 
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Overall NR_FWPGSSA 
 			ON CASE
 					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
@@ -455,10 +455,11 @@ BEGIN
 				END = 1
 			AND NR_FWPGSSA.PG_CollegeTypeID = @CollegeType
 			AND NR_FWPGSSA.PG_WBLFundAgeGroupID IS NULL
-			AND NR_FWPGSSA.PG_FrameworkID = ER.PG_FrameworkID
-			AND NR_FWPGSSA.PG_ProgTypeID = ER.PG_ProgTypeID
 			AND NR_FWPGSSA.PG_SSA1ID = ER.PG_SSA1ID
 			AND NR_FWPGSSA.PG_SSA2ID = ER.PG_SSA2ID
+			AND NR_FWPGSSA.PG_ProgTypeID = ER.PG_ProgTypeID
+			AND NR_FWPGSSA.PG_FrameworkID = ER.PG_FrameworkID
+			AND NR_FWPGSSA.PG_AppStandardID IS NULL
 		LEFT JOIN #NatRate_ER_Overall NR_YR
 			ON CASE
 					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
@@ -497,7 +498,7 @@ BEGIN
 			AND NR_YRG.PG_ProgTypeID IS NULL
 			AND NR_YRG.PG_SSA1ID IS NULL
 			AND NR_YRG.PG_SSA2ID IS NULL
-		LEFT JOIN #NatRate_ER_Overall NR_FW
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Overall NR_FW
 			ON CASE
 					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
@@ -512,10 +513,11 @@ BEGIN
 				END = 1
 			AND NR_FW.PG_CollegeTypeID = @CollegeType
 			AND NR_FW.PG_WBLFundAgeGroupID IS NULL
-			AND NR_FW.PG_FrameworkID = ER.PG_FrameworkID
-			AND NR_FW.PG_ProgTypeID IS NULL
 			AND NR_FW.PG_SSA1ID IS NULL
 			AND NR_FW.PG_SSA2ID IS NULL
+			AND NR_FW.PG_ProgTypeID IS NULL
+			AND NR_FW.PG_FrameworkID = ER.PG_FrameworkID
+			AND NR_FW.PG_AppStandardID IS NULL
     '
 
     SET @SQLString += 
@@ -567,8 +569,9 @@ BEGIN
 
     SET @SQLString += 
         N'
-		LEFT JOIN #NatRate_ER_Overall NR_SSA1
-			ON CASE
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_SSA1
+			ON 
+				CASE
 					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
 							WHEN NR_SSA1.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
@@ -582,12 +585,17 @@ BEGIN
 				END = 1
 			AND NR_SSA1.PG_CollegeTypeID = @CollegeType
 			AND NR_SSA1.PG_WBLFundAgeGroupID IS NULL
-			AND NR_SSA1.PG_FrameworkID IS NULL
-			AND NR_SSA1.PG_ProgTypeID IS NULL
 			AND NR_SSA1.PG_SSA1ID = ER.PG_SSA1ID
 			AND NR_SSA1.PG_SSA2ID IS NULL
-		LEFT JOIN #NatRate_ER_Overall NR_SSA2
-			ON CASE
+			AND NR_SSA1.PG_ProgTypeID IS NULL
+			AND NR_SSA1.PG_EthnicityID IS NULL
+			AND NR_SSA1.PG_EthnicityGroupQARID IS NULL
+			AND NR_SSA1.PG_SexID IS NULL
+			AND NR_SSA1.PG_DifficultyorDisabilityID IS NULL
+			AND NR_SSA1.PG_LearningDifficultyID IS NULL
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_SSA2
+			ON 
+				CASE
 					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
 							WHEN NR_SSA2.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
@@ -601,10 +609,14 @@ BEGIN
 				END = 1
 			AND NR_SSA2.PG_CollegeTypeID = @CollegeType
 			AND NR_SSA2.PG_WBLFundAgeGroupID IS NULL
-			AND NR_SSA2.PG_FrameworkID IS NULL
-			AND NR_SSA2.PG_ProgTypeID IS NULL
 			AND NR_SSA2.PG_SSA1ID IS NULL
 			AND NR_SSA2.PG_SSA2ID = ER.PG_SSA2ID
+			AND NR_SSA2.PG_ProgTypeID IS NULL
+			AND NR_SSA2.PG_EthnicityID IS NULL
+			AND NR_SSA2.PG_EthnicityGroupQARID IS NULL
+			AND NR_SSA2.PG_SexID IS NULL
+			AND NR_SSA2.PG_DifficultyorDisabilityID IS NULL
+			AND NR_SSA2.PG_LearningDifficultyID IS NULL
     '
 
     SET @SQLString += 
