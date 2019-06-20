@@ -451,7 +451,7 @@ BEGIN
 					CASE
 						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 4 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
@@ -485,7 +485,7 @@ BEGIN
 					CASE
 						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 4 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
@@ -538,7 +538,7 @@ BEGIN
 					CASE
 						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 4 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
@@ -576,7 +576,7 @@ BEGIN
 					CASE
 						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 4 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
@@ -613,13 +613,13 @@ BEGIN
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_AgeLSCID,
-				Leave = SUM ( NR.BM_Count_Timely ),
+				Leave = ROUND ( SUM ( NR.BM_Count_Timely ), -1 ),
 				Ach = SUM ( NR.BM_Ach_Timely ),
 				AchPer = 
 					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
+						WHEN ROUND ( SUM ( NR.BM_Count_Timely ), -1 ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Timely ), -1 ) AS FLOAT ), 4 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
@@ -657,7 +657,7 @@ BEGIN
 					CASE
 						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 4 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
@@ -696,7 +696,7 @@ BEGIN
 					CASE
 						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 4 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
@@ -738,7 +738,7 @@ BEGIN
 					CASE
 						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 4 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
@@ -777,7 +777,7 @@ BEGIN
 					CASE
 						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 4 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
@@ -815,7 +815,7 @@ BEGIN
 					CASE
 						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 4 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
@@ -858,7 +858,7 @@ BEGIN
 					CASE
 						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 4 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
@@ -896,7 +896,7 @@ BEGIN
 					CASE
 						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 4 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
@@ -939,7 +939,7 @@ BEGIN
 					CASE
 						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 4 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
@@ -976,7 +976,7 @@ BEGIN
 					CASE
 						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 4 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
@@ -1017,7 +1017,7 @@ BEGIN
 					CASE
 						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 4 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
@@ -1055,7 +1055,7 @@ BEGIN
 					CASE
 						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 4 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE

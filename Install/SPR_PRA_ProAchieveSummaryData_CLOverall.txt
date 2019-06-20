@@ -498,13 +498,13 @@ BEGIN
 		LEFT JOIN (
 			SELECT
 				NR.PG_HybridEndYearID,
-				Leave = ROUND ( SUM ( NR.BM_Count_Overall ), -1 ),
-				Ach = ROUND ( SUM ( NR.BM_Ach_Overall ), -1 ),
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
 				AchPer = 
 					CASE
-						WHEN ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) = 0 THEN 0
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( ROUND ( SUM ( NR.BM_Ach_Overall) , -1 ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) AS FLOAT ), 4 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
@@ -532,13 +532,13 @@ BEGIN
 		LEFT JOIN (
 			SELECT
 				NR.PG_HybridEndYearID,
-				Leave = ROUND ( SUM ( NR.BM_Count_Overall ), -1 ),
-				Ach = ROUND ( SUM ( NR.BM_Ach_Overall ), -1 ),
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
 				AchPer = 
 					CASE
-						WHEN ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) = 0 THEN 0
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( ROUND ( SUM ( NR.BM_Ach_Overall) , -1 ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) AS FLOAT ), 4 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
@@ -585,13 +585,13 @@ BEGIN
 			SELECT
 				NR.PG_HybridEndYearID,
 				NR.PG_QualSizeID,
-				Leave = ROUND ( SUM ( NR.BM_Count_Overall ), -1 ),
-				Ach = ROUND ( SUM ( NR.BM_Ach_Overall ), -1 ),
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
 				AchPer = 
 					CASE
-						WHEN ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) = 0 THEN 0
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( ROUND ( SUM ( NR.BM_Ach_Overall) , -1 ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) AS FLOAT ), 4 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
@@ -623,13 +623,13 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_QualSizeID,
 				NR.PG_AgeLSCID,
-				Leave = ROUND ( SUM ( NR.BM_Count_Overall ), -1 ),
-				Ach = ROUND ( SUM ( NR.BM_Ach_Overall ), -1 ),
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
 				AchPer = 
 					CASE
-						WHEN ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) = 0 THEN 0
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( ROUND ( SUM ( NR.BM_Ach_Overall) , -1 ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) AS FLOAT ), 4 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
@@ -666,13 +666,13 @@ BEGIN
 			SELECT
 				NR.PG_HybridEndYearID,
 				NR.PG_AgeLSCID,
-				Leave = ROUND ( SUM ( NR.BM_Count_Overall ), -1 ),
-				Ach = ROUND ( SUM ( NR.BM_Ach_Overall ), -1 ),
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
 				AchPer = 
 					CASE
-						WHEN ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) = 0 THEN 0
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( ROUND ( SUM ( NR.BM_Ach_Overall) , -1 ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) AS FLOAT ), 4 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
@@ -704,13 +704,13 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_AgeLSCID,
 				NR.PG_SexID,
-				Leave = ROUND ( SUM ( NR.BM_Count_Overall ), -1 ),
-				Ach = ROUND ( SUM ( NR.BM_Ach_Overall ), -1 ),
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
 				AchPer = 
 					CASE
-						WHEN ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) = 0 THEN 0
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( ROUND ( SUM ( NR.BM_Ach_Overall) , -1 ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) AS FLOAT ), 4 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
@@ -743,13 +743,13 @@ BEGIN
 			SELECT
 				NR.PG_HybridEndYearID,
 				NR.PG_NVQLevelCPRID,
-				Leave = ROUND ( SUM ( NR.BM_Count_Overall ), -1 ),
-				Ach = ROUND ( SUM ( NR.BM_Ach_Overall ), -1 ),
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
 				AchPer = 
 					CASE
-						WHEN ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) = 0 THEN 0
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( ROUND ( SUM ( NR.BM_Ach_Overall) , -1 ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) AS FLOAT ), 4 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
@@ -785,13 +785,13 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_NVQLevelCPRID,
                 NR.PG_AgeLSCID,
-				Leave = ROUND ( SUM ( NR.BM_Count_Overall ), -1 ),
-				Ach = ROUND ( SUM ( NR.BM_Ach_Overall ), -1 ),
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
 				AchPer = 
 					CASE
-						WHEN ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) = 0 THEN 0
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( ROUND ( SUM ( NR.BM_Ach_Overall) , -1 ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) AS FLOAT ), 4 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
@@ -824,13 +824,13 @@ BEGIN
 			SELECT
 				NR.PG_HybridEndYearID,
 				NR.PG_NVQLevelGroupID,
-				Leave = ROUND ( SUM ( NR.BM_Count_Overall ), -1 ),
-				Ach = ROUND ( SUM ( NR.BM_Ach_Overall ), -1 ),
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
 				AchPer = 
 					CASE
-						WHEN ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) = 0 THEN 0
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( ROUND ( SUM ( NR.BM_Ach_Overall) , -1 ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) AS FLOAT ), 4 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
@@ -862,13 +862,13 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_NVQLevelGroupID,
                 NR.PG_AgeLSCID,
-				Leave = ROUND ( SUM ( NR.BM_Count_Overall ), -1 ),
-				Ach = ROUND ( SUM ( NR.BM_Ach_Overall ), -1 ),
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
 				AchPer = 
 					CASE
-						WHEN ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) = 0 THEN 0
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( ROUND ( SUM ( NR.BM_Ach_Overall) , -1 ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) AS FLOAT ), 4 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
@@ -905,13 +905,13 @@ BEGIN
 			SELECT
 				NR.PG_HybridEndYearID,
 				NR.PG_EthnicityID,
-				Leave = ROUND ( SUM ( NR.BM_Count_Overall ), -1 ),
-				Ach = ROUND ( SUM ( NR.BM_Ach_Overall ), -1 ),
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
 				AchPer = 
 					CASE
-						WHEN ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) = 0 THEN 0
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( ROUND ( SUM ( NR.BM_Ach_Overall) , -1 ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) AS FLOAT ), 4 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
@@ -943,13 +943,13 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_EthnicityID,
                 NR.PG_AgeLSCID,
-				Leave = ROUND ( SUM ( NR.BM_Count_Overall ), -1 ),
-				Ach = ROUND ( SUM ( NR.BM_Ach_Overall ), -1 ),
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
 				AchPer = 
 					CASE
-						WHEN ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) = 0 THEN 0
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( ROUND ( SUM ( NR.BM_Ach_Overall) , -1 ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) AS FLOAT ), 4 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
@@ -986,13 +986,13 @@ BEGIN
 			SELECT
 				NR.PG_HybridEndYearID,
 				NR.PG_SSA1ID,
-				Leave = ROUND ( SUM ( NR.BM_Count_Overall ), -1 ),
-				Ach = ROUND ( SUM ( NR.BM_Ach_Overall ), -1 ),
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
 				AchPer = 
 					CASE
-						WHEN ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) = 0 THEN 0
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( ROUND ( SUM ( NR.BM_Ach_Overall) , -1 ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) AS FLOAT ), 4 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
@@ -1023,13 +1023,13 @@ BEGIN
 			SELECT
 				NR.PG_HybridEndYearID,
 				NR.PG_SSA2ID,
-				Leave = ROUND ( SUM ( NR.BM_Count_Overall ), -1 ),
-				Ach = ROUND ( SUM ( NR.BM_Ach_Overall ), -1 ),
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
 				AchPer = 
 					CASE
-						WHEN ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) = 0 THEN 0
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( ROUND ( SUM ( NR.BM_Ach_Overall) , -1 ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) AS FLOAT ), 4 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
@@ -1064,13 +1064,13 @@ BEGIN
 			SELECT
 				NR.PG_HybridEndYearID,
 				NR.PG_DifficultyOrDisabilityID,
-				Leave = ROUND ( SUM ( NR.BM_Count_Overall ), -1 ),
-				Ach = ROUND ( SUM ( NR.BM_Ach_Overall ), -1 ),
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
 				AchPer = 
 					CASE
-						WHEN ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) = 0 THEN 0
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( ROUND ( SUM ( NR.BM_Ach_Overall) , -1 ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) AS FLOAT ), 4 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
@@ -1102,13 +1102,13 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_DifficultyOrDisabilityID,
                 NR.PG_AgeLSCID,
-				Leave = ROUND ( SUM ( NR.BM_Count_Overall ), -1 ),
-				Ach = ROUND ( SUM ( NR.BM_Ach_Overall ), -1 ),
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
 				AchPer = 
 					CASE
-						WHEN ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) = 0 THEN 0
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
 						ELSE 
-							ROUND ( CAST ( ROUND ( SUM ( NR.BM_Ach_Overall) , -1 ) AS FLOAT ) / CAST ( ROUND ( SUM ( NR.BM_Count_Overall ), -1 ) AS FLOAT ), 4 )
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
 					END
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
 			WHERE
