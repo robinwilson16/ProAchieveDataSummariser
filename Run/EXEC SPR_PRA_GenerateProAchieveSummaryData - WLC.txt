@@ -1,4 +1,6 @@
-DECLARE @AcademicYear NVARCHAR(5) = '18/19'
+DECLARE @AcademicYear NVARCHAR(5) = ''
+
+SET @AcademicYear = (SELECT CFG.Value FROM Config CFG WHERE CFG.ConfigID = 'PRA_AcademicYearID')
 DECLARE @CollegeType INT = 2
 DECLARE @Mode CHAR(1) = 'R'
 DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = '[WLCBA-PGPA001A].ProGeneral.dbo.'
