@@ -1,16 +1,16 @@
-DECLARE @ProviderID INT = 10001475
+DECLARE @ProviderID INT = 10004760
 DECLARE @AcademicYear NVARCHAR(5) = ''
 
 SET @AcademicYear = (SELECT CFG.Value FROM Config CFG WHERE CFG.ConfigID = 'PRA_AcademicYearID')
 SET @AcademicYear = '18/19' --Override
 DECLARE @CollegeType INT = 0
 DECLARE @Mode CHAR(1) = 'R' --I=Insert/R=Replace
-DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'besql05.ProGeneral.dbo.'
-DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'besql05.ProAchieve.dbo.'
+DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'NLAND_PROSQL.ProGeneral.dbo.'
+DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'NLAND_PROSQL.ProAchieve.dbo.'
 DECLARE @OutputTableLocation NVARCHAR(200) = 'StagingArea.dbo.'
-DECLARE @FacStructureLevel INT = 2
-DECLARE @TeamStructureLevel INT = 3
-DECLARE @CostCentreStructureLevel INT = 4
+DECLARE @FacStructureLevel INT = 1
+DECLARE @TeamStructureLevel INT = 2
+DECLARE @CostCentreStructureLevel INT = 3
 
 DECLARE @NumRowsChanged INT
 DECLARE @ErrorCode INT

@@ -1,3 +1,4 @@
+DECLARE @ProviderID INT = 10000000
 DECLARE @AcademicYear NVARCHAR(5) = ''
 
 SET @AcademicYear = (SELECT CFG.Value FROM Config CFG WHERE CFG.ConfigID = 'PRA_AcademicYearID')
@@ -18,7 +19,8 @@ DECLARE @SQLParams NVARCHAR(MAX);
 
 SET @SQLString = N'
     EXEC SPR_PRA_GenerateProAchieveSummaryData
-        @AcademicYear,
+        @ProviderID,
+		@AcademicYear,
         @CollegeType,
         @Mode,
         @ProGeneralDatabaseLocation,
@@ -27,11 +29,12 @@ SET @SQLString = N'
 		@FacStructureLevel,
 		@TeamStructureLevel,
 		@CostCentreStructureLevel,
-		@NumRowsChanged, 
+        @NumRowsChanged, 
 	    @ErrorCode';
 
 SET @SQLParams = 
-        N'@AcademicYear NVARCHAR(5),
+        N'@ProviderID INT,
+		@AcademicYear NVARCHAR(5),
         @CollegeType INT,
         @Mode CHAR(1),
         @ProGeneralDatabaseLocation NVARCHAR(200),
@@ -46,7 +49,8 @@ SET @SQLParams =
 EXECUTE sp_executesql 
     @SQLString, 
     @SQLParams, 
-    @AcademicYear = @AcademicYear, 
+    @ProviderID = @ProviderID,
+	@AcademicYear = @AcademicYear, 
     @CollegeType = @CollegeType, 
     @Mode = @Mode,
     @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
@@ -56,7 +60,7 @@ EXECUTE sp_executesql
 	@TeamStructureLevel = @TeamStructureLevel,
 	@CostCentreStructureLevel = @CostCentreStructureLevel,
     @NumRowsChanged = @NumRowsChanged OUTPUT,
-	@ErrorCode = @ErrorCode OUTPUT;
+	@ErrorCode = @ErrorCode OUTPUT
 
 IF(@ErrorCode > 0)
     PRINT N'Errors Occurred - Code: ' + CAST ( @ErrorCode AS NVARCHAR(10) )

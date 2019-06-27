@@ -1,4 +1,5 @@
 CREATE PROCEDURE SPR_PRA_GenerateProAchieveSummaryData
+	@ProviderID INT,
 	@AcademicYear NVARCHAR(5),
 	@CollegeType INT,
 	@Mode NCHAR(1),
@@ -247,31 +248,37 @@ BEGIN
 					@NumExistingRecordsOUT = SUM ( 1 )
 				FROM ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData PA
 				WHERE
-					EndYear = @AcademicYear';
+					PA.ProviderID = @ProviderID
+					AND PA.EndYear = @AcademicYear';
 
             SET @SQLParams = 
-                N'@AcademicYear NVARCHAR(5),
+                N'@ProviderID INT,
+				@AcademicYear NVARCHAR(5),
                 @NumExistingRecordsOUT INT OUTPUT';
 
             EXECUTE sp_executesql 
                 @SQLString, 
-                @SQLParams, 
+                @SQLParams,
+				@ProviderID = @ProviderID, 
                 @AcademicYear = @AcademicYear, 
                 @NumExistingRecordsOUT = @NumExistingRecords OUTPUT;
-			PRINT @NumExistingRecords
+
 			IF @NumExistingRecords > 0
 				BEGIN
 					SET @SQLString = N'
 						DELETE FROM ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
 						WHERE
-							EndYear = @AcademicYear';
+							ProviderID = @ProviderID
+							AND EndYear = @AcademicYear';
 
 					SET @SQLParams = 
-                        N'@AcademicYear NVARCHAR(5)';
+                        N'@ProviderID INT,
+						@AcademicYear NVARCHAR(5)';
 
                     EXECUTE sp_executesql 
                         @SQLString, 
-                        @SQLParams, 
+                        @SQLParams,
+						@ProviderID = @ProviderID, 
                         @AcademicYear = @AcademicYear;
 				END
 		END
