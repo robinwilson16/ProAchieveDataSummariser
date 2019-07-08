@@ -1,15 +1,16 @@
-DECLARE @ProviderID INT = 10000000
+DECLARE @ProviderID INT = 10002094
 DECLARE @AcademicYear NVARCHAR(5) = ''
 
 SET @AcademicYear = (SELECT CFG.Value FROM Config CFG WHERE CFG.ConfigID = 'PRA_AcademicYearID')
+SET @AcademicYear = '18/19' --Override
 DECLARE @CollegeType INT = 2
 DECLARE @Mode CHAR(1) = 'R'
 DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = '[WLCBA-PGPA001A].ProGeneral.dbo.'
 DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = '[WLCBA-PGPA001A].ProAchieve.dbo.'
 DECLARE @OutputTableLocation NVARCHAR(200) = 'wlc.dbo.'
-DECLARE @FacStructureLevel INT = 2
-DECLARE @TeamStructureLevel INT = 3
-DECLARE @CostCentreStructureLevel INT = 4
+DECLARE @FacStructureLevel INT = 1
+DECLARE @TeamStructureLevel INT = 2
+DECLARE @CostCentreStructureLevel INT = 3
 
 DECLARE @NumRowsChanged INT
 DECLARE @ErrorCode INT

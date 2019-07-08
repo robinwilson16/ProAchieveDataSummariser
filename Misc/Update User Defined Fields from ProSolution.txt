@@ -16,7 +16,7 @@ BEGIN
 		UserDefined3 = CASE WHEN SD.LookedAfter = 1 THEN 'Y' ELSE 'N' END,
 		UserDefined4 = CASE WHEN SD.YoungCarer = 1 THEN 'Y' ELSE 'N' END,
 		UserDefined5 = CASE WHEN SD.YoungParent = 1 THEN 'Y' ELSE 'N' END
-	FROM ProGeneral.dbo.Student S
+	FROM besql05.ProGeneral.dbo.Student S
 	INNER JOIN besql03.ProSolution.dbo.StudentDetail SD
 		ON SD.RefNo = S.StudentID
 		AND SD.AcademicYearID = S.AcademicYearID
