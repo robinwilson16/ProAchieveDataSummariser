@@ -3,6 +3,7 @@ CREATE PROCEDURE SPR_PRA_ProAchieveSummaryData_ERTimely
 	@CollegeType INT,
 	@ProGeneralDatabaseLocation NVARCHAR(200),
 	@ProAchieveDatabaseLocation NVARCHAR(200),
+	@OutputTableLocation NVARCHAR(200),
 	@FacStructureLevel INT,
 	@TeamStructureLevel INT,
 	@CostCentreStructureLevel INT,
@@ -25,6 +26,7 @@ BEGIN
 
     SET @SQLString = 
         N'
+		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData WITH (TABLOCKX)
 		SELECT
 			EndYear = ER.PG_ExpEndYrID,
 			AcademicYear = AY.PG_AcademicYearID,
@@ -80,7 +82,10 @@ BEGIN
             IsLookedAfter = CASE WHEN STU.UserDefined3 = ''Y'' THEN 1 ELSE 0 END,
             IsYoungCarer = CASE WHEN STU.UserDefined4 = ''Y'' THEN 1 ELSE 0 END,
             IsYoungParent = CASE WHEN STU.UserDefined5 = ''Y'' THEN 1 ELSE 0 END,
+	'
 
+    SET @SQLString += 
+        N'
 			CampusID = COALESCE ( STU.CampusID, ''-'' ),
 			FacCode = 
 				COALESCE ( 
@@ -778,6 +783,7 @@ BEGIN
 	SET @SQLParams = 
         N'@AcademicYear NVARCHAR(5),
 	    @CollegeType INT,
+		@OutputTableLocation NVARCHAR(200),
 		@FacStructureLevel INT,
 		@TeamStructureLevel INT,
 		@CostCentreStructureLevel INT';
@@ -787,6 +793,7 @@ BEGIN
         @SQLParams, 
         @AcademicYear = @AcademicYear, 
         @CollegeType = @CollegeType,
+		@OutputTableLocation = @OutputTableLocation,
 		@FacStructureLevel = @FacStructureLevel,
 		@TeamStructureLevel = @TeamStructureLevel,
 		@CostCentreStructureLevel = @CostCentreStructureLevel;

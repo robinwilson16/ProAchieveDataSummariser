@@ -2,7 +2,7 @@ DECLARE @ProviderID INT = 10001475
 DECLARE @AcademicYear NVARCHAR(5) = ''
 
 SET @AcademicYear = (SELECT CFG.Value FROM Config CFG WHERE CFG.ConfigID = 'PRA_AcademicYearID')
-SET @AcademicYear = '18/19' --Override
+--SET @AcademicYear = '18/19' --Override
 DECLARE @CollegeType INT = 0
 DECLARE @Mode CHAR(1) = 'I' --I=Insert/R=Replace
 DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'besql05.ProGeneral.dbo.'

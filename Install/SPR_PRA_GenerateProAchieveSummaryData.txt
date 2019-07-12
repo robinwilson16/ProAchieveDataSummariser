@@ -285,12 +285,12 @@ BEGIN
 
 	--Insert CL Overall
 	SET @SQLString = N'
-		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
 		EXEC SPR_PRA_ProAchieveSummaryData_CLOverall
 			@AcademicYear, 
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
 			@ProAchieveDatabaseLocation,
+			@OutputTableLocation,
 			@FacStructureLevel,
 			@TeamStructureLevel,
 			@CostCentreStructureLevel,
@@ -302,6 +302,7 @@ BEGIN
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
+			@OutputTableLocation NVARCHAR(200),
 			@FacStructureLevel INT,
 			@TeamStructureLevel INT,
 			@CostCentreStructureLevel INT,
@@ -315,6 +316,7 @@ BEGIN
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
         @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+		@OutputTableLocation = @OutputTableLocation,
 		@FacStructureLevel = @FacStructureLevel,
 		@TeamStructureLevel = @TeamStructureLevel,
 		@CostCentreStructureLevel = @CostCentreStructureLevel,
@@ -323,12 +325,12 @@ BEGIN
 
 	--Insert CL Timely
 	SET @SQLString = N'
-		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
 		EXEC SPR_PRA_ProAchieveSummaryData_CLTimely
 			@AcademicYear, 
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
 			@ProAchieveDatabaseLocation,
+			@OutputTableLocation,
 			@FacStructureLevel,
 			@TeamStructureLevel,
 			@CostCentreStructureLevel,
@@ -340,6 +342,7 @@ BEGIN
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
+			@OutputTableLocation NVARCHAR(200),
 			@FacStructureLevel INT,
 			@TeamStructureLevel INT,
 			@CostCentreStructureLevel INT,
@@ -353,6 +356,7 @@ BEGIN
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
         @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+		@OutputTableLocation = @OutputTableLocation,
 		@FacStructureLevel = @FacStructureLevel,
 		@TeamStructureLevel = @TeamStructureLevel,
 		@CostCentreStructureLevel = @CostCentreStructureLevel,
@@ -361,12 +365,12 @@ BEGIN
 
 	--Insert ER Overall
 	SET @SQLString = N'
-		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
 		EXEC SPR_PRA_ProAchieveSummaryData_EROverall
 			@AcademicYear, 
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
 			@ProAchieveDatabaseLocation,
+			@OutputTableLocation,
 			@FacStructureLevel,
 			@TeamStructureLevel,
 			@CostCentreStructureLevel,
@@ -378,6 +382,7 @@ BEGIN
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
+			@OutputTableLocation NVARCHAR(200),
 			@FacStructureLevel INT,
 			@TeamStructureLevel INT,
 			@CostCentreStructureLevel INT,
@@ -391,6 +396,7 @@ BEGIN
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
         @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+		@OutputTableLocation = @OutputTableLocation,
 		@FacStructureLevel = @FacStructureLevel,
 		@TeamStructureLevel = @TeamStructureLevel,
 		@CostCentreStructureLevel = @CostCentreStructureLevel,
@@ -399,12 +405,12 @@ BEGIN
 
 	--Insert ER Timely
 	SET @SQLString = N'
-		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
 		EXEC SPR_PRA_ProAchieveSummaryData_ERTimely
 			@AcademicYear, 
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
 			@ProAchieveDatabaseLocation,
+			@OutputTableLocation,
 			@FacStructureLevel,
 			@TeamStructureLevel,
 			@CostCentreStructureLevel,
@@ -416,6 +422,7 @@ BEGIN
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
+			@OutputTableLocation NVARCHAR(200),
 			@FacStructureLevel INT,
 			@TeamStructureLevel INT,
 			@CostCentreStructureLevel INT,
@@ -429,6 +436,7 @@ BEGIN
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
         @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+		@OutputTableLocation = @OutputTableLocation,
 		@FacStructureLevel = @FacStructureLevel,
 		@TeamStructureLevel = @TeamStructureLevel,
 		@CostCentreStructureLevel = @CostCentreStructureLevel,
@@ -437,12 +445,12 @@ BEGIN
 
 	--Insert HE Overall
 	SET @SQLString = N'
-		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
 		EXEC SPR_PRA_ProAchieveSummaryData_HEOverall
 			@AcademicYear, 
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
 			@ProAchieveDatabaseLocation,
+			@OutputTableLocation,
 			@FacStructureLevel,
 			@TeamStructureLevel,
 			@CostCentreStructureLevel,
@@ -454,6 +462,7 @@ BEGIN
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
+			@OutputTableLocation NVARCHAR(200),
 			@FacStructureLevel INT,
 			@TeamStructureLevel INT,
 			@CostCentreStructureLevel INT,
@@ -467,6 +476,7 @@ BEGIN
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
         @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+		@OutputTableLocation = @OutputTableLocation,
 		@FacStructureLevel = @FacStructureLevel,
 		@TeamStructureLevel = @TeamStructureLevel,
 		@CostCentreStructureLevel = @CostCentreStructureLevel,
@@ -475,12 +485,12 @@ BEGIN
 
 	--Insert HE Timely
 	SET @SQLString = N'
-		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData
 		EXEC SPR_PRA_ProAchieveSummaryData_HETimely
 			@AcademicYear, 
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
 			@ProAchieveDatabaseLocation,
+			@OutputTableLocation,
 			@FacStructureLevel,
 			@TeamStructureLevel,
 			@CostCentreStructureLevel,
@@ -492,6 +502,7 @@ BEGIN
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
+			@OutputTableLocation NVARCHAR(200),
 			@FacStructureLevel INT,
 			@TeamStructureLevel INT,
 			@CostCentreStructureLevel INT,
@@ -505,6 +516,7 @@ BEGIN
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
         @ProAchieveDatabaseLocation = @ProAchieveDatabaseLocation,
+		@OutputTableLocation = @OutputTableLocation,
 		@FacStructureLevel = @FacStructureLevel,
 		@TeamStructureLevel = @TeamStructureLevel,
 		@CostCentreStructureLevel = @CostCentreStructureLevel,
