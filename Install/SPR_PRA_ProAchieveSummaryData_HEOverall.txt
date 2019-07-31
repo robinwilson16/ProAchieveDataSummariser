@@ -1,4 +1,5 @@
 CREATE PROCEDURE SPR_PRA_ProAchieveSummaryData_HEOverall
+	@ProviderRef NVARCHAR(50),
 	@AcademicYear NVARCHAR(5),
 	@CollegeType INT,
 	@ProGeneralDatabaseLocation NVARCHAR(200),
@@ -7,6 +8,12 @@ CREATE PROCEDURE SPR_PRA_ProAchieveSummaryData_HEOverall
 	@FacStructureLevel INT,
 	@TeamStructureLevel INT,
 	@CostCentreStructureLevel INT,
+	@UserDefinedTrueValue NVARCHAR(50),
+	@ALSUserDefinedField INT,
+	@LookedAfterUserDefinedField INT,
+	@CareLeaverUserDefinedField INT,
+	@YoungCarerUserDefinedField INT,
+	@YoungParentUserDefinedField INT,
     @NumRowsChanged INT OUTPUT, 
 	@ErrorCode INT OUTPUT
 AS
@@ -43,6 +50,7 @@ BEGIN
                 END,
 			DefaultSummary = MYS.DefaultSummary,
 			ProviderID = MYS.PG_ProviderID,
+			ProviderRef = @ProviderRef,
 			ProviderName = MYS.PG_ProviderName,
 			Summary = MYS.Description,
 			SummaryStatus = MYS.Status,
@@ -56,24 +64,91 @@ BEGIN
 			LearnerName = HE.StudentName,
 			Gender = HE.PG_SexID,
 			AgeGroup = AGE.HE_AgeGroupName,
-			EthnicityCode = HE.PG_EthnicityID,
+			EthnicityCode = ETH.PG_EthnicityID,
 			EthnicityName = ETH.PG_EthnicityName,
-			EthnicGroupCode = HE.PG_EthnicGroupID,
+			EthnicityOrder = ETH.PG_EthnicityOrder,
+			EthnicGroupCode = ETHG.PG_EthnicGroupID,
 			EthnicGroupName = ETHG.PG_EthnicGroupName,
+			EthnicGroupOrder = ETHG.PG_EthnicGroupOrder,
 			EthnicGroupQARCode = ETHQ.PG_EthnicityGroupQARID,
 			EthnicGroupQARName = ETHQ.PG_EthnicityGroupQARName,
+			EthnicGroupQAROrder = ETHQ.PG_EthnicityGroupQAROrder,
 			EthnicGroupSimpleCode = ETHGS.PG_EthnicGroupSimpleID,
 			EthnicGroupSimpleName = ETHGS.PG_EthnicGroupSimpleName,
+			EthnicGroupSimpleOrder = ETHGS.PG_EthnicGroupSimpleOrder,
 			DiffDissCode = HE.PG_DifficultyOrDisabilityID,
 			DiffDissName = DIF.ShortDescription,
 			IsHighNeeds = COALESCE ( FAM.PG_LearnFAMTypeHNSID, 0 ),
 			IsFreeMealsEligible = CASE WHEN FAM.PG_LearnFAMTypeFMEID IS NOT NULL THEN 1 ELSE 0 END,
-			
-            IsALSRequired = CASE WHEN STU.UserDefined1 = ''Y'' THEN 1 ELSE 0 END,
-            IsCareLeaver = CASE WHEN STU.UserDefined2 = ''Y'' THEN 1 ELSE 0 END,
-            IsLookedAfter = CASE WHEN STU.UserDefined3 = ''Y'' THEN 1 ELSE 0 END,
-            IsYoungCarer = CASE WHEN STU.UserDefined4 = ''Y'' THEN 1 ELSE 0 END,
-            IsYoungParent = CASE WHEN STU.UserDefined5 = ''Y'' THEN 1 ELSE 0 END,
+	'
+    
+    SET @SQLString += 
+        N'
+			IsALSRequired = 
+				CASE 
+					WHEN
+						CASE 
+							WHEN @ALSUserDefinedField = 1 THEN STU.UserDefined1
+							WHEN @ALSUserDefinedField = 2 THEN STU.UserDefined2
+							WHEN @ALSUserDefinedField = 3 THEN STU.UserDefined3
+							WHEN @ALSUserDefinedField = 4 THEN STU.UserDefined4
+							WHEN @ALSUserDefinedField = 5 THEN STU.UserDefined5
+						END
+					= @UserDefinedTrueValue THEN 1 
+					ELSE 0 
+				END,
+			IsLookedAfter = 
+				CASE 
+					WHEN
+						CASE 
+							WHEN @LookedAfterUserDefinedField = 1 THEN STU.UserDefined1
+							WHEN @LookedAfterUserDefinedField = 2 THEN STU.UserDefined2
+							WHEN @LookedAfterUserDefinedField = 3 THEN STU.UserDefined3
+							WHEN @LookedAfterUserDefinedField = 4 THEN STU.UserDefined4
+							WHEN @LookedAfterUserDefinedField = 5 THEN STU.UserDefined5
+						END
+					= @UserDefinedTrueValue THEN 1 
+					ELSE 0 
+				END,
+			IsCareLeaver = 
+				CASE 
+					WHEN
+						CASE 
+							WHEN @CareLeaverUserDefinedField = 1 THEN STU.UserDefined1
+							WHEN @CareLeaverUserDefinedField = 2 THEN STU.UserDefined2
+							WHEN @CareLeaverUserDefinedField = 3 THEN STU.UserDefined3
+							WHEN @CareLeaverUserDefinedField = 4 THEN STU.UserDefined4
+							WHEN @CareLeaverUserDefinedField = 5 THEN STU.UserDefined5
+						END
+					= @UserDefinedTrueValue THEN 1 
+					ELSE 0 
+				END,
+			IsYoungCarer = 
+				CASE 
+					WHEN
+						CASE 
+							WHEN @YoungCarerUserDefinedField = 1 THEN STU.UserDefined1
+							WHEN @YoungCarerUserDefinedField = 2 THEN STU.UserDefined2
+							WHEN @YoungCarerUserDefinedField = 3 THEN STU.UserDefined3
+							WHEN @YoungCarerUserDefinedField = 4 THEN STU.UserDefined4
+							WHEN @YoungCarerUserDefinedField = 5 THEN STU.UserDefined5
+						END
+					= @UserDefinedTrueValue THEN 1 
+					ELSE 0 
+				END,
+			IsYoungParent = 
+				CASE 
+					WHEN
+						CASE 
+							WHEN @YoungParentUserDefinedField = 1 THEN STU.UserDefined1
+							WHEN @YoungParentUserDefinedField = 2 THEN STU.UserDefined2
+							WHEN @YoungParentUserDefinedField = 3 THEN STU.UserDefined3
+							WHEN @YoungParentUserDefinedField = 4 THEN STU.UserDefined4
+							WHEN @YoungParentUserDefinedField = 5 THEN STU.UserDefined5
+						END
+					= @UserDefinedTrueValue THEN 1 
+					ELSE 0 
+				END,
 	'
 
     SET @SQLString += 
@@ -225,6 +300,9 @@ BEGIN
 			NatRate_Yr_Leave = NULL,
 			NatRate_Yr_Ach = NULL,
 			NatRate_Yr_AchPer = NULL,
+			NatRate_YrALL_Leave = NULL,
+			NatRate_YrALL_Ach = NULL,
+			NatRate_YrALL_AchPer = NULL,
 			NatRate_YrGFE_Leave = NULL,
 			NatRate_YrGFE_Ach = NULL,
 			NatRate_YrGFE_AchPer = NULL,
@@ -378,22 +456,36 @@ BEGIN
 	--SELECT @SQLString AS [processing-instruction(x)] FOR XML PATH('')
 
 	SET @SQLParams = 
-        N'@AcademicYear NVARCHAR(5),
+        N'@ProviderRef NVARCHAR(50),
+		@AcademicYear NVARCHAR(5),
 	    @CollegeType INT,
 		@OutputTableLocation NVARCHAR(200),
 		@FacStructureLevel INT,
 		@TeamStructureLevel INT,
-		@CostCentreStructureLevel INT';
+		@CostCentreStructureLevel INT,
+		@UserDefinedTrueValue NVARCHAR(50),
+		@ALSUserDefinedField INT,
+		@LookedAfterUserDefinedField INT,
+		@CareLeaverUserDefinedField INT,
+		@YoungCarerUserDefinedField INT,
+		@YoungParentUserDefinedField INT';
 
     EXECUTE sp_executesql 
         @SQLString, 
         @SQLParams, 
+		@ProviderRef = @ProviderRef,
         @AcademicYear = @AcademicYear, 
         @CollegeType = @CollegeType,
 		@OutputTableLocation = @OutputTableLocation,
 		@FacStructureLevel = @FacStructureLevel,
 		@TeamStructureLevel = @TeamStructureLevel,
-		@CostCentreStructureLevel = @CostCentreStructureLevel;
+		@CostCentreStructureLevel = @CostCentreStructureLevel,
+		@UserDefinedTrueValue = @UserDefinedTrueValue,
+		@ALSUserDefinedField = @ALSUserDefinedField,
+		@LookedAfterUserDefinedField = @LookedAfterUserDefinedField,
+		@CareLeaverUserDefinedField = @CareLeaverUserDefinedField,
+		@YoungCarerUserDefinedField = @YoungCarerUserDefinedField,
+		@YoungParentUserDefinedField = @YoungParentUserDefinedField;
 
     SET @NumRowsChanged = @@ROWCOUNT
 	SET @ErrorCode = @@ERROR

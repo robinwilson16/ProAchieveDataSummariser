@@ -1,4 +1,5 @@
 CREATE PROCEDURE SPR_PRA_ProAchieveSummaryData_EROverall
+	@ProviderRef NVARCHAR(50),
 	@AcademicYear NVARCHAR(5),
 	@CollegeType INT,
 	@ProGeneralDatabaseLocation NVARCHAR(200),
@@ -7,6 +8,12 @@ CREATE PROCEDURE SPR_PRA_ProAchieveSummaryData_EROverall
 	@FacStructureLevel INT,
 	@TeamStructureLevel INT,
 	@CostCentreStructureLevel INT,
+	@UserDefinedTrueValue NVARCHAR(50),
+	@ALSUserDefinedField INT,
+	@LookedAfterUserDefinedField INT,
+	@CareLeaverUserDefinedField INT,
+	@YoungCarerUserDefinedField INT,
+	@YoungParentUserDefinedField INT,
     @NumRowsChanged INT OUTPUT, 
 	@ErrorCode INT OUTPUT
 AS
@@ -51,6 +58,7 @@ BEGIN
                 END,
 			DefaultSummary = MYS.DefaultSummary,
 			ProviderID = MYS.PG_ProviderID,
+			ProviderRef = @ProviderRef,
 			ProviderName = MYS.PG_ProviderName,
 			Summary = MYS.Description,
 			SummaryStatus = MYS.Status,
@@ -64,24 +72,91 @@ BEGIN
 			LearnerName = STU.Surname + '', '' + STU.Forenames,
 			Gender = ER.PG_SexID,
 			AgeGroup = AGE.PG_WBLFundAgeGroupName,
-			EthnicityCode = ER.PG_EthnicityID,
+			EthnicityCode = ETH.PG_EthnicityID,
 			EthnicityName = ETH.PG_EthnicityName,
-			EthnicGroupCode = ER.PG_EthnicGroupID,
+			EthnicityOrder = ETH.PG_EthnicityOrder,
+			EthnicGroupCode = ETHG.PG_EthnicGroupID,
 			EthnicGroupName = ETHG.PG_EthnicGroupName,
+			EthnicGroupOrder = ETHG.PG_EthnicGroupOrder,
 			EthnicGroupQARCode = ETHQ.PG_EthnicityGroupQARID,
 			EthnicGroupQARName = ETHQ.PG_EthnicityGroupQARName,
+			EthnicGroupQAROrder = ETHQ.PG_EthnicityGroupQAROrder,
 			EthnicGroupSimpleCode = ETHGS.PG_EthnicGroupSimpleID,
 			EthnicGroupSimpleName = ETHGS.PG_EthnicGroupSimpleName,
+			EthnicGroupSimpleOrder = ETHGS.PG_EthnicGroupSimpleOrder,
 			DiffDissCode = ER.PG_DifficultyOrDisabilityID,
 			DiffDissName = DIF.ShortDescription,
 			IsHighNeeds = COALESCE ( FAM.PG_LearnFAMTypeHNSID, 0 ),
 			IsFreeMealsEligible = CASE WHEN FAM.PG_LearnFAMTypeFMEID IS NOT NULL THEN 1 ELSE 0 END,
-
-            IsALSRequired = CASE WHEN STU.UserDefined1 = ''Y'' THEN 1 ELSE 0 END,
-            IsCareLeaver = CASE WHEN STU.UserDefined2 = ''Y'' THEN 1 ELSE 0 END,
-            IsLookedAfter = CASE WHEN STU.UserDefined3 = ''Y'' THEN 1 ELSE 0 END,
-            IsYoungCarer = CASE WHEN STU.UserDefined4 = ''Y'' THEN 1 ELSE 0 END,
-            IsYoungParent = CASE WHEN STU.UserDefined5 = ''Y'' THEN 1 ELSE 0 END,
+	'
+    
+    SET @SQLString += 
+        N'
+			IsALSRequired = 
+				CASE 
+					WHEN
+						CASE 
+							WHEN @ALSUserDefinedField = 1 THEN STU.UserDefined1
+							WHEN @ALSUserDefinedField = 2 THEN STU.UserDefined2
+							WHEN @ALSUserDefinedField = 3 THEN STU.UserDefined3
+							WHEN @ALSUserDefinedField = 4 THEN STU.UserDefined4
+							WHEN @ALSUserDefinedField = 5 THEN STU.UserDefined5
+						END
+					= @UserDefinedTrueValue THEN 1 
+					ELSE 0 
+				END,
+			IsLookedAfter = 
+				CASE 
+					WHEN
+						CASE 
+							WHEN @LookedAfterUserDefinedField = 1 THEN STU.UserDefined1
+							WHEN @LookedAfterUserDefinedField = 2 THEN STU.UserDefined2
+							WHEN @LookedAfterUserDefinedField = 3 THEN STU.UserDefined3
+							WHEN @LookedAfterUserDefinedField = 4 THEN STU.UserDefined4
+							WHEN @LookedAfterUserDefinedField = 5 THEN STU.UserDefined5
+						END
+					= @UserDefinedTrueValue THEN 1 
+					ELSE 0 
+				END,
+			IsCareLeaver = 
+				CASE 
+					WHEN
+						CASE 
+							WHEN @CareLeaverUserDefinedField = 1 THEN STU.UserDefined1
+							WHEN @CareLeaverUserDefinedField = 2 THEN STU.UserDefined2
+							WHEN @CareLeaverUserDefinedField = 3 THEN STU.UserDefined3
+							WHEN @CareLeaverUserDefinedField = 4 THEN STU.UserDefined4
+							WHEN @CareLeaverUserDefinedField = 5 THEN STU.UserDefined5
+						END
+					= @UserDefinedTrueValue THEN 1 
+					ELSE 0 
+				END,
+			IsYoungCarer = 
+				CASE 
+					WHEN
+						CASE 
+							WHEN @YoungCarerUserDefinedField = 1 THEN STU.UserDefined1
+							WHEN @YoungCarerUserDefinedField = 2 THEN STU.UserDefined2
+							WHEN @YoungCarerUserDefinedField = 3 THEN STU.UserDefined3
+							WHEN @YoungCarerUserDefinedField = 4 THEN STU.UserDefined4
+							WHEN @YoungCarerUserDefinedField = 5 THEN STU.UserDefined5
+						END
+					= @UserDefinedTrueValue THEN 1 
+					ELSE 0 
+				END,
+			IsYoungParent = 
+				CASE 
+					WHEN
+						CASE 
+							WHEN @YoungParentUserDefinedField = 1 THEN STU.UserDefined1
+							WHEN @YoungParentUserDefinedField = 2 THEN STU.UserDefined2
+							WHEN @YoungParentUserDefinedField = 3 THEN STU.UserDefined3
+							WHEN @YoungParentUserDefinedField = 4 THEN STU.UserDefined4
+							WHEN @YoungParentUserDefinedField = 5 THEN STU.UserDefined5
+						END
+					= @UserDefinedTrueValue THEN 1 
+					ELSE 0 
+				END,
 	'
 
     SET @SQLString += 
@@ -265,6 +340,9 @@ BEGIN
 			NatRate_Yr_Leave = NR_YR.BMLeave,
 			NatRate_Yr_Ach = NR_YR.BMAchFrame,
 			NatRate_Yr_AchPer = CAST ( NR_YR.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+			NatRate_YrALL_Leave = NR_YRA.BMLeave,
+			NatRate_YrALL_Ach = NR_YRA.BMAchFrame,
+			NatRate_YrALL_AchPer = CAST ( NR_YRA.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
 			NatRate_YrGFE_Leave = NR_YRG.BMLeave,
 			NatRate_YrGFE_Ach = NR_YRG.BMAchFrame,
 			NatRate_YrGFE_AchPer = CAST ( NR_YRG.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
@@ -421,26 +499,6 @@ BEGIN
 				NR.PG_CollegeTypeID = @CollegeType
 		) NR_L
 			ON 1 = 1
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Overall NR_FWPGSSA 
-			ON CASE
-					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
-						CASE
-							WHEN NR_FWPGSSA.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.WB_HybridEndYearID = NR_FWPGSSA.WB_HybridEndYearID THEN 1
-							ELSE 0 
-						END
-				END = 1
-			AND NR_FWPGSSA.PG_CollegeTypeID = @CollegeType
-			AND NR_FWPGSSA.PG_WBLFundAgeGroupID IS NULL
-			AND NR_FWPGSSA.PG_SSA1ID = ER.PG_SSA1ID
-			AND NR_FWPGSSA.PG_SSA2ID = ER.PG_SSA2ID
-			AND NR_FWPGSSA.PG_ProgTypeID = ER.PG_ProgTypeID
-			AND NR_FWPGSSA.PG_FrameworkID = ER.PG_FrameworkID
-			AND NR_FWPGSSA.PG_AppStandardID IS NULL
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_YR
 			ON 
 				CASE
@@ -465,6 +523,30 @@ BEGIN
 			AND NR_YR.PG_SexID IS NULL
 			AND NR_YR.PG_DifficultyorDisabilityID IS NULL
 			AND NR_YR.PG_LearningDifficultyID IS NULL
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_YRA
+			ON 
+				CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_YRA.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_YRA.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_YRA.PG_CollegeTypeID = 0
+			AND NR_YRA.PG_WBLFundAgeGroupID IS NULL
+			AND NR_YRA.PG_SSA1ID IS NULL
+			AND NR_YRA.PG_SSA2ID IS NULL
+			AND NR_YRA.PG_ProgTypeID IS NULL
+			AND NR_YRA.PG_EthnicityID IS NULL
+			AND NR_YRA.PG_EthnicityGroupQARID IS NULL
+			AND NR_YRA.PG_SexID IS NULL
+			AND NR_YRA.PG_DifficultyorDisabilityID IS NULL
+			AND NR_YRA.PG_LearningDifficultyID IS NULL
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_YRG
 			ON 
 				CASE
@@ -513,6 +595,26 @@ BEGIN
 
     SET @SQLString += 
         N'
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Overall NR_FWPGSSA 
+			ON CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_FWPGSSA.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_FWPGSSA.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_FWPGSSA.PG_CollegeTypeID = @CollegeType
+			AND NR_FWPGSSA.PG_WBLFundAgeGroupID IS NULL
+			AND NR_FWPGSSA.PG_SSA1ID = ER.PG_SSA1ID
+			AND NR_FWPGSSA.PG_SSA2ID = ER.PG_SSA2ID
+			AND NR_FWPGSSA.PG_ProgTypeID = ER.PG_ProgTypeID
+			AND NR_FWPGSSA.PG_FrameworkID = ER.PG_FrameworkID
+			AND NR_FWPGSSA.PG_AppStandardID IS NULL
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_AGE
 			ON 
 				CASE
@@ -780,22 +882,36 @@ BEGIN
 	--SELECT @SQLString AS [processing-instruction(x)] FOR XML PATH('')
 
 	SET @SQLParams = 
-        N'@AcademicYear NVARCHAR(5),
+        N'@ProviderRef NVARCHAR(50),
+		@AcademicYear NVARCHAR(5),
 	    @CollegeType INT,
 		@OutputTableLocation NVARCHAR(200),
 		@FacStructureLevel INT,
 		@TeamStructureLevel INT,
-		@CostCentreStructureLevel INT';
+		@CostCentreStructureLevel INT,
+		@UserDefinedTrueValue NVARCHAR(50),
+		@ALSUserDefinedField INT,
+		@LookedAfterUserDefinedField INT,
+		@CareLeaverUserDefinedField INT,
+		@YoungCarerUserDefinedField INT,
+		@YoungParentUserDefinedField INT';
 
     EXECUTE sp_executesql 
         @SQLString, 
         @SQLParams, 
+		@ProviderRef = @ProviderRef,
         @AcademicYear = @AcademicYear, 
         @CollegeType = @CollegeType,
 		@OutputTableLocation = @OutputTableLocation,
 		@FacStructureLevel = @FacStructureLevel,
 		@TeamStructureLevel = @TeamStructureLevel,
-		@CostCentreStructureLevel = @CostCentreStructureLevel;
+		@CostCentreStructureLevel = @CostCentreStructureLevel,
+		@UserDefinedTrueValue = @UserDefinedTrueValue,
+		@ALSUserDefinedField = @ALSUserDefinedField,
+		@LookedAfterUserDefinedField = @LookedAfterUserDefinedField,
+		@CareLeaverUserDefinedField = @CareLeaverUserDefinedField,
+		@YoungCarerUserDefinedField = @YoungCarerUserDefinedField,
+		@YoungParentUserDefinedField = @YoungParentUserDefinedField;
 
     SET @NumRowsChanged = @@ROWCOUNT
 	SET @ErrorCode = @@ERROR

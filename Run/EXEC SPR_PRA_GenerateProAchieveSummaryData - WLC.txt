@@ -1,16 +1,23 @@
-DECLARE @ProviderID INT = 10002094
+DECLARE @ProviderID INT = 10002094 --Provider Ref of the college
+DECLARE @ProviderRef NVARCHAR(50) = 'EHWLC' --Reference to save into table in case title too long for charts etc.
 DECLARE @AcademicYear NVARCHAR(5) = ''
 
 SET @AcademicYear = (SELECT CFG.Value FROM Config CFG WHERE CFG.ConfigID = 'PRA_AcademicYearID')
 SET @AcademicYear = '18/19' --Override
-DECLARE @CollegeType INT = 2
-DECLARE @Mode CHAR(1) = 'R'
-DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = '[WLCBA-PGPA001A].ProGeneral.dbo.'
-DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = '[WLCBA-PGPA001A].ProAchieve.dbo.'
-DECLARE @OutputTableLocation NVARCHAR(200) = 'wlc.dbo.'
-DECLARE @FacStructureLevel INT = 1
-DECLARE @TeamStructureLevel INT = 2
-DECLARE @CostCentreStructureLevel INT = 3
+DECLARE @CollegeType INT = 2 --Type of national averages - 2=GFE, 0=All Institutions
+DECLARE @Mode CHAR(1) = 'R' --I=Insert new yearly ProAchieve data leaving data for other years, R=Replace table
+DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = '[WLCBA-PGPA001A].ProGeneral.dbo.' --Database/Linked Server location
+DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = '[WLCBA-PGPA001A].ProAchieve.dbo.' --Database/Linked Server location
+DECLARE @OutputTableLocation NVARCHAR(200) = 'wlc.dbo.' --Location where the resulting ProAchieve Summary Data table will be created
+DECLARE @FacStructureLevel INT = 1 --Level of hierarchy for Faculty
+DECLARE @TeamStructureLevel INT = 2 --Level of hierarchy for Team
+DECLARE @CostCentreStructureLevel INT = 3 --Level of hierarchy for Cost Centre
+DECLARE @UserDefinedTrueValue NVARCHAR(50) = 'True' --The value that indicates ALS is provided - e.g. Y/True
+DECLARE @ALSUserDefinedField INT = 2 --UDF where ALS is imported as Y/N
+DECLARE @LookedAfterUserDefinedField INT = 1
+DECLARE @CareLeaverUserDefinedField INT = 3
+DECLARE @YoungCarerUserDefinedField INT = 4
+DECLARE @YoungParentUserDefinedField INT = 5
 
 DECLARE @NumRowsChanged INT
 DECLARE @ErrorCode INT
@@ -21,6 +28,7 @@ DECLARE @SQLParams NVARCHAR(MAX);
 SET @SQLString = N'
     EXEC SPR_PRA_GenerateProAchieveSummaryData
         @ProviderID,
+		@ProviderRef,
 		@AcademicYear,
         @CollegeType,
         @Mode,
@@ -30,11 +38,18 @@ SET @SQLString = N'
 		@FacStructureLevel,
 		@TeamStructureLevel,
 		@CostCentreStructureLevel,
+		@UserDefinedTrueValue,
+		@ALSUserDefinedField,
+		@LookedAfterUserDefinedField,
+		@CareLeaverUserDefinedField,
+		@YoungCarerUserDefinedField,
+		@YoungParentUserDefinedField,
         @NumRowsChanged, 
 	    @ErrorCode';
 
 SET @SQLParams = 
         N'@ProviderID INT,
+		@ProviderRef NVARCHAR(50),
 		@AcademicYear NVARCHAR(5),
         @CollegeType INT,
         @Mode CHAR(1),
@@ -44,6 +59,12 @@ SET @SQLParams =
 		@FacStructureLevel INT,
 		@TeamStructureLevel INT,
 		@CostCentreStructureLevel INT,
+		@UserDefinedTrueValue NVARCHAR(50),
+		@ALSUserDefinedField INT,
+		@LookedAfterUserDefinedField INT,
+		@CareLeaverUserDefinedField INT,
+		@YoungCarerUserDefinedField INT,
+		@YoungParentUserDefinedField INT,
         @NumRowsChanged INT OUTPUT, 
 	    @ErrorCode INT OUTPUT';
     
@@ -51,6 +72,7 @@ EXECUTE sp_executesql
     @SQLString, 
     @SQLParams, 
     @ProviderID = @ProviderID,
+	@ProviderRef = @ProviderRef,
 	@AcademicYear = @AcademicYear, 
     @CollegeType = @CollegeType, 
     @Mode = @Mode,
@@ -60,6 +82,12 @@ EXECUTE sp_executesql
 	@FacStructureLevel = @FacStructureLevel,
 	@TeamStructureLevel = @TeamStructureLevel,
 	@CostCentreStructureLevel = @CostCentreStructureLevel,
+	@UserDefinedTrueValue = @UserDefinedTrueValue,
+	@ALSUserDefinedField = @ALSUserDefinedField,
+	@LookedAfterUserDefinedField = @LookedAfterUserDefinedField,
+	@CareLeaverUserDefinedField = @CareLeaverUserDefinedField,
+	@YoungCarerUserDefinedField = @YoungCarerUserDefinedField,
+	@YoungParentUserDefinedField = @YoungParentUserDefinedField,
     @NumRowsChanged = @NumRowsChanged OUTPUT,
 	@ErrorCode = @ErrorCode OUTPUT
 

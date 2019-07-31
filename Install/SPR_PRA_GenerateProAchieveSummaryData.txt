@@ -1,5 +1,6 @@
 CREATE PROCEDURE SPR_PRA_GenerateProAchieveSummaryData
 	@ProviderID INT,
+	@ProviderRef NVARCHAR(50),
 	@AcademicYear NVARCHAR(5),
 	@CollegeType INT,
 	@Mode NCHAR(1),
@@ -9,6 +10,12 @@ CREATE PROCEDURE SPR_PRA_GenerateProAchieveSummaryData
 	@FacStructureLevel INT,
 	@TeamStructureLevel INT,
 	@CostCentreStructureLevel INT,
+	@UserDefinedTrueValue NVARCHAR(50),
+	@ALSUserDefinedField INT,
+	@LookedAfterUserDefinedField INT,
+	@CareLeaverUserDefinedField INT,
+	@YoungCarerUserDefinedField INT,
+	@YoungParentUserDefinedField INT,
     @NumRowsChanged INT OUTPUT, 
 	@ErrorCode INT OUTPUT
 
@@ -61,6 +68,7 @@ BEGIN
 					SummaryType NVARCHAR(23) NOT NULL,
 					DefaultSummary bit NULL,
 					ProviderID NVARCHAR(8) NOT NULL,
+					ProviderRef NVARCHAR(50) NULL,
 					ProviderName NVARCHAR(255) NULL,
 					Summary NVARCHAR(128) NULL,
 					SummaryStatus NVARCHAR(20) NULL,
@@ -75,20 +83,24 @@ BEGIN
 					AgeGroup NVARCHAR(32) NULL,
 					EthnicityCode NCHAR(3) NULL,
 					EthnicityName NVARCHAR(62) NULL,
+					EthnicityOrder INT NULL,
 					EthnicGroupCode NCHAR(2) NULL,
 					EthnicGroupName NVARCHAR(62) NULL,
+					EthnicGroupOrder INT NULL,
 					EthnicGroupQARCode NCHAR(2) NOT NULL,
 					EthnicGroupQARName NVARCHAR(200) NULL,
+					EthnicGroupQAROrder INT NULL,
 					EthnicGroupSimpleCode NVARCHAR(2) NULL,
 					EthnicGroupSimpleName NVARCHAR(9) NULL,
+					EthnicGroupSimpleOrder INT NULL,
 					DiffDissCode NCHAR(1) NULL,
 					DiffDissName NVARCHAR(40) NULL,
 					IsHighNeeds INT NULL,
 					IsFreeMealsEligible INT NOT NULL,
 
                     IsALSRequired INT NULL,
+					IsLookedAfter INT NULL,
                     IsCareLeaver INT NULL,
-                    IsLookedAfter INT NULL,
                     IsYoungCarer INT NULL,
                     IsYoungParent INT NULL,
                     
@@ -164,6 +176,9 @@ BEGIN
 					NatRate_Yr_Leave INT NULL,
 					NatRate_Yr_Ach INT NULL,
 					NatRate_Yr_AchPer FLOAT NULL,
+					NatRate_YrALL_Leave INT NULL,
+					NatRate_YrALL_Ach INT NULL,
+					NatRate_YrALL_AchPer FLOAT NULL,
 					NatRate_YrGFE_Leave INT NULL,
 					NatRate_YrGFE_Ach INT NULL,
 					NatRate_YrGFE_AchPer FLOAT NULL,
@@ -283,9 +298,12 @@ BEGIN
 				END
 		END
 
+	PRINT '5% - Table Set Up';
+
 	--Insert CL Overall
 	SET @SQLString = N'
 		EXEC SPR_PRA_ProAchieveSummaryData_CLOverall
+			@ProviderRef,
 			@AcademicYear, 
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
@@ -294,11 +312,18 @@ BEGIN
 			@FacStructureLevel,
 			@TeamStructureLevel,
 			@CostCentreStructureLevel,
+			@UserDefinedTrueValue,
+			@ALSUserDefinedField,
+			@LookedAfterUserDefinedField,
+			@CareLeaverUserDefinedField,
+			@YoungCarerUserDefinedField,
+			@YoungParentUserDefinedField,
             @NumRowsChanged, 
 	        @ErrorCode';
 
     SET @SQLParams = 
-            N'@AcademicYear NVARCHAR(5),
+            N'@ProviderRef NVARCHAR(50),
+			@AcademicYear NVARCHAR(5),
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
@@ -306,12 +331,19 @@ BEGIN
 			@FacStructureLevel INT,
 			@TeamStructureLevel INT,
 			@CostCentreStructureLevel INT,
+			@UserDefinedTrueValue NVARCHAR(50),
+			@ALSUserDefinedField INT,
+			@LookedAfterUserDefinedField INT,
+			@CareLeaverUserDefinedField INT,
+			@YoungCarerUserDefinedField INT,
+			@YoungParentUserDefinedField INT,
             @NumRowsChanged INT OUTPUT, 
 	        @ErrorCode INT OUTPUT';
         
     EXECUTE sp_executesql 
         @SQLString, 
         @SQLParams, 
+		@ProviderRef = @ProviderRef, 
         @AcademicYear = @AcademicYear, 
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
@@ -320,12 +352,21 @@ BEGIN
 		@FacStructureLevel = @FacStructureLevel,
 		@TeamStructureLevel = @TeamStructureLevel,
 		@CostCentreStructureLevel = @CostCentreStructureLevel,
+		@UserDefinedTrueValue = @UserDefinedTrueValue,
+		@ALSUserDefinedField = @ALSUserDefinedField,
+		@LookedAfterUserDefinedField = @LookedAfterUserDefinedField,
+		@CareLeaverUserDefinedField = @CareLeaverUserDefinedField,
+		@YoungCarerUserDefinedField = @YoungCarerUserDefinedField,
+		@YoungParentUserDefinedField = @YoungParentUserDefinedField,
         @NumRowsChanged = @NumRowsChanged OUTPUT, 
         @ErrorCode = @ErrorCode OUTPUT;
+
+	PRINT '15% - CL Overall ' + @AcademicYear + ' Imported';
 
 	--Insert CL Timely
 	SET @SQLString = N'
 		EXEC SPR_PRA_ProAchieveSummaryData_CLTimely
+			@ProviderRef,
 			@AcademicYear, 
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
@@ -334,11 +375,18 @@ BEGIN
 			@FacStructureLevel,
 			@TeamStructureLevel,
 			@CostCentreStructureLevel,
+			@UserDefinedTrueValue,
+			@ALSUserDefinedField,
+			@LookedAfterUserDefinedField,
+			@CareLeaverUserDefinedField,
+			@YoungCarerUserDefinedField,
+			@YoungParentUserDefinedField,
             @NumRowsChanged, 
 	        @ErrorCode';
 
     SET @SQLParams = 
-            N'@AcademicYear NVARCHAR(5),
+            N'@ProviderRef NVARCHAR(50),
+			@AcademicYear NVARCHAR(5),
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
@@ -346,12 +394,19 @@ BEGIN
 			@FacStructureLevel INT,
 			@TeamStructureLevel INT,
 			@CostCentreStructureLevel INT,
+			@UserDefinedTrueValue NVARCHAR(50),
+			@ALSUserDefinedField INT,
+			@LookedAfterUserDefinedField INT,
+			@CareLeaverUserDefinedField INT,
+			@YoungCarerUserDefinedField INT,
+			@YoungParentUserDefinedField INT,
             @NumRowsChanged INT OUTPUT, 
 	        @ErrorCode INT OUTPUT';
         
     EXECUTE sp_executesql 
         @SQLString, 
         @SQLParams, 
+		@ProviderRef = @ProviderRef, 
         @AcademicYear = @AcademicYear, 
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
@@ -360,12 +415,21 @@ BEGIN
 		@FacStructureLevel = @FacStructureLevel,
 		@TeamStructureLevel = @TeamStructureLevel,
 		@CostCentreStructureLevel = @CostCentreStructureLevel,
+		@UserDefinedTrueValue = @UserDefinedTrueValue,
+		@ALSUserDefinedField = @ALSUserDefinedField,
+		@LookedAfterUserDefinedField = @LookedAfterUserDefinedField,
+		@CareLeaverUserDefinedField = @CareLeaverUserDefinedField,
+		@YoungCarerUserDefinedField = @YoungCarerUserDefinedField,
+		@YoungParentUserDefinedField = @YoungParentUserDefinedField,
         @NumRowsChanged = @NumRowsChanged OUTPUT, 
         @ErrorCode = @ErrorCode OUTPUT;
+
+	PRINT '30% - CL Timely ' + @AcademicYear + ' Imported';
 
 	--Insert ER Overall
 	SET @SQLString = N'
 		EXEC SPR_PRA_ProAchieveSummaryData_EROverall
+			@ProviderRef,
 			@AcademicYear, 
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
@@ -374,11 +438,18 @@ BEGIN
 			@FacStructureLevel,
 			@TeamStructureLevel,
 			@CostCentreStructureLevel,
+			@UserDefinedTrueValue,
+			@ALSUserDefinedField,
+			@LookedAfterUserDefinedField,
+			@CareLeaverUserDefinedField,
+			@YoungCarerUserDefinedField,
+			@YoungParentUserDefinedField,
             @NumRowsChanged, 
 	        @ErrorCode';
 
     SET @SQLParams = 
-            N'@AcademicYear NVARCHAR(5),
+            N'@ProviderRef NVARCHAR(50),
+			@AcademicYear NVARCHAR(5),
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
@@ -386,12 +457,20 @@ BEGIN
 			@FacStructureLevel INT,
 			@TeamStructureLevel INT,
 			@CostCentreStructureLevel INT,
+			@UserDefinedTrueValue NVARCHAR(50),
+			@ALSUserDefinedField INT,
+			@LookedAfterUserDefinedField INT,
+			@CareLeaverUserDefinedField INT,
+			@YoungCarerUserDefinedField INT,
+			@YoungParentUserDefinedField INT,
             @NumRowsChanged INT OUTPUT, 
 	        @ErrorCode INT OUTPUT';
-        
+    
+ 
     EXECUTE sp_executesql 
         @SQLString, 
         @SQLParams, 
+		@ProviderRef = @ProviderRef, 
         @AcademicYear = @AcademicYear, 
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
@@ -400,12 +479,21 @@ BEGIN
 		@FacStructureLevel = @FacStructureLevel,
 		@TeamStructureLevel = @TeamStructureLevel,
 		@CostCentreStructureLevel = @CostCentreStructureLevel,
+		@UserDefinedTrueValue = @UserDefinedTrueValue,
+		@ALSUserDefinedField = @ALSUserDefinedField,
+		@LookedAfterUserDefinedField = @LookedAfterUserDefinedField,
+		@CareLeaverUserDefinedField = @CareLeaverUserDefinedField,
+		@YoungCarerUserDefinedField = @YoungCarerUserDefinedField,
+		@YoungParentUserDefinedField = @YoungParentUserDefinedField,
         @NumRowsChanged = @NumRowsChanged OUTPUT, 
         @ErrorCode = @ErrorCode OUTPUT;
+
+	PRINT '50% - ER Overall ' + @AcademicYear + ' Imported';
 
 	--Insert ER Timely
 	SET @SQLString = N'
 		EXEC SPR_PRA_ProAchieveSummaryData_ERTimely
+			@ProviderRef,
 			@AcademicYear, 
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
@@ -414,11 +502,18 @@ BEGIN
 			@FacStructureLevel,
 			@TeamStructureLevel,
 			@CostCentreStructureLevel,
+			@UserDefinedTrueValue,
+			@ALSUserDefinedField,
+			@LookedAfterUserDefinedField,
+			@CareLeaverUserDefinedField,
+			@YoungCarerUserDefinedField,
+			@YoungParentUserDefinedField,
             @NumRowsChanged, 
 	        @ErrorCode';
 
     SET @SQLParams = 
-            N'@AcademicYear NVARCHAR(5),
+            N'@ProviderRef NVARCHAR(50),
+			@AcademicYear NVARCHAR(5),
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
@@ -426,12 +521,19 @@ BEGIN
 			@FacStructureLevel INT,
 			@TeamStructureLevel INT,
 			@CostCentreStructureLevel INT,
+			@UserDefinedTrueValue NVARCHAR(50),
+			@ALSUserDefinedField INT,
+			@LookedAfterUserDefinedField INT,
+			@CareLeaverUserDefinedField INT,
+			@YoungCarerUserDefinedField INT,
+			@YoungParentUserDefinedField INT,
             @NumRowsChanged INT OUTPUT, 
 	        @ErrorCode INT OUTPUT';
         
     EXECUTE sp_executesql 
         @SQLString, 
         @SQLParams, 
+		@ProviderRef = @ProviderRef, 
         @AcademicYear = @AcademicYear, 
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
@@ -440,12 +542,21 @@ BEGIN
 		@FacStructureLevel = @FacStructureLevel,
 		@TeamStructureLevel = @TeamStructureLevel,
 		@CostCentreStructureLevel = @CostCentreStructureLevel,
+		@UserDefinedTrueValue = @UserDefinedTrueValue,
+		@ALSUserDefinedField = @ALSUserDefinedField,
+		@LookedAfterUserDefinedField = @LookedAfterUserDefinedField,
+		@CareLeaverUserDefinedField = @CareLeaverUserDefinedField,
+		@YoungCarerUserDefinedField = @YoungCarerUserDefinedField,
+		@YoungParentUserDefinedField = @YoungParentUserDefinedField,
         @NumRowsChanged = @NumRowsChanged OUTPUT, 
         @ErrorCode = @ErrorCode OUTPUT;
+	
+	PRINT '70% - ER Timely ' + @AcademicYear + ' Imported';
 
 	--Insert HE Overall
 	SET @SQLString = N'
 		EXEC SPR_PRA_ProAchieveSummaryData_HEOverall
+			@ProviderRef,
 			@AcademicYear, 
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
@@ -454,11 +565,18 @@ BEGIN
 			@FacStructureLevel,
 			@TeamStructureLevel,
 			@CostCentreStructureLevel,
+			@UserDefinedTrueValue,
+			@ALSUserDefinedField,
+			@LookedAfterUserDefinedField,
+			@CareLeaverUserDefinedField,
+			@YoungCarerUserDefinedField,
+			@YoungParentUserDefinedField,
             @NumRowsChanged, 
 	        @ErrorCode';
 
     SET @SQLParams = 
-            N'@AcademicYear NVARCHAR(5),
+            N'@ProviderRef NVARCHAR(50),
+			@AcademicYear NVARCHAR(5),
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
@@ -466,12 +584,19 @@ BEGIN
 			@FacStructureLevel INT,
 			@TeamStructureLevel INT,
 			@CostCentreStructureLevel INT,
+			@UserDefinedTrueValue NVARCHAR(50),
+			@ALSUserDefinedField INT,
+			@LookedAfterUserDefinedField INT,
+			@CareLeaverUserDefinedField INT,
+			@YoungCarerUserDefinedField INT,
+			@YoungParentUserDefinedField INT,
             @NumRowsChanged INT OUTPUT, 
 	        @ErrorCode INT OUTPUT';
         
     EXECUTE sp_executesql 
         @SQLString, 
         @SQLParams, 
+		@ProviderRef = @ProviderRef, 
         @AcademicYear = @AcademicYear, 
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
@@ -480,12 +605,21 @@ BEGIN
 		@FacStructureLevel = @FacStructureLevel,
 		@TeamStructureLevel = @TeamStructureLevel,
 		@CostCentreStructureLevel = @CostCentreStructureLevel,
+		@UserDefinedTrueValue = @UserDefinedTrueValue,
+		@ALSUserDefinedField = @ALSUserDefinedField,
+		@LookedAfterUserDefinedField = @LookedAfterUserDefinedField,
+		@CareLeaverUserDefinedField = @CareLeaverUserDefinedField,
+		@YoungCarerUserDefinedField = @YoungCarerUserDefinedField,
+		@YoungParentUserDefinedField = @YoungParentUserDefinedField,
         @NumRowsChanged = @NumRowsChanged OUTPUT, 
         @ErrorCode = @ErrorCode OUTPUT;
+
+	PRINT '85% - HE Overall ' + @AcademicYear + ' Imported';
 
 	--Insert HE Timely
 	SET @SQLString = N'
 		EXEC SPR_PRA_ProAchieveSummaryData_HETimely
+			@ProviderRef,
 			@AcademicYear, 
 			@CollegeType, 
 			@ProGeneralDatabaseLocation,
@@ -494,11 +628,18 @@ BEGIN
 			@FacStructureLevel,
 			@TeamStructureLevel,
 			@CostCentreStructureLevel,
+			@UserDefinedTrueValue,
+			@ALSUserDefinedField,
+			@LookedAfterUserDefinedField,
+			@CareLeaverUserDefinedField,
+			@YoungCarerUserDefinedField,
+			@YoungParentUserDefinedField,
             @NumRowsChanged, 
 	        @ErrorCode';
 
     SET @SQLParams = 
-            N'@AcademicYear NVARCHAR(5),
+            N'@ProviderRef NVARCHAR(50),
+			@AcademicYear NVARCHAR(5),
             @CollegeType INT,
             @ProGeneralDatabaseLocation NVARCHAR(200),
             @ProAchieveDatabaseLocation NVARCHAR(200),
@@ -506,12 +647,19 @@ BEGIN
 			@FacStructureLevel INT,
 			@TeamStructureLevel INT,
 			@CostCentreStructureLevel INT,
+			@UserDefinedTrueValue NVARCHAR(50),
+			@ALSUserDefinedField INT,
+			@LookedAfterUserDefinedField INT,
+			@CareLeaverUserDefinedField INT,
+			@YoungCarerUserDefinedField INT,
+			@YoungParentUserDefinedField INT,
             @NumRowsChanged INT OUTPUT, 
 	        @ErrorCode INT OUTPUT';
         
     EXECUTE sp_executesql 
         @SQLString, 
         @SQLParams, 
+		@ProviderRef = @ProviderRef, 
         @AcademicYear = @AcademicYear, 
         @CollegeType = @CollegeType, 
         @ProGeneralDatabaseLocation = @ProGeneralDatabaseLocation, 
@@ -520,6 +668,15 @@ BEGIN
 		@FacStructureLevel = @FacStructureLevel,
 		@TeamStructureLevel = @TeamStructureLevel,
 		@CostCentreStructureLevel = @CostCentreStructureLevel,
+		@UserDefinedTrueValue = @UserDefinedTrueValue,
+		@ALSUserDefinedField = @ALSUserDefinedField,
+		@LookedAfterUserDefinedField = @LookedAfterUserDefinedField,
+		@CareLeaverUserDefinedField = @CareLeaverUserDefinedField,
+		@YoungCarerUserDefinedField = @YoungCarerUserDefinedField,
+		@YoungParentUserDefinedField = @YoungParentUserDefinedField,
         @NumRowsChanged = @NumRowsChanged OUTPUT, 
         @ErrorCode = @ErrorCode OUTPUT;
+
+	PRINT '100% - HE Timely ' + @AcademicYear + ' Imported';
+	PRINT  @AcademicYear + ' Import Complete';
 END
