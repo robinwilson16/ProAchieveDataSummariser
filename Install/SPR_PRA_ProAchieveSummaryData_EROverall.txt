@@ -355,9 +355,12 @@ BEGIN
 			NatRate_Age_Leave = NR_AGE.BMLeave,
 			NatRate_Age_Ach = NR_AGE.BMAchFrame,
 			NatRate_Age_AchPer = CAST ( NR_AGE.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
-			NatRate_AgeGender_Leave = NR_AGEGEN.BMLeave,
-			NatRate_AgeGender_Ach = NR_AGEGEN.BMAchFrame,
-			NatRate_AgeGender_AchPer = CAST ( NR_AGEGEN.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+			NatRate_Gender_Leave = NR_GEN.BMLeave,
+			NatRate_Gender_Ach = NR_GEN.BMAchFrame,
+			NatRate_Gender_AchPer = CAST ( NR_GEN.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+			NatRate_GenderAge_Leave = NR_GENAGE.BMLeave,
+			NatRate_GenderAge_Ach = NR_GENAGE.BMAchFrame,
+			NatRate_GenderAge_AchPer = CAST ( NR_GENAGE.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
 			NatRate_Level_Leave = NR_LEV.BMLeave,
 			NatRate_Level_Ach = NR_LEV.BMAchFrame,
 			NatRate_Level_AchPer = CAST ( NR_LEV.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
@@ -382,12 +385,24 @@ BEGIN
             NatRate_EthnicityAge_Leave = NR_ETHAGE.BMLeave,
 			NatRate_EthnicityAge_Ach = NR_ETHAGE.BMAchFrame,
 			NatRate_EthnicityAge_AchPer = CAST ( NR_ETHAGE.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+			NatRate_EthnicGroup_Leave = NULL,
+			NatRate_EthnicGroup_Ach = NULL,
+			NatRate_EthnicGroup_AchPer = NULL,
+            NatRate_EthnicGroupAge_Leave = NULL,
+			NatRate_EthnicGroupAge_Ach = NULL,
+			NatRate_EthnicGroupAge_AchPer = NULL,
 			NatRate_SSA1_Leave = NR_SSA1.BMLeave,
 			NatRate_SSA1_Ach = NR_SSA1.BMAchFrame,
 			NatRate_SSA1_AchPer = CAST ( NR_SSA1.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+			NatRate_SSA1Age_Leave = NR_SSA1AGE.BMLeave,
+			NatRate_SSA1Age_Ach = NR_SSA1AGE.BMAchFrame,
+			NatRate_SSA1Age_AchPer = CAST ( NR_SSA1AGE.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
 			NatRate_SSA2_Leave = NR_SSA2.BMLeave,
 			NatRate_SSA2_Ach = NR_SSA2.BMAchFrame,
 			NatRate_SSA2_AchPer = CAST ( NR_SSA2.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
+			NatRate_SSA2Age_Leave = NR_SSA2AGE.BMLeave,
+			NatRate_SSA2Age_Ach = NR_SSA2AGE.BMAchFrame,
+			NatRate_SSA2Age_AchPer = CAST ( NR_SSA2AGE.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
 			NatRate_DifDis_Leave = NR_DIF.BMLeave,
 			NatRate_DifDis_Ach = NR_DIF.BMAchFrame,
 			NatRate_DifDis_AchPer = CAST ( NR_DIF.BMAchFrameOverallLeave AS FLOAT ) / 100.00,
@@ -639,30 +654,54 @@ BEGIN
 			AND NR_AGE.PG_SexID IS NULL
 			AND NR_AGE.PG_DifficultyorDisabilityID IS NULL
 			AND NR_AGE.PG_LearningDifficultyID IS NULL
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_AGEGEN
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_GEN
 			ON 
 				CASE
 					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
 						CASE
-							WHEN NR_AGEGEN.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							WHEN NR_GEN.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 					ELSE 
 						CASE
-							WHEN ER.WB_HybridEndYearID = NR_AGEGEN.WB_HybridEndYearID THEN 1
+							WHEN ER.WB_HybridEndYearID = NR_GEN.WB_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 				END = 1
-			AND NR_AGEGEN.PG_CollegeTypeID = @CollegeType
-			AND NR_AGEGEN.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
-			AND NR_AGEGEN.PG_SSA1ID IS NULL
-			AND NR_AGEGEN.PG_SSA2ID IS NULL
-			AND NR_AGEGEN.PG_ProgTypeID IS NULL
-			AND NR_AGEGEN.PG_EthnicityID IS NULL
-			AND NR_AGEGEN.PG_EthnicityGroupQARID IS NULL
-			AND NR_AGEGEN.PG_SexID = ER.PG_SexID
-			AND NR_AGEGEN.PG_DifficultyorDisabilityID IS NULL
-			AND NR_AGEGEN.PG_LearningDifficultyID IS NULL
+			AND NR_GEN.PG_CollegeTypeID = @CollegeType
+			AND NR_GEN.PG_WBLFundAgeGroupID IS NULL
+			AND NR_GEN.PG_SSA1ID IS NULL
+			AND NR_GEN.PG_SSA2ID IS NULL
+			AND NR_GEN.PG_ProgTypeID IS NULL
+			AND NR_GEN.PG_EthnicityID IS NULL
+			AND NR_GEN.PG_EthnicityGroupQARID IS NULL
+			AND NR_GEN.PG_SexID = ER.PG_SexID
+			AND NR_GEN.PG_DifficultyorDisabilityID IS NULL
+			AND NR_GEN.PG_LearningDifficultyID IS NULL
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_GENAGE
+			ON 
+				CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_GENAGE.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_GENAGE.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_GENAGE.PG_CollegeTypeID = @CollegeType
+			AND NR_GENAGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
+			AND NR_GENAGE.PG_SSA1ID IS NULL
+			AND NR_GENAGE.PG_SSA2ID IS NULL
+			AND NR_GENAGE.PG_ProgTypeID IS NULL
+			AND NR_GENAGE.PG_EthnicityID IS NULL
+			AND NR_GENAGE.PG_EthnicityGroupQARID IS NULL
+			AND NR_GENAGE.PG_SexID = ER.PG_SexID
+			AND NR_GENAGE.PG_DifficultyorDisabilityID IS NULL
+			AND NR_GENAGE.PG_LearningDifficultyID IS NULL
 	'
 
     SET @SQLString += 
@@ -691,6 +730,34 @@ BEGIN
 			AND NR_SSA1.PG_SexID IS NULL
 			AND NR_SSA1.PG_DifficultyorDisabilityID IS NULL
 			AND NR_SSA1.PG_LearningDifficultyID IS NULL
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_SSA1AGE
+			ON 
+				CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_SSA1AGE.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_SSA1AGE.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_SSA1AGE.PG_CollegeTypeID = @CollegeType
+			AND NR_SSA1AGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
+			AND NR_SSA1AGE.PG_SSA1ID = ER.PG_SSA1ID
+			AND NR_SSA1AGE.PG_SSA2ID IS NULL
+			AND NR_SSA1AGE.PG_ProgTypeID IS NULL
+			AND NR_SSA1AGE.PG_EthnicityID IS NULL
+			AND NR_SSA1AGE.PG_EthnicityGroupQARID IS NULL
+			AND NR_SSA1AGE.PG_SexID IS NULL
+			AND NR_SSA1AGE.PG_DifficultyorDisabilityID IS NULL
+			AND NR_SSA1AGE.PG_LearningDifficultyID IS NULL
+	'
+
+    SET @SQLString += 
+        N'
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_SSA2
 			ON 
 				CASE
@@ -715,6 +782,30 @@ BEGIN
 			AND NR_SSA2.PG_SexID IS NULL
 			AND NR_SSA2.PG_DifficultyorDisabilityID IS NULL
 			AND NR_SSA2.PG_LearningDifficultyID IS NULL
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_SSA2AGE
+			ON 
+				CASE
+					WHEN ER.WB_HybridEndYearID >= NR_L.WB_HybridEndYearID THEN
+						CASE
+							WHEN NR_SSA2AGE.WB_HybridEndYearID = NR_L.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN ER.WB_HybridEndYearID = NR_SSA2AGE.WB_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_SSA2AGE.PG_CollegeTypeID = @CollegeType
+			AND NR_SSA2AGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
+			AND NR_SSA2AGE.PG_SSA1ID IS NULL
+			AND NR_SSA2AGE.PG_SSA2ID = ER.PG_SSA2ID
+			AND NR_SSA2AGE.PG_ProgTypeID IS NULL
+			AND NR_SSA2AGE.PG_EthnicityID IS NULL
+			AND NR_SSA2AGE.PG_EthnicityGroupQARID IS NULL
+			AND NR_SSA2AGE.PG_SexID IS NULL
+			AND NR_SSA2AGE.PG_DifficultyorDisabilityID IS NULL
+			AND NR_SSA2AGE.PG_LearningDifficultyID IS NULL
     '
 
     SET @SQLString += 
@@ -743,10 +834,6 @@ BEGIN
 			AND NR_LEV.PG_SexID IS NULL
 			AND NR_LEV.PG_DifficultyorDisabilityID IS NULL
 			AND NR_LEV.PG_LearningDifficultyID IS NULL
-    '
-
-    SET @SQLString += 
-        N'
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_LEVAGE
 			ON 
 				CASE
@@ -771,6 +858,10 @@ BEGIN
 			AND NR_LEVAGE.PG_SexID IS NULL
 			AND NR_LEVAGE.PG_DifficultyorDisabilityID IS NULL
 			AND NR_LEVAGE.PG_LearningDifficultyID IS NULL
+	'
+
+    SET @SQLString += 
+        N'
         LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_ETH
 			ON 
 				CASE
@@ -819,6 +910,10 @@ BEGIN
 			AND NR_ETHAGE.PG_LearningDifficultyID IS NULL
 			AND NR_ETHAGE.PG_EthnicityID = ER.PG_EthnicityID
 			AND NR_ETHAGE.PG_EthnicityGroupQARID IS NULL
+    '
+
+    SET @SQLString += 
+        N'
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_DIF
 			ON 
 				CASE
@@ -843,10 +938,6 @@ BEGIN
 			AND NR_DIF.PG_SexID IS NULL
 			AND NR_DIF.PG_DifficultyorDisabilityID = ER.PG_DifficultyorDisabilityID
 			AND NR_DIF.PG_LearningDifficultyID IS NULL
-    '
-
-    SET @SQLString += 
-        N'
         LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Overall NR_DIFAGE
 			ON 
 				CASE

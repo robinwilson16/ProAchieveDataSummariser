@@ -78,7 +78,11 @@ BEGIN
 			LearnerRef = CL.PG_StudentID,
 			LearnerName = CL.StudentName,
 			Gender = CL.PG_SexID,
-			AgeGroup = REPLACE ( AGE.PG_AgeLSCName, '' '', '''' ),
+			AgeGroup = 
+				CASE
+					WHEN AGE.PG_AgeLSCName = ''16-18'' THEN ''16 - 18''
+					ELSE AGE.PG_AgeLSCName
+				END,
 			EthnicityCode = ETH.PG_EthnicityID,
 			EthnicityName = ETH.PG_EthnicityName,
 			EthnicityOrder = ETH.PG_EthnicityOrder,
@@ -420,9 +424,12 @@ BEGIN
 			NatRate_Age_Leave = NR_AGE.Leave,
 			NatRate_Age_Ach = NR_AGE.Ach,
 			NatRate_Age_AchPer = NR_AGE.AchPer,
-			NatRate_AgeGender_Leave = NR_AGEGEN.Leave,
-			NatRate_AgeGender_Ach = NR_AGEGEN.Ach,
-			NatRate_AgeGender_AchPer = NR_AGEGEN.AchPer,
+			NatRate_Gender_Leave = NR_GEN.Leave,
+			NatRate_Gender_Ach = NR_GEN.Ach,
+			NatRate_Gender_AchPer = NR_GEN.AchPer,
+			NatRate_GenderAge_Leave = NR_GENAGE.Leave,
+			NatRate_GenderAge_Ach = NR_GENAGE.Ach,
+			NatRate_GenderAge_AchPer = NR_GENAGE.AchPer,
 			NatRate_Level_Leave = NR_LEV.Leave,
 			NatRate_Level_Ach = NR_LEV.Ach,
 			NatRate_Level_AchPer = NR_LEV.AchPer,
@@ -447,12 +454,24 @@ BEGIN
             NatRate_EthnicityAge_Leave = NR_ETHAGE.Leave,
 			NatRate_EthnicityAge_Ach = NR_ETHAGE.Ach,
 			NatRate_EthnicityAge_AchPer = NR_ETHAGE.AchPer,
+			NatRate_EthnicGroup_Leave = NR_ETHG.Leave,
+			NatRate_EthnicGroup_Ach = NR_ETHG.Ach,
+			NatRate_EthnicGroup_AchPer = NR_ETHG.AchPer,
+            NatRate_EthnicGroupAge_Leave = NR_ETHGAGE.Leave,
+			NatRate_EthnicGroupAge_Ach = NR_ETHGAGE.Ach,
+			NatRate_EthnicGroupAge_AchPer = NR_ETHGAGE.AchPer,
 			NatRate_SSA1_Leave = NR_SSA1.Leave,
 			NatRate_SSA1_Ach = NR_SSA1.Ach,
 			NatRate_SSA1_AchPer = NR_SSA1.AchPer,
+			NatRate_SSA1Age_Leave = NR_SSA1AGE.Leave,
+			NatRate_SSA1Age_Ach = NR_SSA1AGE.Ach,
+			NatRate_SSA1Age_AchPer = NR_SSA1AGE.AchPer,
 			NatRate_SSA2_Leave = NR_SSA2.Leave,
 			NatRate_SSA2_Ach = NR_SSA2.Ach,
 			NatRate_SSA2_AchPer = NR_SSA2.AchPer,
+			NatRate_SSA2Age_Leave = NR_SSA2AGE.Leave,
+			NatRate_SSA2Age_Ach = NR_SSA2AGE.Ach,
+			NatRate_SSA2Age_AchPer = NR_SSA2AGE.AchPer,
 			NatRate_DifDis_Leave = NR_DIF.Leave,
 			NatRate_DifDis_Ach = NR_DIF.Ach,
 			NatRate_DifDis_AchPer = NR_DIF.AchPer,
@@ -813,6 +832,43 @@ BEGIN
 		LEFT JOIN (
 			SELECT
 				NR.PG_HybridEndYearID,
+				NR.PG_SexID,
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
+				AchPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END
+			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
+			WHERE
+				NR.PG_CollegeTypeID = 
+					CASE
+						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
+						ELSE @CollegeType
+					END
+			GROUP BY
+				NR.PG_HybridEndYearID,
+				NR.PG_SexID
+		) NR_GEN
+			ON
+				CASE
+					WHEN CL.PG_HybridEndYearID >= NR_L.PG_HybridEndYearID THEN
+						CASE
+							WHEN NR_GEN.PG_HybridEndYearID = NR_L.PG_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN CL.PG_HybridEndYearID = NR_GEN.PG_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_GEN.PG_SexID = CL.PG_SexID
+		LEFT JOIN (
+			SELECT
+				NR.PG_HybridEndYearID,
 				NR.PG_AgeLSCID,
 				NR.PG_SexID,
 				Leave = SUM ( NR.BM_Count_Overall ),
@@ -834,22 +890,26 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_AgeLSCID,
 				NR.PG_SexID
-		) NR_AGEGEN
+		) NR_GENAGE
 			ON
 				CASE
 					WHEN CL.PG_HybridEndYearID >= NR_L.PG_HybridEndYearID THEN
 						CASE
-							WHEN NR_AGEGEN.PG_HybridEndYearID = NR_L.PG_HybridEndYearID THEN 1
+							WHEN NR_GENAGE.PG_HybridEndYearID = NR_L.PG_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 					ELSE 
 						CASE
-							WHEN CL.PG_HybridEndYearID = NR_AGEGEN.PG_HybridEndYearID THEN 1
+							WHEN CL.PG_HybridEndYearID = NR_GENAGE.PG_HybridEndYearID THEN 1
 							ELSE 0 
 						END
 				END = 1
-			AND NR_AGEGEN.PG_AgeLSCID = CL.PG_AgeLSCID
-			AND NR_AGEGEN.PG_SexID = CL.PG_SexID
+			AND NR_GENAGE.PG_AgeLSCID = CL.PG_AgeLSCID
+			AND NR_GENAGE.PG_SexID = CL.PG_SexID
+    '
+    
+    SET @SQLString += 
+        N'
 		LEFT JOIN (
 			SELECT
 				NR.PG_HybridEndYearID,
@@ -887,10 +947,6 @@ BEGIN
 						END
 				END = 1
 			AND NR_LEV.PG_NVQLevelCPRID = CL.PG_NVQLevelCPRID
-    '
-    
-    SET @SQLString += 
-        N'
         LEFT JOIN (
 			SELECT
 				NR.PG_HybridEndYearID,
@@ -931,6 +987,10 @@ BEGIN
 				END = 1
 			AND NR_LEVAGE.PG_NVQLevelCPRID = CL.PG_NVQLevelCPRID
             AND NR_LEVAGE.PG_AgeLSCID = CL.PG_AgeLSCID
+	'
+    
+    SET @SQLString += 
+        N'
         LEFT JOIN (
 			SELECT
 				NR.PG_HybridEndYearID,
@@ -1091,6 +1151,87 @@ BEGIN
             AND NR_ETHAGE.PG_AgeLSCID = CL.PG_AgeLSCID
 	'
 
+	SET @SQLString += 
+        N'
+		LEFT JOIN (
+			SELECT
+				NR.PG_HybridEndYearID,
+				NR.PG_EthnicGroupID,
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
+				AchPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END
+			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
+			WHERE
+				NR.PG_CollegeTypeID = 
+					CASE
+						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
+						ELSE @CollegeType
+					END
+			GROUP BY
+				NR.PG_HybridEndYearID,
+				NR.PG_EthnicGroupID
+		) NR_ETHG
+			ON
+				CASE
+					WHEN CL.PG_HybridEndYearID >= NR_L.PG_HybridEndYearID THEN
+						CASE
+							WHEN NR_ETHG.PG_HybridEndYearID = NR_L.PG_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN CL.PG_HybridEndYearID = NR_ETHG.PG_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_ETHG.PG_EthnicGroupID = CL.PG_EthnicGroupID
+        LEFT JOIN (
+			SELECT
+				NR.PG_HybridEndYearID,
+				NR.PG_EthnicGroupID,
+                NR.PG_AgeLSCID,
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
+				AchPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END
+			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
+			WHERE
+				NR.PG_CollegeTypeID = 
+					CASE
+						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
+						ELSE @CollegeType
+					END
+			GROUP BY
+				NR.PG_HybridEndYearID,
+				NR.PG_EthnicGroupID,
+                NR.PG_AgeLSCID
+		) NR_ETHGAGE
+			ON
+				CASE
+					WHEN CL.PG_HybridEndYearID >= NR_L.PG_HybridEndYearID THEN
+						CASE
+							WHEN NR_ETHGAGE.PG_HybridEndYearID = NR_L.PG_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN CL.PG_HybridEndYearID = NR_ETHGAGE.PG_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_ETHGAGE.PG_EthnicGroupID = CL.PG_EthnicGroupID
+            AND NR_ETHGAGE.PG_AgeLSCID = CL.PG_AgeLSCID
+	'
+
     SET @SQLString += 
         N'
 		LEFT JOIN (
@@ -1133,6 +1274,50 @@ BEGIN
 		LEFT JOIN (
 			SELECT
 				NR.PG_HybridEndYearID,
+				NR.PG_SSA1ID,
+				NR.PG_AgeLSCID,
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
+				AchPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END
+			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
+			WHERE
+				NR.PG_CollegeTypeID = 
+					CASE
+						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
+						ELSE @CollegeType
+					END
+			GROUP BY
+				NR.PG_HybridEndYearID,
+				NR.PG_SSA1ID,
+				NR.PG_AgeLSCID
+		) NR_SSA1AGE
+			ON
+				CASE
+					WHEN CL.PG_HybridEndYearID >= NR_L.PG_HybridEndYearID THEN
+						CASE
+							WHEN NR_SSA1AGE.PG_HybridEndYearID = NR_L.PG_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN CL.PG_HybridEndYearID = NR_SSA1AGE.PG_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_SSA1AGE.PG_SSA1ID = CL.PG_SSA1ID
+			AND NR_SSA1AGE.PG_AgeLSCID = CL.PG_AgeLSCID
+	'
+
+    SET @SQLString += 
+		N'
+		LEFT JOIN (
+			SELECT
+				NR.PG_HybridEndYearID,
 				NR.PG_SSA2ID,
 				Leave = SUM ( NR.BM_Count_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
@@ -1167,6 +1352,46 @@ BEGIN
 						END
 				END = 1
 			AND NR_SSA2.PG_SSA2ID = CL.PG_SSA2ID
+		LEFT JOIN (
+			SELECT
+				NR.PG_HybridEndYearID,
+				NR.PG_SSA2ID,
+				NR.PG_AgeLSCID,
+				Leave = SUM ( NR.BM_Count_Overall ),
+				Ach = SUM ( NR.BM_Ach_Overall ),
+				AchPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Ach_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END
+			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Overall NR
+			WHERE
+				NR.PG_CollegeTypeID = 
+					CASE
+						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
+						ELSE @CollegeType
+					END
+			GROUP BY
+				NR.PG_HybridEndYearID,
+				NR.PG_SSA2ID,
+				NR.PG_AgeLSCID
+		) NR_SSA2AGE
+			ON
+				CASE
+					WHEN CL.PG_HybridEndYearID >= NR_L.PG_HybridEndYearID THEN
+						CASE
+							WHEN NR_SSA2AGE.PG_HybridEndYearID = NR_L.PG_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+					ELSE 
+						CASE
+							WHEN CL.PG_HybridEndYearID = NR_SSA2AGE.PG_HybridEndYearID THEN 1
+							ELSE 0 
+						END
+				END = 1
+			AND NR_SSA2AGE.PG_SSA2ID = CL.PG_SSA2ID
+			AND NR_SSA2AGE.PG_AgeLSCID = CL.PG_AgeLSCID
     '
 
     SET @SQLString += 
