@@ -81,6 +81,7 @@ BEGIN
 			AgeGroup = 
 				CASE
 					WHEN AGE.PG_AgeLSCName = ''16-18'' THEN ''16 - 18''
+					WHEN AGE.PG_AgeLSCName = ''19+'' THEN ''19 +''
 					ELSE AGE.PG_AgeLSCName
 				END,
 			EthnicityCode = ETH.PG_EthnicityID,
