@@ -123,7 +123,10 @@ BEGIN
 					CourseCode NVARCHAR(40) NULL,
 					CourseName NVARCHAR(255) NULL,
 					GroupCode NVARCHAR(255) NULL,
+					SubcontractorCode NVARCHAR(8) NULL,
+					SubcontractorName NVARCHAR(255) NULL,
 					SequenceNo INT NOT NULL,
+
 					AimRef NVARCHAR(8) NULL,
 					AimName NVARCHAR(254) NULL,
 					QualTypeCode NVARCHAR(4) NULL,
