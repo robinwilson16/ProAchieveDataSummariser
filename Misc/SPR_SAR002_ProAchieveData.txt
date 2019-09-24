@@ -59,14 +59,65 @@ BEGIN
 			Team = PRA.Team,
 			AgeGroup = PRA.AgeGroup,
 			Leavers2YearsAgo = MIN ( CASE WHEN PRA.EndYear = CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) THEN PRA.Leavers ELSE NULL END ),
+			Ret2YearsAgo = MIN ( CASE WHEN PRA.EndYear = CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) THEN PRA.RetainedPer ELSE NULL END ),
 			Ach2YearsAgo = MIN ( CASE WHEN PRA.EndYear = CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) THEN PRA.AchievedPer ELSE NULL END ),
+			Pass2YearsAgo = MIN ( CASE WHEN PRA.EndYear = CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) THEN PRA.PassedPer ELSE NULL END ),
 			LeaversLastYear = MIN ( CASE WHEN PRA.EndYear = CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) THEN PRA.Leavers ELSE NULL END ),
+			RetLastYear = MIN ( CASE WHEN PRA.EndYear = CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) THEN PRA.RetainedPer ELSE NULL END ),
 			AchLastYear = MIN ( CASE WHEN PRA.EndYear = CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) THEN PRA.AchievedPer ELSE NULL END ),
+			PassLastYear = MIN ( CASE WHEN PRA.EndYear = CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) THEN PRA.PassedPer ELSE NULL END ),
 			LeaversThisYear = MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.Leavers ELSE NULL END ),
 			RetThisYear = MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.RetainedPer ELSE NULL END ),
-			PassThisYear = MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.PassedPer ELSE NULL END ),
 			AchThisYear = MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.AchievedPer ELSE NULL END ),
-			NatRateThisYear = MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.NatRate ELSE NULL END ),
+			PassThisYear = MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.PassedPer ELSE NULL END ),
+			AchNatRateThisYear = MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.NatRate ELSE NULL END ),
+			PassNatRateThisYear = MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.NatRate ELSE NULL END ),
+
+			PassVarianceLastYear = 
+				ROUND ( 
+					MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.RetainedPer ELSE NULL END ) 
+					- MIN ( CASE WHEN PRA.EndYear = CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) THEN PRA.RetainedPer ELSE NULL END )
+				, 3 ),
+			PassVarianceNR = 
+				ROUND ( 
+					MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.RetainedPer ELSE NULL END ) 
+					- MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.NatRate ELSE NULL END )
+				, 3 ),
+			PassRAGRating = 
+				CASE
+					WHEN 
+						ROUND ( 
+							MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.RetainedPer ELSE NULL END ) 
+							- MIN ( CASE WHEN PRA.EndYear = CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) THEN PRA.RetainedPer ELSE NULL END )
+						, 3 ) < 0
+						AND
+						ROUND ( 
+							MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.RetainedPer ELSE NULL END ) 
+							- MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.NatRate ELSE NULL END )
+						, 3 ) < 0 THEN ''R''
+					WHEN 
+						ROUND ( 
+							MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.RetainedPer ELSE NULL END ) 
+							- MIN ( CASE WHEN PRA.EndYear = CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) THEN PRA.RetainedPer ELSE NULL END )
+						, 3 ) < 0
+						OR
+						ROUND ( 
+							MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.RetainedPer ELSE NULL END ) 
+							- MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.NatRate ELSE NULL END )
+						, 3 ) < 0 THEN ''A''
+					WHEN 
+						ROUND ( 
+							MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.RetainedPer ELSE NULL END ) 
+							- MIN ( CASE WHEN PRA.EndYear = CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) THEN PRA.RetainedPer ELSE NULL END )
+						, 3 ) IS NULL
+						AND
+						ROUND ( 
+							MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.RetainedPer ELSE NULL END ) 
+							- MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.NatRate ELSE NULL END )
+						, 3 ) IS NULL THEN ''-''
+					ELSE ''G''
+				END,
+
 			AchVarianceLastYear = 
 				ROUND ( 
 					MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.AchievedPer ELSE NULL END ) 
@@ -77,7 +128,7 @@ BEGIN
 					MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.AchievedPer ELSE NULL END ) 
 					- MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.NatRate ELSE NULL END )
 				, 3 ),
-			RAGRating = 
+			AchRAGRating = 
 				CASE
 					WHEN 
 						ROUND ( 

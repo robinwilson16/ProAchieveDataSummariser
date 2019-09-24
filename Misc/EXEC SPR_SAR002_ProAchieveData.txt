@@ -40,17 +40,25 @@ CREATE TABLE #SarData (
 	Team NVARCHAR(255) NULL,
 	AgeGroup NVARCHAR(32) NULL,
 	Leavers2YearsAgo INT NULL,
+	Ret2YearsAgo FLOAT NULL,
 	Ach2YearsAgo FLOAT NULL,
+	Pass2YearsAgo FLOAT NULL,
 	LeaversLastYear INT NULL,
+	RetLastYear FLOAT NULL,
 	AchLastYear FLOAT NULL,
+	PassLastYear FLOAT NULL,
 	LeaversThisYear INT NULL,
 	RetThisYear FLOAT NULL,
-	PassThisYear FLOAT NULL,
 	AchThisYear FLOAT NULL,
-	NatRateThisYear FLOAT NULL,
+	PassThisYear FLOAT NULL,
+	AchNatRateThisYear FLOAT NULL,
+	PassNatRateThisYear FLOAT NULL,
+	PassVarianceLastYear FLOAT NULL,
+	PassVarianceNR FLOAT NULL,
+	PassRAGRating CHAR(1) NULL,
 	AchVarianceLastYear FLOAT NULL,
 	AchVarianceNR FLOAT NULL,
-	RAGRating CHAR(1) NULL
+	AchRAGRating CHAR(1) NULL
 )
 
 SET @CriteriaTitle = 'Headline'

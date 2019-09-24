@@ -207,10 +207,10 @@ BEGIN
 			TeamName = 
 				COALESCE ( 
 					CASE 
-						WHEN @FacStructureLevel = 1 THEN L1.GN_Structure1IYName
-						WHEN @FacStructureLevel = 2 THEN L2.GN_Structure2IYName
-						WHEN @FacStructureLevel = 3 THEN L3.GN_Structure3IYName
-						WHEN @FacStructureLevel = 4 THEN L4.GN_Structure4IYName
+						WHEN @TeamStructureLevel = 1 THEN L1.GN_Structure1IYName
+						WHEN @TeamStructureLevel = 2 THEN L2.GN_Structure2IYName
+						WHEN @TeamStructureLevel = 3 THEN L3.GN_Structure3IYName
+						WHEN @TeamStructureLevel = 4 THEN L4.GN_Structure4IYName
 					END,
 					''-- Unknown --''
 				),
@@ -410,75 +410,123 @@ BEGIN
     SET @SQLString += 
         N'
 			NatRate_Yr_Leave = NR_YR.Leave,
+			NatRate_Yr_Comp = NR_YR.Comp,
+			NatRate_Yr_RetPer = NR_YR.RetPer,
 			NatRate_Yr_Ach = NR_YR.Ach,
 			NatRate_Yr_AchPer = NR_YR.AchPer,
 			NatRate_YrALL_Leave = NR_YRA.Leave,
+			NatRate_YrALL_Comp = NR_YRA.Comp,
+			NatRate_YrALL_RetPer = NR_YRA.RetPer,
 			NatRate_YrALL_Ach = NR_YRA.Ach,
 			NatRate_YrALL_AchPer = NR_YRA.AchPer,
 			NatRate_YrGFE_Leave = NR_YRG.Leave,
+			NatRate_YrGFE_Comp = NR_YRG.Comp,
+			NatRate_YrGFE_RetPer = NR_YRG.RetPer,
 			NatRate_YrGFE_Ach = NR_YRG.Ach,
 			NatRate_YrGFE_AchPer = NR_YRG.AchPer,
 			NatRate_Aim_Leave = NR_AIM.BM_Count_Overall,
+			NatRate_Aim_Comp = ROUND ( ( CAST ( NR_AIM.BM_Count_Overall AS FLOAT ) / 100 ) * NR_AIM.BM_RetCount_Overall, 0 ),
+			NatRate_Aim_RetPer = NR_AIM.BM_RetCount_Overall,
 			NatRate_Aim_Ach = ROUND ( ( CAST ( NR_AIM.BM_Count_Overall AS FLOAT ) / 100 ) * NR_AIM.BM_AchCount_Overall, 0 ),
 			NatRate_Aim_AchPer = NR_AIM.BM_AchCount_Overall,
 			NatRate_FworkPTSSA_Leave = NULL,
+			NatRate_FworkPTSSA_Comp = NULL,
+			NatRate_FworkPTSSA_RetPer = NULL,
 			NatRate_FworkPTSSA_Ach = NULL,
 			NatRate_FworkPTSSA_AchPer = NULL,
 			NatRate_Age_Leave = NR_AGE.Leave,
+			NatRate_Age_Comp = NR_AGE.Comp,
+			NatRate_Age_RetPer = NR_AGE.RetPer,
 			NatRate_Age_Ach = NR_AGE.Ach,
 			NatRate_Age_AchPer = NR_AGE.AchPer,
 			NatRate_Gender_Leave = NR_GEN.Leave,
+			NatRate_Gender_Comp = NR_GEN.Comp,
+			NatRate_Gender_RetPer = NR_GEN.RetPer,
 			NatRate_Gender_Ach = NR_GEN.Ach,
 			NatRate_Gender_AchPer = NR_GEN.AchPer,
 			NatRate_GenderAge_Leave = NR_GENAGE.Leave,
+			NatRate_GenderAge_Comp = NR_GENAGE.Comp,
+			NatRate_GenderAge_RetPer = NR_GENAGE.RetPer,
 			NatRate_GenderAge_Ach = NR_GENAGE.Ach,
 			NatRate_GenderAge_AchPer = NR_GENAGE.AchPer,
 			NatRate_Level_Leave = NR_LEV.Leave,
+			NatRate_Level_Comp = NR_LEV.Comp,
+			NatRate_Level_RetPer = NR_LEV.RetPer,
 			NatRate_Level_Ach = NR_LEV.Ach,
 			NatRate_Level_AchPer = NR_LEV.AchPer,
             NatRate_LevelAge_Leave = NR_LEVAGE.Leave,
+			NatRate_LevelAge_Comp = NR_LEVAGE.Comp,
+			NatRate_LevelAge_RetPer = NR_LEVAGE.RetPer,
 			NatRate_LevelAge_Ach = NR_LEVAGE.Ach,
 			NatRate_LevelAge_AchPer = NR_LEVAGE.AchPer,
             NatRate_LevelGrp_Leave = NR_LEVG.Leave,
+			NatRate_LevelGrp_Comp = NR_LEVG.Comp,
+			NatRate_LevelGrp_RetPer = NR_LEVG.RetPer,
 			NatRate_LevelGrp_Ach = NR_LEVG.Ach,
 			NatRate_LevelGrp_AchPer = NR_LEVG.AchPer,
             NatRate_LevelGrpAge_Leave = NR_LEVGAGE.Leave,
+			NatRate_LevelGrpAge_Comp = NR_LEVGAGE.Comp,
+			NatRate_LevelGrpAge_RetPer = NR_LEVGAGE.RetPer,
 			NatRate_LevelGrpAge_Ach = NR_LEVGAGE.Ach,
 			NatRate_LevelGrpAge_AchPer = NR_LEVGAGE.AchPer,
 			NatRate_QualType_Leave = NR_QS.Leave,
+			NatRate_QualType_Comp = NR_QS.Comp,
+			NatRate_QualType_RetPer = NR_QS.RetPer,
 			NatRate_QualType_Ach = NR_QS.Ach,
 			NatRate_QualType_AchPer = NR_QS.AchPer,
 			NatRate_QualTypeAge_Leave = NR_QSAGE.Leave,
+			NatRate_QualTypeAge_Comp = NR_QSAGE.Comp,
+			NatRate_QualTypeAge_RetPer = NR_QSAGE.RetPer,
 			NatRate_QualTypeAge_Ach = NR_QSAGE.Ach,
 			NatRate_QualTypeAge_AchPer = NR_QSAGE.AchPer,
 			NatRate_Ethnicity_Leave = NR_ETH.Leave,
+			NatRate_Ethnicity_Comp = NR_ETH.Comp,
+			NatRate_Ethnicity_RetPer = NR_ETH.RetPer,
 			NatRate_Ethnicity_Ach = NR_ETH.Ach,
 			NatRate_Ethnicity_AchPer = NR_ETH.AchPer,
             NatRate_EthnicityAge_Leave = NR_ETHAGE.Leave,
+			NatRate_EthnicityAge_Comp = NR_ETHAGE.Comp,
+			NatRate_EthnicityAge_RetPer = NR_ETHAGE.RetPer,
 			NatRate_EthnicityAge_Ach = NR_ETHAGE.Ach,
 			NatRate_EthnicityAge_AchPer = NR_ETHAGE.AchPer,
 			NatRate_EthnicGroup_Leave = NR_ETHG.Leave,
+			NatRate_EthnicGroup_Comp = NR_ETHG.Comp,
+			NatRate_EthnicGroup_RetPer = NR_ETHG.RetPer,
 			NatRate_EthnicGroup_Ach = NR_ETHG.Ach,
 			NatRate_EthnicGroup_AchPer = NR_ETHG.AchPer,
             NatRate_EthnicGroupAge_Leave = NR_ETHGAGE.Leave,
+			NatRate_EthnicGroupAge_Comp = NR_ETHGAGE.Comp,
+			NatRate_EthnicGroupAge_RetPer = NR_ETHGAGE.RetPer,
 			NatRate_EthnicGroupAge_Ach = NR_ETHGAGE.Ach,
 			NatRate_EthnicGroupAge_AchPer = NR_ETHGAGE.AchPer,
 			NatRate_SSA1_Leave = NR_SSA1.Leave,
+			NatRate_SSA1_Comp = NR_SSA1.Comp,
+			NatRate_SSA1_RetPer = NR_SSA1.RetPer,
 			NatRate_SSA1_Ach = NR_SSA1.Ach,
 			NatRate_SSA1_AchPer = NR_SSA1.AchPer,
 			NatRate_SSA1Age_Leave = NR_SSA1AGE.Leave,
+			NatRate_SSA1Age_Comp = NR_SSA1AGE.Comp,
+			NatRate_SSA1Age_RetPer = NR_SSA1AGE.RetPer,
 			NatRate_SSA1Age_Ach = NR_SSA1AGE.Ach,
 			NatRate_SSA1Age_AchPer = NR_SSA1AGE.AchPer,
 			NatRate_SSA2_Leave = NR_SSA2.Leave,
+			NatRate_SSA2_Comp = NR_SSA2.Comp,
+			NatRate_SSA2_RetPer = NR_SSA2.RetPer,
 			NatRate_SSA2_Ach = NR_SSA2.Ach,
 			NatRate_SSA2_AchPer = NR_SSA2.AchPer,
 			NatRate_SSA2Age_Leave = NR_SSA2AGE.Leave,
+			NatRate_SSA2Age_Comp = NR_SSA2AGE.Comp,
+			NatRate_SSA2Age_RetPer = NR_SSA2AGE.RetPer,
 			NatRate_SSA2Age_Ach = NR_SSA2AGE.Ach,
 			NatRate_SSA2Age_AchPer = NR_SSA2AGE.AchPer,
 			NatRate_DifDis_Leave = NR_DIF.Leave,
+			NatRate_DifDis_Comp = NR_DIF.Comp,
+			NatRate_DifDis_RetPer = NR_DIF.RetPer,
 			NatRate_DifDis_Ach = NR_DIF.Ach,
 			NatRate_DifDis_AchPer = NR_DIF.AchPer,
             NatRate_DifDisAge_Leave = NR_DIFAGE.Leave,
+			NatRate_DifDisAge_Comp = NR_DIFAGE.Comp,
+			NatRate_DifDisAge_RetPer = NR_DIFAGE.RetPer,
 			NatRate_DifDisAge_Ach = NR_DIFAGE.Ach,
 			NatRate_DifDisAge_AchPer = NR_DIFAGE.AchPer
 	'
@@ -604,7 +652,14 @@ BEGIN
 			SELECT
 				NR.PG_HybridEndYearID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -638,7 +693,14 @@ BEGIN
 			SELECT
 				NR.PG_HybridEndYearID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -666,7 +728,14 @@ BEGIN
 			SELECT
 				NR.PG_HybridEndYearID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -719,7 +788,14 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_QualSizeID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -757,7 +833,14 @@ BEGIN
 				NR.PG_QualSizeID,
 				NR.PG_AgeLSCID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -800,7 +883,14 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_AgeLSCID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -837,7 +927,14 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_SexID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -875,7 +972,14 @@ BEGIN
 				NR.PG_AgeLSCID,
 				NR.PG_SexID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -918,7 +1022,14 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_NVQLevelCPRID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -956,7 +1067,14 @@ BEGIN
 				NR.PG_NVQLevelCPRID,
                 NR.PG_AgeLSCID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -999,7 +1117,14 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_NVQLevelGroupID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -1037,7 +1162,14 @@ BEGIN
 				NR.PG_NVQLevelGroupID,
                 NR.PG_AgeLSCID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -1080,7 +1212,14 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_EthnicityID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -1118,7 +1257,14 @@ BEGIN
 				NR.PG_EthnicityID,
                 NR.PG_AgeLSCID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -1161,7 +1307,14 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_EthnicGroupID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -1199,7 +1352,14 @@ BEGIN
 				NR.PG_EthnicGroupID,
                 NR.PG_AgeLSCID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -1242,7 +1402,14 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_SSA1ID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -1280,7 +1447,14 @@ BEGIN
 				NR.PG_SSA1ID,
 				NR.PG_AgeLSCID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -1323,7 +1497,14 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_SSA2ID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -1361,7 +1542,14 @@ BEGIN
 				NR.PG_SSA2ID,
 				NR.PG_AgeLSCID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -1404,7 +1592,14 @@ BEGIN
 				NR.PG_HybridEndYearID,
 				NR.PG_DifficultyOrDisabilityID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
@@ -1442,7 +1637,14 @@ BEGIN
 				NR.PG_DifficultyOrDisabilityID,
                 NR.PG_AgeLSCID,
 				Leave = SUM ( NR.BM_Count_Overall ),
+				Comp = SUM ( NR.BM_Complete_Overall ),
 				Ach = SUM ( NR.BM_Ach_Overall ),
+				RetPer = 
+					CASE
+						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
+						ELSE 
+							ROUND ( CAST ( SUM ( NR.BM_Complete_Overall ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Overall ) AS FLOAT ), 3 )
+					END,
 				AchPer = 
 					CASE
 						WHEN SUM ( NR.BM_Count_Overall ) = 0 THEN 0
