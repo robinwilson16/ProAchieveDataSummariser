@@ -724,6 +724,10 @@ BEGIN
 							ELSE 0 
 						END
 				END = 1
+	'
+    
+    SET @SQLString += 
+        N'
 		LEFT JOIN (
 			SELECT
 				NR.PG_HybridEndYearID,

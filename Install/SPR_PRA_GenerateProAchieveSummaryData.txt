@@ -175,7 +175,10 @@ BEGIN
 					IsRet INT NULL,
 					IsAch INT NULL,
 					IsPassAToC INT NULL,
+				'
 
+			SET @SQLString += 
+				N'
 					NatRate_Yr_Leave INT NULL,
 					NatRate_Yr_Comp INT NULL,
 					NatRate_Yr_RetPer FLOAT NULL,
