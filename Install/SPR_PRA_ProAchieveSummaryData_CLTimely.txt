@@ -247,7 +247,7 @@ BEGIN
 			CourseName = CRS.PG_AggCourseName,
 			GroupCode = CL.EnrolmentUserDefined1,
 			SubcontractorCode = CL.PG_SubContractorID,
-			SubcontractorName = PAR.PG_SubContractorName,
+			SubcontractorName = NULL,
 			SequenceNo = CL.SequenceNo,
     '
 
@@ -459,8 +459,6 @@ BEGIN
 			AND ENR.PG_AcademicYearID = CL.PG_AcademicYearID
 			AND ENR.PG_StudentID = CL.PG_StudentID
 			AND ENR.SequenceNo = CL.SequenceNo
-		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_SubContractor PAR
-			ON PAR.PG_SubContractorID = CL.PG_SubContractorID
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'GN_Aim AIM 
 			ON AIM.GN_AimID = CL.PG_AimID
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_Ethnicity ETH

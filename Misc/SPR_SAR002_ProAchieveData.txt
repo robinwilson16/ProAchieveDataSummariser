@@ -7,6 +7,7 @@ CREATE PROCEDURE [dbo].[SPR_SAR002_ProAchieveData]
 	@Campus NVARCHAR(8),
 	@Faculty NVARCHAR(50),
 	@Team NVARCHAR(50),
+	@SubcontractedProvision BIT,
 	@DisplayHeadline BIT,
 	@DisplayFaculty BIT,
 	@DisplayTeam BIT,
@@ -167,6 +168,21 @@ BEGIN
 					END = 1
 				AND COALESCE ( PA.FacCode, ''-'' ) = COALESCE ( @Faculty, PA.FacCode, ''-'' )
 				AND COALESCE ( PA.TeamCode, ''-'' ) = COALESCE ( @Team, PA.TeamCode, ''-'' )
+				AND
+					CASE
+						WHEN @SubcontractedProvision IS NULL THEN 1
+						WHEN @SubcontractedProvision = ''1'' THEN
+							CASE
+								WHEN PA.SubcontractorCode = ''00000000'' THEN 0
+								ELSE 1
+							END
+						WHEN @SubcontractedProvision = ''0'' THEN
+							CASE
+								WHEN PA.SubcontractorCode = ''00000000'' THEN 1
+								ELSE 0
+							END
+						ELSE 0
+					END = 1
 				AND @DisplayHeadline = 1
 			GROUP BY
 				PA.EndYear,
@@ -231,6 +247,21 @@ BEGIN
 					END = 1
 				AND COALESCE ( PA.FacCode, ''-'' ) = COALESCE ( @Faculty, PA.FacCode, ''-'' )
 				AND COALESCE ( PA.TeamCode, ''-'' ) = COALESCE ( @Team, PA.TeamCode, ''-'' )
+				AND
+					CASE
+						WHEN @SubcontractedProvision IS NULL THEN 1
+						WHEN @SubcontractedProvision = ''1'' THEN
+							CASE
+								WHEN PA.SubcontractorCode = ''00000000'' THEN 0
+								ELSE 1
+							END
+						WHEN @SubcontractedProvision = ''0'' THEN
+							CASE
+								WHEN PA.SubcontractorCode = ''00000000'' THEN 1
+								ELSE 0
+							END
+						ELSE 0
+					END = 1
 				AND @DisplayHeadline = 1
 			GROUP BY
 				PA.EndYear,
@@ -297,6 +328,21 @@ BEGIN
 					END = 1
 				AND COALESCE ( PA.FacCode, ''-'' ) = COALESCE ( @Faculty, PA.FacCode, ''-'' )
 				AND COALESCE ( PA.TeamCode, ''-'' ) = COALESCE ( @Team, PA.TeamCode, ''-'' )
+				AND
+					CASE
+						WHEN @SubcontractedProvision IS NULL THEN 1
+						WHEN @SubcontractedProvision = ''1'' THEN
+							CASE
+								WHEN PA.SubcontractorCode = ''00000000'' THEN 0
+								ELSE 1
+							END
+						WHEN @SubcontractedProvision = ''0'' THEN
+							CASE
+								WHEN PA.SubcontractorCode = ''00000000'' THEN 1
+								ELSE 0
+							END
+						ELSE 0
+					END = 1
 				AND @DisplayFaculty = 1
 			GROUP BY
 				PA.EndYear,
@@ -362,6 +408,21 @@ BEGIN
 					END = 1
 				AND COALESCE ( PA.FacCode, ''-'' ) = COALESCE ( @Faculty, PA.FacCode, ''-'' )
 				AND COALESCE ( PA.TeamCode, ''-'' ) = COALESCE ( @Team, PA.TeamCode, ''-'' )
+				AND
+					CASE
+						WHEN @SubcontractedProvision IS NULL THEN 1
+						WHEN @SubcontractedProvision = ''1'' THEN
+							CASE
+								WHEN PA.SubcontractorCode = ''00000000'' THEN 0
+								ELSE 1
+							END
+						WHEN @SubcontractedProvision = ''0'' THEN
+							CASE
+								WHEN PA.SubcontractorCode = ''00000000'' THEN 1
+								ELSE 0
+							END
+						ELSE 0
+					END = 1
 				AND @DisplayFaculty = 1
 			GROUP BY
 				PA.EndYear,
@@ -429,6 +490,21 @@ BEGIN
 					END = 1
 				AND COALESCE ( PA.FacCode, ''-'' ) = COALESCE ( @Faculty, PA.FacCode, ''-'' )
 				AND COALESCE ( PA.TeamCode, ''-'' ) = COALESCE ( @Team, PA.TeamCode, ''-'' )
+				AND
+					CASE
+						WHEN @SubcontractedProvision IS NULL THEN 1
+						WHEN @SubcontractedProvision = ''1'' THEN
+							CASE
+								WHEN PA.SubcontractorCode = ''00000000'' THEN 0
+								ELSE 1
+							END
+						WHEN @SubcontractedProvision = ''0'' THEN
+							CASE
+								WHEN PA.SubcontractorCode = ''00000000'' THEN 1
+								ELSE 0
+							END
+						ELSE 0
+					END = 1
 				AND @DisplayTeam = 1
 			GROUP BY
 				PA.EndYear,
@@ -496,6 +572,21 @@ BEGIN
 					END = 1
 				AND COALESCE ( PA.FacCode, ''-'' ) = COALESCE ( @Faculty, PA.FacCode, ''-'' )
 				AND COALESCE ( PA.TeamCode, ''-'' ) = COALESCE ( @Team, PA.TeamCode, ''-'' )
+				AND
+					CASE
+						WHEN @SubcontractedProvision IS NULL THEN 1
+						WHEN @SubcontractedProvision = ''1'' THEN
+							CASE
+								WHEN PA.SubcontractorCode = ''00000000'' THEN 0
+								ELSE 1
+							END
+						WHEN @SubcontractedProvision = ''0'' THEN
+							CASE
+								WHEN PA.SubcontractorCode = ''00000000'' THEN 1
+								ELSE 0
+							END
+						ELSE 0
+					END = 1
 				AND @DisplayTeam = 1
 			GROUP BY
 				PA.EndYear,
@@ -540,6 +631,7 @@ BEGIN
 		@Campus NVARCHAR(8),
 		@Faculty NVARCHAR(50),
 		@Team NVARCHAR(50),
+		@SubcontractedProvision BIT,
 		@DisplayHeadline BIT,
 		@DisplayFaculty BIT,
 		@DisplayTeam BIT,
@@ -557,6 +649,7 @@ BEGIN
 		@Campus = @Campus,
 		@Faculty = @Faculty,
 		@Team = @Team,
+		@SubcontractedProvision = @SubcontractedProvision,
 		@DisplayHeadline = @DisplayHeadline,
 		@DisplayFaculty = @DisplayFaculty,
 		@DisplayTeam = @DisplayTeam,
