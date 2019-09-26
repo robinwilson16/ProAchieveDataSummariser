@@ -1,0 +1,2 @@
+CREATE NONCLUSTERED INDEX NI_PRA_ProAchieveSummaryData ON PRA_ProAchieveSummaryData (SummaryType, EndYear)
+INCLUDE (ProviderID, ProviderName, AgeGroup, CampusID, FacCode, FacName, TeamCode, TeamName, SubcontractorCode, IsLeaver, IsComp, IsAch)

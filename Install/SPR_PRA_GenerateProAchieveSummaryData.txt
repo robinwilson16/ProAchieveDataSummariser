@@ -324,6 +324,35 @@ BEGIN
                 @SQLString, 
                 @SQLParams;
 
+
+			--Additional index to speed up reporting
+			SET @SQLString = N'
+				CREATE NONCLUSTERED INDEX NI_PRA_ProAchieveSummaryData 
+					ON PRA_ProAchieveSummaryData (
+						SummaryType, 
+						EndYear
+					)
+				INCLUDE (
+					ProviderID, 
+					ProviderName, 
+					AgeGroup, 
+					CampusID, 
+					FacCode, 
+					FacName, 
+					TeamCode, 
+					TeamName, 
+					SubcontractorCode, 
+					IsLeaver, 
+					IsComp, 
+					IsAch
+				)'
+
+			SET @SQLParams = N'';
+
+            EXECUTE sp_executesql 
+                @SQLString, 
+                @SQLParams;
+
 		END
 	ELSE
 		BEGIN
