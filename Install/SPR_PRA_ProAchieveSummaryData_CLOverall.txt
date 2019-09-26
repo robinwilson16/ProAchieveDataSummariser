@@ -243,7 +243,7 @@ BEGIN
 			ProgTypeName = NULL,
 			FrameworkCode = NULL,
 			FrameworkName = NULL,
-			CourseCode = CRS.PG_AggCourseID,
+			CourseCode = CL.PG_AggCourseID,
 			CourseName = CRS.PG_AggCourseName,
 			GroupCode = CL.EnrolmentUserDefined1,
 			SubcontractorCode = CL.PG_SubContractorID,

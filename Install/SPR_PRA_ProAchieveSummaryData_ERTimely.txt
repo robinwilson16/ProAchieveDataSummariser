@@ -235,7 +235,7 @@ BEGIN
 			ProgTypeName = ER.PG_ProgTypeName,
 			FrameworkCode = ER.PG_FrameworkID,
 			FrameworkName = ER.PG_FrameworkName,
-			CourseCode = CRS.PG_AggCourseID,
+			CourseCode = ER.PG_AggCourseID,
 			CourseName = CRS.PG_AggCourseName,
 			GroupCode = ER.EnrolmentUserDefined1,
 			SubcontractorCode = ER.PG_SubContractorID,
