@@ -15,7 +15,8 @@ CREATE PROCEDURE [dbo].[SPR_SAR002_ProAchieveData]
 	@CriteriaOrder INT,
 	@NatAvgAllAges NVARCHAR(50),
 	@NatAvgAge NVARCHAR(50),
-	@GroupBy NVARCHAR(255)
+	@GroupBy NVARCHAR(255),
+	@WhereClause NVARCHAR(255)
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -110,6 +111,7 @@ BEGIN
 			SELECT
 				NR.EndYear,
 				NR.Grp,
+				NR.AgeGroup,
 				Leave = SUM ( NR.Leave ),
 				Comp = SUM ( NR.Comp ),
 				Ach = SUM ( NR.Ach ),
@@ -137,6 +139,7 @@ BEGIN
 				SELECT
 					EndYear = PA.EndYear,
 					Grp = ' + @GroupBy + ',
+					AgeGroup = PA.AgeGroup,
 					Leave = PA.NatRate_' + @NatAvgAge + '_Leave,
 					Comp = PA.NatRate_' + @NatAvgAge + '_Comp,
 					Ach = PA.NatRate_' + @NatAvgAge + '_Ach
@@ -150,13 +153,15 @@ BEGIN
 				GROUP BY
 					PA.EndYear,
 					' + @GroupBy + ',
+					PA.AgeGroup,
 					PA.NatRate_' + @NatAvgAge + '_Leave,
 					PA.NatRate_' + @NatAvgAge + '_Comp,
 					PA.NatRate_' + @NatAvgAge + '_Ach
 			) NR
 			GROUP BY
 				NR.EndYear,
-				NR.Grp
+				NR.Grp,
+				NR.AgeGroup
 		)
 	'
 
@@ -358,6 +363,7 @@ BEGIN
 						ELSE 0
 					END = 1
 				AND @DisplayHeadline = 1
+				' + COALESCE ( @WhereClause, '' ) + '
 			GROUP BY
 				PA.EndYear,
 				PA.ProviderID,
@@ -409,6 +415,7 @@ BEGIN
 			INNER JOIN NatRates NR
 				ON NR.EndYear = PA.EndYear
 				AND NR.Grp = ' + @GroupBy + '
+				AND NR.AgeGroup = PA.AgeGroup
 			WHERE
 				PA.EndYear BETWEEN 
 					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
@@ -442,6 +449,7 @@ BEGIN
 						ELSE 0
 					END = 1
 				AND @DisplayHeadline = 1
+				' + COALESCE ( @WhereClause, '' ) + '
 			GROUP BY
 				PA.EndYear,
 				PA.ProviderID,
@@ -528,6 +536,7 @@ BEGIN
 						ELSE 0
 					END = 1
 				AND @DisplayFaculty = 1
+				' + COALESCE ( @WhereClause, '' ) + '
 			GROUP BY
 				PA.EndYear,
 				PA.ProviderID,
@@ -580,6 +589,7 @@ BEGIN
 			INNER JOIN NatRates NR
 				ON NR.EndYear = PA.EndYear
 				AND NR.Grp = ' + @GroupBy + '
+				AND NR.AgeGroup = PA.AgeGroup
 			WHERE
 				PA.EndYear BETWEEN 
 					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
@@ -613,6 +623,7 @@ BEGIN
 						ELSE 0
 					END = 1
 				AND @DisplayFaculty = 1
+				' + COALESCE ( @WhereClause, '' ) + '
 			GROUP BY
 				PA.EndYear,
 				PA.ProviderID,
@@ -700,6 +711,7 @@ BEGIN
 						ELSE 0
 					END = 1
 				AND @DisplayTeam = 1
+				' + COALESCE ( @WhereClause, '' ) + '
 			GROUP BY
 				PA.EndYear,
 				PA.ProviderID,
@@ -753,6 +765,7 @@ BEGIN
 			INNER JOIN NatRates NR
 				ON NR.EndYear = PA.EndYear
 				AND NR.Grp = ' + @GroupBy + '
+				AND NR.AgeGroup = PA.AgeGroup
 			WHERE
 				PA.EndYear BETWEEN 
 					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
@@ -787,6 +800,7 @@ BEGIN
 						ELSE 0
 					END = 1
 				AND @DisplayTeam = 1
+				' + COALESCE ( @WhereClause, '' ) + '
 			GROUP BY
 				PA.EndYear,
 				PA.ProviderID,
@@ -836,7 +850,8 @@ BEGIN
 		@DisplayFaculty BIT,
 		@DisplayTeam BIT,
 		@CriteriaTitle NVARCHAR(255),
-		@CriteriaOrder INT';
+		@CriteriaOrder INT,
+		@WhereClause NVARCHAR(255)';
 
     EXECUTE sp_executesql 
         @SQLString, 
@@ -854,5 +869,6 @@ BEGIN
 		@DisplayFaculty = @DisplayFaculty,
 		@DisplayTeam = @DisplayTeam,
 		@CriteriaTitle = @CriteriaTitle,
-		@CriteriaOrder = @CriteriaOrder;
+		@CriteriaOrder = @CriteriaOrder,
+		@WhereClause = @WhereClause;
 END
