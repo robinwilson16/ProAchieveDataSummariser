@@ -18,8 +18,11 @@ DECLARE @DisplayTeam BIT = 1
 DECLARE @CriteriaTitle NVARCHAR(255) = NULL
 DECLARE @CriteriaOrder INT = NULL
 DECLARE @NatAvgAllAges NVARCHAR(50) = NULL
+DECLARE @NatAvgAllAgesDesc NVARCHAR(50) = NULL
 DECLARE @NatAvgAge NVARCHAR(50) = NULL
+DECLARE @NatAvgAgeDesc NVARCHAR(50) = NULL
 DECLARE @GroupBy NVARCHAR(255) = NULL
+DECLARE @GroupByDesc NVARCHAR(255) = NULL
 DECLARE @WhereClause NVARCHAR(255) = NULL
 
 IF OBJECT_ID('tempdb.dbo.#SarData', 'U') IS NOT NULL
@@ -59,143 +62,228 @@ CREATE TABLE #SarData (
 	PassRAGRating CHAR(1) NULL,
 	AchVarianceLastYear FLOAT NULL,
 	AchVarianceNR FLOAT NULL,
-	AchRAGRating CHAR(1) NULL
+	AchRAGRating CHAR(1) NULL,
+	NatAvgAllAgesDesc NVARCHAR(50) NULL,
+	NatAvgAgeDesc NVARCHAR(50) NULL,
+	GroupByDesc NVARCHAR(255) NULL
 )
 
 SET @CriteriaTitle = 'Headline'
 SET @CriteriaOrder = 1
 SET @NatAvgAllAges = 'Yr'
+SET @NatAvgAllAgesDesc = 'Year'
 SET @NatAvgAge = 'Age'
-SET @GroupBy = 'PA.ProviderID'
+SET @NatAvgAgeDesc = 'Year + Age Group'
+SET @GroupBy = 'CASE WHEN PA.ProviderID IS NOT NULL THEN '''' ELSE PA.ProviderID END'
+SET @GroupByDesc = ''
 SET @WhereClause = ''
 INSERT INTO #SarData
-EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAge, @GroupBy, @WhereClause
+EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAllAgesDesc, @NatAvgAge, @NatAvgAgeDesc, @GroupBy, @GroupByDesc, @WhereClause
 
-SET @CriteriaTitle = 'EFA Study Programme'
-SET @CriteriaOrder = 2
-SET @NatAvgAllAges = 'Yr'
-SET @NatAvgAge = 'Age'
-SET @GroupBy = '
-	CASE
-		WHEN PA.QualTypeCode IN (
-			5, 6, 7, 8, 11
-		)
-			THEN ''Academic''
-		ELSE ''Vocational''
-	END'
-SET @WhereClause = 
-	'AND PA.FundModelCode = ''1619''
-	AND PA.AimTypeCode = ''5'''
-INSERT INTO #SarData
-EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAge, @GroupBy, @WhereClause
+IF @SummaryCourseType = 'CL'
+BEGIN
+	SET @CriteriaTitle = 'EFA Study Programme'
+	SET @CriteriaOrder = 2
+	SET @NatAvgAllAges = 'Yr'
+	SET @NatAvgAllAgesDesc = 'Year'
+	SET @NatAvgAge = 'Age'
+	SET @NatAvgAgeDesc = 'Year + Age Group'
+	SET @GroupBy = '
+		CASE
+			WHEN PA.QualTypeCode IN (
+				5, 6, 7, 8, 11
+			)
+				THEN ''Academic''
+			ELSE ''Vocational''
+		END'
+	SET @GroupByDesc = 'Course Type'
+	SET @WhereClause = 
+		'AND PA.FundModelCode = ''1619''
+		AND PA.AimTypeCode = ''5'''
+	INSERT INTO #SarData
+	EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAllAgesDesc, @NatAvgAge, @NatAvgAgeDesc, @GroupBy, @GroupByDesc, @WhereClause
+END
 
-SET @CriteriaTitle = 'Level'
-SET @CriteriaOrder = 3
-SET @NatAvgAllAges = 'Level'
-SET @NatAvgAge = 'LevelAge'
-SET @GroupBy = 'CASE WHEN PA.NVQLevelGrpName = ''Other (including X, M & Unspecified)'' THEN ''Other'' ELSE PA.NVQLevelGrpName END'
-SET @WhereClause = ''
-INSERT INTO #SarData
-EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAge, @GroupBy, @WhereClause
+
+IF @SummaryCourseType = 'CL'
+BEGIN
+	SET @CriteriaTitle = 'Maths and English'
+	SET @CriteriaOrder = 3
+	SET @NatAvgAllAges = 'QualType'
+	SET @NatAvgAllAgesDesc = 'Year + Qual Type'
+	SET @NatAvgAge = 'QualTypeAge'
+	SET @NatAvgAgeDesc = 'Year + Qual Type + Age Group'
+	SET @GroupBy = 'COALESCE ( PA.QualTypeName, ''-- Unknown --'' )'
+	SET @GroupByDesc = 'Functional Skills / GCSE'
+	SET @WhereClause = 'AND PA.QualTypeCode IN ( 7, 9 )'
+	INSERT INTO #SarData
+	EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAllAgesDesc, @NatAvgAge, @NatAvgAgeDesc, @GroupBy, @GroupByDesc, @WhereClause
+END
+
+IF @SummaryCourseType = 'CL'
+BEGIN
+	SET @CriteriaTitle = 'Level'
+	SET @CriteriaOrder = 4
+	SET @NatAvgAllAges = 'Level'
+	SET @NatAvgAllAgesDesc = 'Year + Level'
+	SET @NatAvgAge = 'LevelAge'
+	SET @NatAvgAgeDesc = 'Year + Level + Age Group'
+	SET @GroupBy = 'CASE WHEN PA.NVQLevelGrpName = ''Other (including X, M & Unspecified)'' THEN ''Other'' ELSE PA.NVQLevelGrpName END'
+	SET @GroupByDesc = 'Level'
+	SET @WhereClause = ''
+	INSERT INTO #SarData
+	EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAllAgesDesc, @NatAvgAge, @NatAvgAgeDesc, @GroupBy, @GroupByDesc, @WhereClause
+END
+
+IF @SummaryCourseType = 'ER'
+BEGIN
+	SET @CriteriaTitle = 'Level'
+	SET @CriteriaOrder = 4
+	SET @NatAvgAllAges = 'Level'
+	SET @NatAvgAllAgesDesc = 'Year + Prog Type'
+	SET @NatAvgAge = 'LevelAge'
+	SET @NatAvgAgeDesc = 'Year + Prog Type + Age Group'
+	SET @GroupBy = 'PA.ProgTypeName'
+	SET @GroupByDesc = 'Programme Type'
+	SET @WhereClause = ''
+	INSERT INTO #SarData
+	EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAllAgesDesc, @NatAvgAge, @NatAvgAgeDesc, @GroupBy, @GroupByDesc, @WhereClause
+END
 
 SET @CriteriaTitle = 'Gender'
-SET @CriteriaOrder = 4
+SET @CriteriaOrder = 5
 SET @NatAvgAllAges = 'Gender'
+SET @NatAvgAllAgesDesc = 'Year + Gender'
 SET @NatAvgAge = 'GenderAge'
+SET @NatAvgAgeDesc = 'Year + Gender + Age Group'
 SET @GroupBy = 'PA.Gender'
+SET @GroupByDesc = 'Gender'
 SET @WhereClause = ''
 INSERT INTO #SarData
-EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAge, @GroupBy, @WhereClause
+EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAllAgesDesc, @NatAvgAge, @NatAvgAgeDesc, @GroupBy, @GroupByDesc, @WhereClause
 
 SET @CriteriaTitle = 'LLDD'
-SET @CriteriaOrder = 5
+SET @CriteriaOrder = 6
 SET @NatAvgAllAges = 'DifDis'
+SET @NatAvgAllAgesDesc = 'Year + Dif/Dis'
 SET @NatAvgAge = 'DifDisAge'
+SET @NatAvgAgeDesc = 'Year + Dif/Dis + Age Group'
 SET @GroupBy = 'PA.DiffDissName'
+SET @GroupByDesc = 'Difficulty / Disability'
 SET @WhereClause = ''
 INSERT INTO #SarData
-EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAge, @GroupBy, @WhereClause
+EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAllAgesDesc, @NatAvgAge, @NatAvgAgeDesc, @GroupBy, @GroupByDesc, @WhereClause
 
 SET @CriteriaTitle = 'High Needs'
-SET @CriteriaOrder = 6
-SET @NatAvgAllAges = 'Yr'
-SET @NatAvgAge = 'Age'
-SET @GroupBy = 'CASE WHEN PA.IsHighNeeds = 1 THEN ''High Needs'' ELSE ''Not High Needs'' END'
-SET @WhereClause = ''
-INSERT INTO #SarData
-EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAge, @GroupBy, @WhereClause
-
-SET @CriteriaTitle = 'Free Meals'
 SET @CriteriaOrder = 7
 SET @NatAvgAllAges = 'Yr'
+SET @NatAvgAllAgesDesc = 'Year'
 SET @NatAvgAge = 'Age'
-SET @GroupBy = 'CASE WHEN PA.IsFreeMealsEligible = 1 THEN ''Free School Meals'' ELSE ''Not Free School Meals'' END'
+SET @NatAvgAgeDesc = 'Year + Age Group'
+SET @GroupBy = 'CASE WHEN PA.IsHighNeeds = 1 THEN ''High Needs'' ELSE ''Not High Needs'' END'
+SET @GroupByDesc = 'High Needs'
 SET @WhereClause = ''
 INSERT INTO #SarData
-EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAge, @GroupBy, @WhereClause
+EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAllAgesDesc, @NatAvgAge, @NatAvgAgeDesc, @GroupBy, @GroupByDesc, @WhereClause
 
-SET @CriteriaTitle = 'Looked After'
+SET @CriteriaTitle = 'Free Meals'
 SET @CriteriaOrder = 8
 SET @NatAvgAllAges = 'Yr'
+SET @NatAvgAllAgesDesc = 'Year'
 SET @NatAvgAge = 'Age'
-SET @GroupBy = 'CASE WHEN PA.IsLookedAfter = 1 THEN ''Looked After'' ELSE ''Not Looked After'' END'
+SET @NatAvgAgeDesc = 'Year + Age Group'
+SET @GroupBy = 'CASE WHEN PA.IsFreeMealsEligible = 1 THEN ''Free School Meals'' ELSE ''Not Free School Meals'' END'
+SET @GroupByDesc = 'Free Meals'
 SET @WhereClause = ''
 INSERT INTO #SarData
-EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAge, @GroupBy, @WhereClause
+EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAllAgesDesc, @NatAvgAge, @NatAvgAgeDesc, @GroupBy, @GroupByDesc, @WhereClause
+
+SET @CriteriaTitle = 'Looked After'
+SET @CriteriaOrder = 9
+SET @NatAvgAllAges = 'Yr'
+SET @NatAvgAllAgesDesc = 'Year'
+SET @NatAvgAge = 'Age'
+SET @NatAvgAgeDesc = 'Year + Age Group'
+SET @GroupBy = 'CASE WHEN PA.IsLookedAfter = 1 THEN ''Looked After'' ELSE ''Not Looked After'' END'
+SET @GroupByDesc = 'Looked After'
+SET @WhereClause = ''
+INSERT INTO #SarData
+EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAllAgesDesc, @NatAvgAge, @NatAvgAgeDesc, @GroupBy, @GroupByDesc, @WhereClause
 
 SET @CriteriaTitle = 'Ethnic Group'
-SET @CriteriaOrder = 9
+SET @CriteriaOrder = 10
 SET @NatAvgAllAges = 'EthnicGroup'
+SET @NatAvgAllAgesDesc = 'Year + Ethnic Group'
 SET @NatAvgAge = 'EthnicGroupAge'
+SET @NatAvgAgeDesc = 'Year + Ethnic Group + Age Group'
 SET @GroupBy = 'PA.EthnicGroupSimpleName'
+SET @GroupByDesc = 'Ethnic Group'
 SET @WhereClause = ''
 INSERT INTO #SarData
-EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAge, @GroupBy, @WhereClause
+EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAllAgesDesc, @NatAvgAge, @NatAvgAgeDesc, @GroupBy, @GroupByDesc, @WhereClause
 
 SET @CriteriaTitle = 'Ethnicity'
-SET @CriteriaOrder = 10
-SET @NatAvgAllAges = 'Ethnicity'
-SET @NatAvgAge = 'EthnicityAge'
-SET @GroupBy = 'PA.EthnicityName'
-SET @WhereClause = ''
-INSERT INTO #SarData
-EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAge, @GroupBy, @WhereClause
-
-SET @CriteriaTitle = 'Qual Type'
 SET @CriteriaOrder = 11
-SET @NatAvgAllAges = 'QualType'
-SET @NatAvgAge = 'QualTypeAge'
-SET @GroupBy = 'COALESCE ( PA.QualTypeName, ''-- Unknown --'' )'
+SET @NatAvgAllAges = 'Ethnicity'
+SET @NatAvgAllAgesDesc = 'Year + Ethnicity'
+SET @NatAvgAge = 'EthnicityAge'
+SET @NatAvgAgeDesc = 'Year + Ethnicity + Age Group'
+SET @GroupBy = 'PA.EthnicityName'
+SET @GroupByDesc = 'Ethnicity'
 SET @WhereClause = ''
 INSERT INTO #SarData
-EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAge, @GroupBy, @WhereClause
+EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAllAgesDesc, @NatAvgAge, @NatAvgAgeDesc, @GroupBy, @GroupByDesc, @WhereClause
+
+IF @SummaryCourseType = 'CL'
+BEGIN
+	SET @CriteriaTitle = 'Qual Type'
+	SET @CriteriaOrder = 12
+	SET @NatAvgAllAges = 'QualType'
+	SET @NatAvgAllAgesDesc = 'Year + Qual Type'
+	SET @NatAvgAge = 'QualTypeAge'
+	SET @NatAvgAgeDesc = 'Year + Qual Type + Age Group'
+	SET @GroupBy = 'COALESCE ( PA.QualTypeName, ''-- Unknown --'' )'
+	SET @GroupByDesc = 'Qualification Type'
+	SET @WhereClause = ''
+	INSERT INTO #SarData
+	EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAllAgesDesc, @NatAvgAge, @NatAvgAgeDesc, @GroupBy, @GroupByDesc, @WhereClause
+END
 
 SET @CriteriaTitle = 'SSA1'
-SET @CriteriaOrder = 12
+SET @CriteriaOrder = 13
 SET @NatAvgAllAges = 'SSA1'
+SET @NatAvgAllAgesDesc = 'Year + SSA1'
 SET @NatAvgAge = 'SSA1Age'
+SET @NatAvgAgeDesc = 'Year + SSA1 + Age Group'
 SET @GroupBy = 'PA.SSA1Code + '' - '' + PA.SSA1Name'
+SET @GroupByDesc = 'Subject Sector Area 1'
 SET @WhereClause = ''
 INSERT INTO #SarData
-EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAge, @GroupBy, @WhereClause
+EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAllAgesDesc, @NatAvgAge, @NatAvgAgeDesc, @GroupBy, @GroupByDesc, @WhereClause
 
 SET @CriteriaTitle = 'SSA2'
-SET @CriteriaOrder = 13
+SET @CriteriaOrder = 14
 SET @NatAvgAllAges = 'SSA2'
+SET @NatAvgAllAgesDesc = 'Year + SSA2'
 SET @NatAvgAge = 'SSA2Age'
+SET @NatAvgAgeDesc = 'Year + SSA2 + Age Group'
 SET @GroupBy = 'PA.SSA2Code + '' - '' + PA.SSA2Name'
+SET @GroupByDesc = 'Subject Sector Area 2'
 SET @WhereClause = ''
 INSERT INTO #SarData
-EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAge, @GroupBy, @WhereClause
+EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAllAgesDesc, @NatAvgAge, @NatAvgAgeDesc, @GroupBy, @GroupByDesc, @WhereClause
 
 SET @CriteriaTitle = 'ALS'
-SET @CriteriaOrder = 14
+SET @CriteriaOrder = 15
 SET @NatAvgAllAges = 'Yr'
+SET @NatAvgAllAgesDesc = 'Year'
 SET @NatAvgAge = 'Age'
+SET @NatAvgAgeDesc = 'Year + Age Group'
 SET @GroupBy = 'CASE WHEN PA.IsALSRequired = 1 THEN ''ALS Required'' ELSE ''ALS Not Required'' END'
+SET @GroupByDesc = 'Additional Learning Support'
 SET @WhereClause = ''
 INSERT INTO #SarData
-EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAge, @GroupBy, @WhereClause
+EXEC SPR_SAR002_ProAchieveData @EndYear, @ProviderID, @SummaryCourseType, @SummaryType, @SummaryMeasure, @Campus, @Faculty, @Team, @SubcontractedProvision, @DisplayHeadline, @DisplayFaculty, @DisplayTeam, @CriteriaTitle, @CriteriaOrder, @NatAvgAllAges, @NatAvgAllAgesDesc, @NatAvgAge, @NatAvgAgeDesc, @GroupBy, @GroupByDesc, @WhereClause
 
 SELECT *
 FROM #SarData

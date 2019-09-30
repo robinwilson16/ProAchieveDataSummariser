@@ -14,8 +14,11 @@ CREATE PROCEDURE [dbo].[SPR_SAR002_ProAchieveData]
 	@CriteriaTitle NVARCHAR(255),
 	@CriteriaOrder INT,
 	@NatAvgAllAges NVARCHAR(50),
+	@NatAvgAllAgesDesc NVARCHAR(50),
 	@NatAvgAge NVARCHAR(50),
+	@NatAvgAgeDesc NVARCHAR(50),
 	@GroupBy NVARCHAR(255),
+	@GroupByDesc NVARCHAR(255),
 	@WhereClause NVARCHAR(255)
 AS
 BEGIN
@@ -285,7 +288,10 @@ BEGIN
 							- MIN ( CASE WHEN PRA.EndYear = @EndYear THEN PRA.NatAchRate ELSE NULL END )
 						, 3 ) IS NULL THEN ''-''
 					ELSE ''G''
-				END
+				END,
+			NatAvgAllAgesDesc = @NatAvgAllAgesDesc,
+			NatAvgAgeDesc = @NatAvgAgeDesc,
+			GroupByDesc = @GroupByDesc
 		FROM (
 	'
 
@@ -851,6 +857,9 @@ BEGIN
 		@DisplayTeam BIT,
 		@CriteriaTitle NVARCHAR(255),
 		@CriteriaOrder INT,
+		@NatAvgAllAgesDesc NVARCHAR(50),
+		@NatAvgAgeDesc NVARCHAR(50),
+		@GroupByDesc NVARCHAR(255),
 		@WhereClause NVARCHAR(255)';
 
     EXECUTE sp_executesql 
@@ -870,5 +879,8 @@ BEGIN
 		@DisplayTeam = @DisplayTeam,
 		@CriteriaTitle = @CriteriaTitle,
 		@CriteriaOrder = @CriteriaOrder,
+		@NatAvgAllAgesDesc = @NatAvgAllAgesDesc,
+		@NatAvgAgeDesc = @NatAvgAgeDesc,
+		@GroupByDesc = @GroupByDesc,
 		@WhereClause = @WhereClause;
 END
