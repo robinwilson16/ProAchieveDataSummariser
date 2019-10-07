@@ -231,10 +231,10 @@ BEGIN
 			SSA2Code = ER.PG_SSA2ID,
 			SSA2Name = SSA2.SSA_Tier2_Desc,
 			ProgTypeCode = ER.PG_ProgTypeID,
-			ProgTypeShortName = ER.PG_ProgTypeGroupShortName,
-			ProgTypeName = ER.PG_ProgTypeName,
+			ProgTypeShortName = PT.PG_ProgTypeShortName,
+			ProgTypeName = PT.PG_ProgTypeName,
 			FrameworkCode = ER.PG_FrameworkID,
-			FrameworkName = ER.PG_FrameworkName,
+			FrameworkName = FWK.PG_FrameworkName,
 			CourseCode = ER.PG_AggCourseID,
 			CourseName = CRS.PG_AggCourseName,
 			GroupCode = ER.EnrolmentUserDefined1,
@@ -275,8 +275,44 @@ BEGIN
 			FundModelName = ''Apprenticeship'',
 			IsEFAFunded = 0,
 			IsAdvLearnLoanFunded = 0,
-			IsStart = ER.WBStartOverall,
-			IsLeaver = ER.WBOverallLeave,
+			IsStart = 
+				WBCount 
+				-
+				CASE
+					WHEN ER.WBCount = 0 THEN 0
+					WHEN ER.WBXfr + ER.WBWithdrawnin6Wks > 0  THEN 1
+					WHEN ER.WBPlannedBreak - ER.WBOverdue > 0 THEN 1
+					ELSE 0
+				END,
+			IsLeaver = 
+				CASE
+					WHEN 
+						ER.WBOverdue = 1
+						AND 
+							ER.WBLeave 
+							- 
+							CASE WHEN ER.WBLeave = 0 THEN 0
+								WHEN ER.WBLSCExcludeOverall + ER.WBWithdrawnin6Wks > 0 THEN 1
+								ELSE 0
+							END = 0
+						AND 
+							ER.WBAchFrame 
+							- 
+							CASE 
+								WHEN ER.WBAchFrame = 0 THEN 0
+								WHEN ER.WBCont + ER.WBLSCExcludeOverall > 0 THEN 1
+								ELSE 0
+							END = 0
+						AND ER.WBWithdrawnin6Wks = 0
+							THEN 1
+					ELSE
+						ER.WBLeave 
+						- 
+						CASE WHEN ER.WBLeave = 0 THEN 0
+							WHEN ER.WBLSCExcludeOverall + ER.WBWithdrawnin6Wks > 0 THEN 1
+							ELSE 0
+						END
+				END,
 			LessonsExpected = ER.Att_Exp,
 			LessonsAttended = ER.Att_Act,
 			AttendPer = 
@@ -295,10 +331,18 @@ BEGIN
 					END
 				, 4 ),
 			IsXfr = ER.WBXfr,
-			IsCont = ER.WBContOverall,
+			IsCont = 
+				CASE
+					WHEN ER.WBOverdue = 1 AND ER.WB_FrameworkStatusID IN (0,5) THEN 0
+					ELSE ER.WBCont
+				END,
 			IsWdr = ER.WBLeave,
 			IsWdrInQualifyingPeriod = ER.WBWithdrawnin6Wks,
-			IsWdrAfterQualifyingPeriod = ER.WBWithdrawnAfter6wksOverall,
+			IsWdrAfterQualifyingPeriod = 
+				CASE
+					WHEN ER.WBOverdue = 1 AND ER.WB_FrameworkStatusID IN (0,5,11,12) AND CASE WHEN WBWithdrawnFlag - WBWithdrawnin6Wks > 0 THEN 1 ELSE 0 END = 0 THEN 1
+					ELSE CASE WHEN WBWithdrawnFlag - WBWithdrawnin6Wks > 0 THEN 1 ELSE 0 END
+				END,
 			IsOutOfFunding30 = 
 				CASE
 					WHEN ER.WBContinBeyondEnd = 1 THEN
@@ -326,7 +370,13 @@ BEGIN
 						END
 					ELSE 0
 				END,
-			IsComp = ER.WBRet - ER.WBContOverall,
+			IsComp = 
+				ER.WBRet 
+				- 
+				CASE
+					WHEN WBOverdue = 1 AND ER.WB_FrameworkStatusID IN (0,5) THEN 0
+					ELSE ER.WBCont
+				END,
 			IsRetInYr = 
 				CASE
 					WHEN ER.WBOverdue = 1 AND ER.WB_FrameworkStatusID IN (0,5) THEN 0
@@ -337,7 +387,14 @@ BEGIN
 					WHEN ER.WBOverdue = 1 AND ER.WB_FrameworkStatusID IN (0,5) THEN 0
 					ELSE ER.WBRet
 				END,
-			IsAch = ER.WBAchFrameOverallLSCExclude,
+			IsAch = 
+				WBAchFrame 
+				- 
+				CASE 
+					WHEN ER.WBAchFrame = 0 THEN 0
+					WHEN ER.WBCont + ER.WBLSCExcludeOverall > 0 THEN 1
+					ELSE 0
+				END,
 			IsPassAToC = 0,
 	'
 
@@ -467,7 +524,7 @@ BEGIN
 
     SET @SQLString += 
         N'
-		FROM ' + @ProAchieveDatabaseLocation + 'vER_Summary_Apprenticeships ER
+		FROM ' + @ProAchieveDatabaseLocation + 'ER_StudentProgram ER
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_AcademicYear AY
 			ON AY.AcademicYearNumber = ER.AcademicYearNumber
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'vER_MYS_RDS_Seln MYS
@@ -513,6 +570,10 @@ BEGIN
 			ON DUR.WB_DurationID = ER.WB_DurationID
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_ProgType PT
 			ON PT.PG_ProgTypeID = ER.PG_ProgTypeID
+		INNER JOIN ' + @ProAchieveDatabaseLocation + 'WB_ProgGroup PG
+			ON PG.WB_ProgGroupID = PT.WB_ProgGroupID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_Framework FWK
+			ON FWK.PG_FrameworkID = ER.PG_FrameworkID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_WBLFundAgeGroup AGE 
 			ON AGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_QualSize QS
@@ -1021,7 +1082,7 @@ BEGIN
 			--ND MYS.LastAcademicYearID = @AcademicYear
 			--Default filters applied in ProAchieve
 			AND ER.IsNotFundedAllYears = 0
-			AND ER.WB_ProgGroupID = 1
+			AND PT.WB_ProgGroupID = 1
 	'
 
 	--SELECT @SQLString AS [processing-instruction(x)] FOR XML PATH('')
