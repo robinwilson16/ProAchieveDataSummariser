@@ -303,6 +303,7 @@ BEGIN
 			IsAdvLearnLoanFunded = CL.Loan_Funded,
 			IsStart = CL.CLStartTimely,
 			IsLeaver = CL.P_Count_TimelyQSRExclude,
+			IsLeaverBestCase = CL.P_Count_TimelyQSRExclude,
 			LessonsExpected = CL.Att_Exp,
 			LessonsAttended = CL.Att_Act,
 			AttendPer = 
@@ -356,7 +357,11 @@ BEGIN
 			IsRetInYr = CL.PVCont + CL.P_Complete_TimelyQSRExclude,
 			IsRet = CL.PVCont + CL.P_Complete_TimelyQSRExclude,
 			IsAch = CL.P_Ach_TimelyQSRExclude,
+			IsAchBestCase = CL.P_Ach_TimelyQSRExclude,
 			IsPassAToC = CL.CLPassRateAC_Timely,
+			FrameworkStatusCode = NULL,
+			FrameworkStatusName = NULL,
+			IsCompAwaitAch = NULL,
 	'
 
     SET @SQLString += 

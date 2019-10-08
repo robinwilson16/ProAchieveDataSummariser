@@ -242,7 +242,7 @@ BEGIN
 			GroupCode = ER.EnrolmentUserDefined1,
 			SubcontractorCode = ER.PG_SubContractorID,
 			SubcontractorName = NULL,
-			MinimumStandardThreshold = MINS.ThresholdValue,
+			MinimumStandardThreshold = 62,
 			MinimumStandardType = MINS.Type,
 			MinimumStandardGroupCode = ER.Minimum_Standards_GroupID,
 			MinimumStandardsGroupName = MSTD.Minimum_Standards_GroupName,
@@ -318,6 +318,40 @@ BEGIN
 							WHEN ER.WBLSCExcludeOverall + ER.WBWithdrawnin6Wks > 0 THEN 1
 							ELSE 0
 						END
+				END,
+			IsLeaverBestCase = 
+				CASE
+					WHEN 
+						ER.WBOverdue = 1
+						AND 
+							ER.WBLeave 
+							- 
+							CASE WHEN ER.WBLeave = 0 THEN 0
+								WHEN ER.WBLSCExcludeOverall + ER.WBWithdrawnin6Wks > 0 THEN 1
+								ELSE 0
+							END = 0
+						AND 
+							ER.WBAchFrame 
+							- 
+							CASE 
+								WHEN ER.WBAchFrame = 0 THEN 0
+								WHEN ER.WBCont + ER.WBLSCExcludeOverall > 0 THEN 1
+								ELSE 0
+							END = 0
+						AND ER.WBWithdrawnin6Wks = 0
+							THEN 1
+					ELSE
+						ER.WBLeave 
+						- 
+						CASE WHEN ER.WBLeave = 0 THEN 0
+							WHEN ER.WBLSCExcludeOverall + ER.WBWithdrawnin6Wks > 0 THEN 1
+							ELSE 0
+						END
+				END
+				+
+				CASE
+					WHEN ER.WBOverdue = 1 AND ER.WB_FrameworkStatusID IN (0,5) THEN 0
+					ELSE ER.WBCont
 				END,
 			LessonsExpected = ER.Att_Exp,
 			LessonsAttended = ER.Att_Act,
@@ -401,7 +435,32 @@ BEGIN
 					WHEN ER.WBCont + ER.WBLSCExcludeOverall > 0 THEN 1
 					ELSE 0
 				END,
+			IsAchBestCase = 
+				WBAchFrame 
+				- 
+				CASE 
+					WHEN ER.WBAchFrame = 0 THEN 0
+					WHEN ER.WBCont + ER.WBLSCExcludeOverall > 0 THEN 1
+					ELSE 0
+				END
+				+
+				CASE
+					WHEN ER.WBOverdue = 1 AND ER.WB_FrameworkStatusID IN (0,5) THEN 0
+					ELSE ER.WBCont
+				END
+				+
+				CASE
+					WHEN ER.WB_FrameworkStatusID = 3 THEN ER.WBLeave
+					ELSE 0
+				END,
 			IsPassAToC = 0,
+			FrameworkStatusCode = ER.WB_FrameworkStatusID,
+			FrameworkStatusName = FWKS.WB_FrameworkStatusName,
+			IsCompAwaitAch = 
+				CASE
+					WHEN ER.WB_FrameworkStatusID = 3 THEN ER.WBLeave
+					ELSE 0
+				END,
 	'
 
     SET @SQLString += 
@@ -578,6 +637,8 @@ BEGIN
 			ON PT.PG_ProgTypeID = ER.PG_ProgTypeID
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'WB_ProgGroup PG
 			ON PG.WB_ProgGroupID = PT.WB_ProgGroupID
+		INNER JOIN ' + @ProAchieveDatabaseLocation + 'WB_FrameworkStatus FWKS
+			ON FWKS.WB_FrameworkStatusID = ER.WB_FrameworkStatusID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_AppStandard STD
 			ON STD.PG_AppStandardID = ER.PG_AppStandardID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_Framework FWK

@@ -163,6 +163,7 @@ BEGIN
 					IsAdvLearnLoanFunded INT NULL,
 					IsStart INT NULL,
 					IsLeaver INT NULL,
+					IsLeaverBestCase INT NULL,
 					LessonsExpected FLOAT NULL,
 					LessonsAttended FLOAT NULL,
 					AttendPer FLOAT NULL,
@@ -180,7 +181,11 @@ BEGIN
 					IsRetInYr INT NULL,
 					IsRet INT NULL,
 					IsAch INT NULL,
+					IsAchBestCase INT NULL,
 					IsPassAToC INT NULL,
+					FrameworkStatusCode INT NULL,
+					FrameworkStatusName NVARCHAR(128),
+					IsCompAwaitAch INT NULL,
 				'
 
 			SET @SQLString += 

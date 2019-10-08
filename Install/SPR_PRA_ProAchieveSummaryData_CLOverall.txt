@@ -312,6 +312,26 @@ BEGIN
 					ELSE 
 						CL.P_Count_OverallQSRExclude 
 				END,
+			IsLeaverBestCase = 
+				CASE 
+					WHEN 
+						CL.CLOverdue = 1 
+						AND CL.QSRExclude_Overall = 0 
+						AND CL.P_Count_OverallQSRExclude = 0 
+						THEN 1 
+					ELSE 
+						CL.P_Count_OverallQSRExclude 
+				END
+				+
+				CASE 
+					WHEN 
+						CL.CLOverdue = 1 
+						AND CL.QSRExclude_Overall = 0 
+						AND CL.P_Count_OverallQSRExclude = 0 
+						THEN 0
+					ELSE 
+						CL.PVCont
+				END,
 			LessonsExpected = CL.Att_Exp,
 			LessonsAttended = CL.Att_Act,
 			AttendPer = 
@@ -410,7 +430,22 @@ BEGIN
 						CL.P_Count_OverallQSRExclude 
 				END,
 			IsAch = CL.P_Ach_OverallQSRExclude,
+			IsAchBestCase = 
+				CL.P_Ach_OverallQSRExclude
+				+
+				CASE 
+					WHEN 
+						CL.CLOverdue = 1 
+						AND CL.QSRExclude_Overall = 0 
+						AND CL.P_Count_OverallQSRExclude = 0 
+						THEN 0
+					ELSE 
+						CL.PVCont
+				END,
 			IsPassAToC = CL.CLPassRateAC_Overall,
+			FrameworkStatusCode = NULL,
+			FrameworkStatusName = NULL,
+			IsCompAwaitAch = NULL,
 	'
 
     SET @SQLString += 

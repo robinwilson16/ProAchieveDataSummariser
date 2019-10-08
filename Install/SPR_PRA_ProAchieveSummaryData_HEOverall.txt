@@ -271,6 +271,10 @@ BEGIN
 			IsAdvLearnLoanFunded = 0,
 			IsStart = HE.P_Count_OverallQSRExclude,
 			IsLeaver = HE.P_Count_OverallQSRExclude,
+			IsLeaverBestCase = 
+				HE.P_Count_OverallQSRExclude
+				+
+				HE.PVCont,
 			LessonsExpected = HE.Att_Exp,
 			LessonsAttended = HE.Att_Act,
 			AttendPer = 
@@ -300,7 +304,14 @@ BEGIN
 			IsRetInYr = HE.PVCont + HE.P_Complete_OverallQSRExclude,
 			IsRet = HE.PVCont + HE.P_Complete_OverallQSRExclude,
 			IsAch = HE.P_Ach_OverallQSRExclude,
+			IsAchBestCase = 
+				HE.P_Ach_OverallQSRExclude
+				+
+				HE.PVCont,
 			IsPassAToC = 0,
+			FrameworkStatusCode = NULL,
+			FrameworkStatusName = NULL,
+			IsCompAwaitAch = NULL,
 	'
 
     SET @SQLString += 
