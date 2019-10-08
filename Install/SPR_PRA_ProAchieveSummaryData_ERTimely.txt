@@ -233,6 +233,8 @@ BEGIN
 			ProgTypeCode = ER.PG_ProgTypeID,
 			ProgTypeShortName = PT.PG_ProgTypeShortName,
 			ProgTypeName = PT.PG_ProgTypeName,
+			StandardCode = ER.PG_AppStandardID,
+			StandardName = STD.PG_AppStandardName,
 			FrameworkCode = ER.PG_FrameworkID,
 			FrameworkName = FWK.PG_FrameworkName,
 			CourseCode = ER.PG_AggCourseID,
@@ -240,6 +242,8 @@ BEGIN
 			GroupCode = ER.EnrolmentUserDefined1,
 			SubcontractorCode = ER.PG_SubContractorID,
 			SubcontractorName = NULL,
+			MinimumStandardGroupCode = ER.Minimum_Standards_GroupID,
+			MinimumStandardsGroupName = MSTD.Minimum_Standards_GroupName,
 			SequenceNo = ER.SequenceNo,
 	'
 
@@ -545,8 +549,12 @@ BEGIN
 			ON PT.PG_ProgTypeID = ER.PG_ProgTypeID
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'WB_ProgGroup PG
 			ON PG.WB_ProgGroupID = PT.WB_ProgGroupID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_AppStandard STD
+			ON STD.PG_AppStandardID = ER.PG_AppStandardID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_Framework FWK
 			ON FWK.PG_FrameworkID = ER.PG_FrameworkID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'Minimum_Standards_Group MSTD
+			ON MSTD.Minimum_Standards_GroupID = ER.Minimum_Standards_GroupID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_WBLFundAgeGroup AGE 
 			ON AGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_QualSize QS

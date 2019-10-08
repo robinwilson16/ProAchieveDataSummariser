@@ -118,6 +118,8 @@ BEGIN
 					ProgTypeCode NCHAR(2) NULL,
 					ProgTypeShortName NVARCHAR(32) NULL,
 					ProgTypeName NVARCHAR(50) NULL,
+					StandardCode NVARCHAR(5) NULL,
+					StandardName NVARCHAR(750) NULL,
 					FrameworkCode NVARCHAR(3) NULL,
 					FrameworkName NVARCHAR(163) NULL,
 					CourseCode NVARCHAR(40) NULL,
@@ -125,6 +127,8 @@ BEGIN
 					GroupCode NVARCHAR(255) NULL,
 					SubcontractorCode NVARCHAR(8) NULL,
 					SubcontractorName NVARCHAR(255) NULL,
+					MinimumStandardGroupCode NVARCHAR(1) NULL,
+					MinimumStandardsGroupName NVARCHAR(1) NULL,
 					SequenceNo INT NOT NULL,
 
 					AimRef NVARCHAR(8) NULL,

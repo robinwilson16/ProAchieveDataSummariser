@@ -221,6 +221,8 @@ BEGIN
 			ProgTypeCode = NULL,
 			ProgTypeShortName = NULL,
 			ProgTypeName = NULL,
+			StandardCode = NULL,
+			StandardName = NULL,
 			FrameworkCode = NULL,
 			FrameworkName = NULL,
 			CourseCode = HE.PG_AggCourseID,
@@ -228,6 +230,8 @@ BEGIN
 			GroupCode = HE.EnrolmentUserDefined1,
 			SubcontractorCode = NULL,
 			SubcontractorName = NULL,
+			MinimumStandardGroupCode = NULL,
+			MinimumStandardsGroupName = NULL,
 			SequenceNo = HE.SequenceNo,
     '
 

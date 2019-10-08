@@ -241,6 +241,8 @@ BEGIN
 			ProgTypeCode = NULL,
 			ProgTypeShortName = NULL,
 			ProgTypeName = NULL,
+			StandardCode = NULL,
+			StandardName = NULL,
 			FrameworkCode = NULL,
 			FrameworkName = NULL,
 			CourseCode = CL.PG_AggCourseID,
@@ -248,6 +250,8 @@ BEGIN
 			GroupCode = CL.EnrolmentUserDefined1,
 			SubcontractorCode = CL.PG_SubContractorID,
 			SubcontractorName = NULL,
+			MinimumStandardGroupCode = CL.Minimum_Standards_GroupID,
+			MinimumStandardsGroupName = MSTD.Minimum_Standards_GroupName,
 			SequenceNo = CL.SequenceNo,
     '
 
@@ -542,6 +546,8 @@ BEGIN
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PM_MS_ThresholdValue MINS
 			ON MINS.PG_QualSizeID = CL.PG_QualSizeID
 			AND MINS.ThresholdID = 1
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'Minimum_Standards_Group MSTD
+			ON MSTD.Minimum_Standards_GroupID = CL.Minimum_Standards_GroupID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_AgeLSC AGE
 			ON AGE.PG_AgeLSCID = CL.PG_AgeLSCID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_Learner_FAM_Pivoted FAM
