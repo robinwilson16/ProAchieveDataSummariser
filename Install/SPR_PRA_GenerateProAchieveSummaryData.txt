@@ -127,6 +127,8 @@ BEGIN
 					GroupCode NVARCHAR(255) NULL,
 					SubcontractorCode NVARCHAR(8) NULL,
 					SubcontractorName NVARCHAR(255) NULL,
+					MinimumStandardThreshold INT,
+					MinimumStandardType NVARCHAR(24),
 					MinimumStandardGroupCode NVARCHAR(1) NULL,
 					MinimumStandardsGroupName NVARCHAR(1) NULL,
 					SequenceNo INT NOT NULL,

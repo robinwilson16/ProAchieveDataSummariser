@@ -230,6 +230,8 @@ BEGIN
 			GroupCode = HE.EnrolmentUserDefined1,
 			SubcontractorCode = NULL,
 			SubcontractorName = NULL,
+			MinimumStandardThreshold = NULL,
+			MinimumStandardType = NULL,
 			MinimumStandardGroupCode = NULL,
 			MinimumStandardsGroupName = NULL,
 			SequenceNo = HE.SequenceNo,

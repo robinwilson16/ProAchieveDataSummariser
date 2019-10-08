@@ -250,6 +250,8 @@ BEGIN
 			GroupCode = CL.EnrolmentUserDefined1,
 			SubcontractorCode = CL.PG_SubContractorID,
 			SubcontractorName = NULL,
+			MinimumStandardThreshold = MINS.ThresholdValue,
+			MinimumStandardType = MINS.Type,
 			MinimumStandardGroupCode = CL.Minimum_Standards_GroupID,
 			MinimumStandardsGroupName = MSTD.Minimum_Standards_GroupName,
 			SequenceNo = CL.SequenceNo,

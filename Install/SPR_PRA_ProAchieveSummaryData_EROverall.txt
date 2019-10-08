@@ -242,6 +242,8 @@ BEGIN
 			GroupCode = ER.EnrolmentUserDefined1,
 			SubcontractorCode = ER.PG_SubContractorID,
 			SubcontractorName = NULL,
+			MinimumStandardThreshold = MINS.ThresholdValue,
+			MinimumStandardType = MINS.Type,
 			MinimumStandardGroupCode = ER.Minimum_Standards_GroupID,
 			MinimumStandardsGroupName = MSTD.Minimum_Standards_GroupName,
 			SequenceNo = ER.SequenceNo,
