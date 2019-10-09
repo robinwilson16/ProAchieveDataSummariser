@@ -84,6 +84,9 @@ BEGIN
 					WHEN AGE.PG_AgeLSCName = ''19+'' THEN ''19 +''
 					ELSE AGE.PG_AgeLSCName
 				END,
+			PostCodeHome = CL.HomePostcode,
+			PostCodeCurrent = CL.CurrentPostcode,
+			PostCodeDelivery = CL.DeliveryPostcode,
 			EthnicityCode = ETH.PG_EthnicityID,
 			EthnicityName = ETH.PG_EthnicityName,
 			EthnicityOrder = ETH.PG_EthnicityOrder,
@@ -320,17 +323,7 @@ BEGIN
 						AND CL.P_Count_OverallQSRExclude = 0 
 						THEN 1 
 					ELSE 
-						CL.P_Count_OverallQSRExclude 
-				END
-				+
-				CASE 
-					WHEN 
-						CL.CLOverdue = 1 
-						AND CL.QSRExclude_Overall = 0 
-						AND CL.P_Count_OverallQSRExclude = 0 
-						THEN 0
-					ELSE 
-						CL.PVCont
+						CL.P_Count_Overall_BestCase
 				END,
 			LessonsExpected = CL.Att_Exp,
 			LessonsAttended = CL.Att_Act,
@@ -430,22 +423,11 @@ BEGIN
 						CL.P_Count_OverallQSRExclude 
 				END,
 			IsAch = CL.P_Ach_OverallQSRExclude,
-			IsAchBestCase = 
-				CL.P_Ach_OverallQSRExclude
-				+
-				CASE 
-					WHEN 
-						CL.CLOverdue = 1 
-						AND CL.QSRExclude_Overall = 0 
-						AND CL.P_Count_OverallQSRExclude = 0 
-						THEN 0
-					ELSE 
-						CL.PVCont
-				END,
+			IsAchBestCase = CL.P_Ach_Overall_BestCase,
 			IsPassAToC = CL.CLPassRateAC_Overall,
 			FrameworkStatusCode = NULL,
 			FrameworkStatusName = NULL,
-			IsCompAwaitAch = NULL,
+			IsCompAwaitAch = CL.P_CompUnknown,
 	'
 
     SET @SQLString += 

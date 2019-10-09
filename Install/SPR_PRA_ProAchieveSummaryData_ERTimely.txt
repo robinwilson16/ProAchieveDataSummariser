@@ -76,6 +76,9 @@ BEGIN
 					WHEN AGE.PG_WBLFundAgeGroupName = ''24+'' THEN ''24 +''
 					ELSE AGE.PG_WBLFundAgeGroupName
 				END,
+			PostCodeHome = ER.HomePostcode,
+			PostCodeCurrent = ER.CurrentPostcode,
+			PostCodeDelivery = ER.DeliveryPostcode,
 			EthnicityCode = ETH.PG_EthnicityID,
 			EthnicityName = ETH.PG_EthnicityName,
 			EthnicityOrder = ETH.PG_EthnicityOrder,
