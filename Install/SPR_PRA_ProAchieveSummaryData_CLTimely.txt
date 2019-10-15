@@ -87,6 +87,22 @@ BEGIN
 			PostCodeHome = CL.HomePostcode,
 			PostCodeCurrent = CL.CurrentPostcode,
 			PostCodeDelivery = CL.DeliveryPostcode,
+			PostCodeWardCode = PCW.WardCode,
+			PostCodeWardName = PCW.WardName,
+			PostCodeDistrictCode = PCW.DistrictCode,
+			PostCodeDistrictName = PCW.DistrictName,
+			PostCodeLEACode = PCW.LEACode,
+			PostCodeLEAName = PCW.LEAName,
+			PostCodeUplift1619 = COALESCE ( PCU.EFA_UPLIFT, 1 ),
+			PostCodeUpliftAdult = COALESCE ( PCU.SFA_UPLIFT, 1 ),
+			PostCodeUpliftApp = COALESCE ( PCU.APP_FUNDING_UPLIFT, 1 ),
+			PostCodeUpliftApplied =
+				CASE
+					WHEN CL.PG_FundingStreamID = ''25'' THEN COALESCE ( PCU.EFA_UPLIFT, 1 )
+					WHEN CL.PG_FundingStreamID = ''35'' THEN COALESCE ( PCU.SFA_UPLIFT, 1 )
+					WHEN CL.PG_FundingStreamID = ''36'' THEN COALESCE ( PCU.APP_FUNDING_UPLIFT, 1 )
+					ELSE 1
+				END,
 			EthnicityCode = ETH.PG_EthnicityID,
 			EthnicityName = ETH.PG_EthnicityName,
 			EthnicityOrder = ETH.PG_EthnicityOrder,
@@ -281,10 +297,14 @@ BEGIN
 
 			EngOrMathsCode = COALESCE ( CL.PG_MathsEnglishID, ''X'' ),
 			EngOrMathsName = COALESCE ( EM.PG_MathsEnglishName, ''Neither'' ),
-			NVQLevelCode = NVQ.PG_NVQLevelCPRID,
-			NVQLevelName = NVQ.PG_NVQLevelCPRName,
-			NVQLevelGrpCode = NVQG.NVQLevelGroupID,
-			NVQLevelGrpName = NVQG.Description,
+			NVQLevelCode = CL.PG_NVQLevelID,
+			NVQLevelName = LVLC.PG_NVQLevelCPRName,
+			NVQLevelGrpCode = LVL.PG_NVQLevelGroupID,
+			NVQLevelGrpName = LVLG.Description,
+			LevelOfStudyCode = NULL,
+			LevelOfStudyName = NULL,
+			QOECode = NULL,
+			QOEName = NULL,
 			AwardBody = AIM.PG_AwardBodyID,
 			Grade = CL.PG_GradeID,
 
@@ -302,6 +322,7 @@ BEGIN
 					WHEN CL.FundType = ''24+ Loan'' THEN ''Loan Funded''
 					ELSE ''-- Unknown --''
 				END,
+			FundStream = CL.PG_FundingStreamID,
 			IsEFAFunded = CASE WHEN CL.IsEFA_Funded = ''Y'' THEN 1 ELSE 0 END,
 			IsAdvLearnLoanFunded = CL.Loan_Funded,
 			IsStart = CL.CLStartTimely,
@@ -564,10 +585,16 @@ BEGIN
 			ON FAM.PG_StudentID = CL.PG_StudentID
 			AND FAM.PG_ProviderID = CL.PG_ProviderID
 			AND FAM.PG_AcademicYearID = CL.PG_AcademicYearID
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NVQLevelCPR NVQ 
-			ON NVQ.PG_NVQLevelCPRID = CL.PG_NVQLevelID
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'NVQLevelGroup NVQG
-			ON NVQG.NVQLevelGroupID = CL.PG_NVQLevelGroupID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NVQLevel LVL
+			ON LVL.PG_NVQLevelID = CL.PG_NVQLevelID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NVQLevelCPR LVLC
+			ON LVLC.PG_NVQLevelCPRID = CL.PG_NVQLevelID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'NVQLevelGroup LVLG
+			ON LVLG.NVQLevelGroupID = LVL.PG_NVQLevelGroupID
+		LEFT JOIN ' + @ProGeneralDatabaseLocation + 'PostCodeWard PCW
+			ON PCW.Postcode = CL.HomePostcode
+		LEFT JOIN ' + @ProGeneralDatabaseLocation + 'PostCodeUplift PCU
+			ON PCU.POSTCODE = CL.HomePostcode
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure1IY L1 
 			ON L1.GN_Structure1IYID = CL.PG_Structure1ID
 			AND L1.PG_AcademicYearID = CL.PG_AcademicYearID

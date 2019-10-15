@@ -64,9 +64,25 @@ BEGIN
 			LearnerName = HE.StudentName,
 			Gender = HE.PG_SexID,
 			AgeGroup = AGE.HE_AgeGroupName,
-			PostCodeHome = NULL,
-			PostCodeCurrent = NULL,
-			PostCodeDelivery = NULL,
+			PostCodeHome = MP.HomePostcode,
+			PostCodeCurrent = MP.CurrentPostcode,
+			PostCodeDelivery = MP.DeliveryPostcode,
+			PostCodeWardCode = PCW.WardCode,
+			PostCodeWardName = PCW.WardName,
+			PostCodeDistrictCode = PCW.DistrictCode,
+			PostCodeDistrictName = PCW.DistrictName,
+			PostCodeLEACode = PCW.LEACode,
+			PostCodeLEAName = PCW.LEAName,
+			PostCodeUplift1619 = COALESCE ( PCU.EFA_UPLIFT, 1 ),
+			PostCodeUpliftAdult = COALESCE ( PCU.SFA_UPLIFT, 1 ),
+			PostCodeUpliftApp = COALESCE ( PCU.APP_FUNDING_UPLIFT, 1 ),
+			PostCodeUpliftApplied =
+				CASE
+					WHEN HE.PG_FundingStreamID = ''25'' THEN COALESCE ( PCU.EFA_UPLIFT, 1 )
+					WHEN HE.PG_FundingStreamID = ''35'' THEN COALESCE ( PCU.SFA_UPLIFT, 1 )
+					WHEN HE.PG_FundingStreamID = ''36'' THEN COALESCE ( PCU.APP_FUNDING_UPLIFT, 1 )
+					ELSE 1
+				END,
 			EthnicityCode = ETH.PG_EthnicityID,
 			EthnicityName = ETH.PG_EthnicityName,
 			EthnicityOrder = ETH.PG_EthnicityOrder,
@@ -261,15 +277,20 @@ BEGIN
 
 			EngOrMathsCode = ''X'',
 			EngOrMathsName = ''Neither'',
-			NVQLevelCode = NVQ.PG_NVQLevelCPRID,
-			NVQLevelName = NVQ.PG_NVQLevelCPRName,
-			NVQLevelGrpCode = NULL,
-			NVQLevelGrpName = NULL,
+			NVQLevelCode = HE.PG_NVQLevelID,
+			NVQLevelName = LVLC.PG_NVQLevelCPRName,
+			NVQLevelGrpCode = LVL.PG_NVQLevelGroupID,
+			NVQLevelGrpName = LVLG.Description,
+			LevelOfStudyCode = HE.HE_LevelofStudyID,
+			LevelOfStudyName = LVL2.HE_LevelofStudyName,
+			QOECode = HE.PG_HEQualsOnEntryID,
+			QOEName = QOE.PG_HEQualsOnEntryName,
 			AwardBody = AIM.PG_AwardBodyID,
 			Grade = HE.PG_GradeID,
 
 			FundModelCode = ''HE'',
 			FundModelName = ''Higher Education'',
+			FundStream = HE.PG_FundingStreamID,
 			IsEFAFunded = 0,
 			IsAdvLearnLoanFunded = 0,
 			IsStart = HE.P_Count_TimelyQSRExclude,
@@ -455,6 +476,11 @@ BEGIN
                     AND MYS2.RulesApplied = MYS.RulesApplied
                     AND MYS2.IncludeAllAimTypes = MYS.IncludeAllAimTypes
             )
+		INNER JOIN ' + @ProAchieveDatabaseLocation + 'HE_Midpoint MP
+			ON MP.PG_ProviderID = HE.PG_ProviderID
+			AND MP.PG_AcademicYearID = HE.PG_AcademicYearID
+			AND MP.PG_StudentID = HE.PG_StudentID
+			AND MP.SequenceNo = HE.SequenceNo
 		INNER JOIN ' + @ProGeneralDatabaseLocation + 'Student STU
 			ON STU.StudentID = HE.PG_StudentID
 			AND STU.AcademicYearID = HE.PG_AcademicYearID
@@ -493,8 +519,20 @@ BEGIN
 			ON FAM.PG_StudentID = HE.PG_StudentID
 			AND FAM.PG_ProviderID = HE.PG_ProviderID
 			AND FAM.PG_AcademicYearID = HE.PG_AcademicYearID
-		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NVQLevelCPR NVQ 
-			ON NVQ.PG_NVQLevelCPRID = HE.PG_NVQLevelID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NVQLevel LVL
+			ON LVL.PG_NVQLevelID = HE.PG_NVQLevelID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NVQLevelCPR LVLC
+			ON LVLC.PG_NVQLevelCPRID = HE.PG_NVQLevelID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'NVQLevelGroup LVLG
+			ON LVLG.NVQLevelGroupID = LVL.PG_NVQLevelGroupID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'HE_LevelofStudy LVL2
+			ON LVL2.HE_LevelofStudyID = HE.HE_LevelofStudyID
+		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_HEQualsOnEntry QOE
+			ON QOE.PG_HEQualsOnEntryID = HE.PG_HEQualsOnEntryID
+		LEFT JOIN ' + @ProGeneralDatabaseLocation + 'PostCodeWard PCW
+			ON PCW.Postcode = MP.HomePostcode
+		LEFT JOIN ' + @ProGeneralDatabaseLocation + 'PostCodeUplift PCU
+			ON PCU.POSTCODE = MP.HomePostcode
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'GN_Structure1IY L1 
 			ON L1.GN_Structure1IYID = HE.PG_Structure1ID
 			AND L1.PG_AcademicYearID = HE.PG_AcademicYearID
