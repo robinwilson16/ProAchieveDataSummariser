@@ -481,6 +481,7 @@ BEGIN
 			AND MP.PG_AcademicYearID = HE.PG_AcademicYearID
 			AND MP.PG_StudentID = HE.PG_StudentID
 			AND MP.SequenceNo = HE.SequenceNo
+			AND MP.HE_MidpointID = MYS.HE_MidpointID
 		INNER JOIN ' + @ProGeneralDatabaseLocation + 'Student STU
 			ON STU.StudentID = HE.PG_StudentID
 			AND STU.AcademicYearID = HE.PG_AcademicYearID
