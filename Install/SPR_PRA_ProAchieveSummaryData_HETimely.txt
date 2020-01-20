@@ -293,7 +293,7 @@ BEGIN
 			FundStream = HE.PG_FundingStreamID,
 			IsEFAFunded = 0,
 			IsAdvLearnLoanFunded = 0,
-			IsStart = HE.P_Count_TimelyQSRExclude,
+			IsStart = HE.HEStart_Timely,
 			IsLeaver = HE.P_Count_TimelyQSRExclude,
 			IsLeaverBestCase = HE.P_Count_TimelyQSRExclude,
 			LessonsExpected = HE.Att_Exp,
