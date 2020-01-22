@@ -5,15 +5,17 @@ CREATE PROCEDURE SPR_PRA_ProAchieveSummaryData_HETimely
 	@ProGeneralDatabaseLocation NVARCHAR(200),
 	@ProAchieveDatabaseLocation NVARCHAR(200),
 	@OutputTableLocation NVARCHAR(200),
+	@CollegeStructureLevel INT,
 	@FacStructureLevel INT,
 	@TeamStructureLevel INT,
 	@CostCentreStructureLevel INT,
 	@UserDefinedTrueValue NVARCHAR(50),
-	@ALSUserDefinedField INT,
-	@LookedAfterUserDefinedField INT,
-	@CareLeaverUserDefinedField INT,
-	@YoungCarerUserDefinedField INT,
-	@YoungParentUserDefinedField INT,
+	@ALSStudentUserDefinedField INT,
+	@LookedAfterStudentUserDefinedField INT,
+	@CareLeaverStudentUserDefinedField INT,
+	@YoungCarerStudentUserDefinedField INT,
+	@YoungParentStudentUserDefinedField INT,
+	@GroupCodeEnrolmentUserDefinedField INT,
     @NumRowsChanged INT OUTPUT, 
 	@ErrorCode INT OUTPUT
 AS
@@ -107,11 +109,11 @@ BEGIN
 				CASE 
 					WHEN
 						CASE 
-							WHEN @ALSUserDefinedField = 1 THEN STU.UserDefined1
-							WHEN @ALSUserDefinedField = 2 THEN STU.UserDefined2
-							WHEN @ALSUserDefinedField = 3 THEN STU.UserDefined3
-							WHEN @ALSUserDefinedField = 4 THEN STU.UserDefined4
-							WHEN @ALSUserDefinedField = 5 THEN STU.UserDefined5
+							WHEN @ALSStudentUserDefinedField = 1 THEN STU.UserDefined1
+							WHEN @ALSStudentUserDefinedField = 2 THEN STU.UserDefined2
+							WHEN @ALSStudentUserDefinedField = 3 THEN STU.UserDefined3
+							WHEN @ALSStudentUserDefinedField = 4 THEN STU.UserDefined4
+							WHEN @ALSStudentUserDefinedField = 5 THEN STU.UserDefined5
 						END
 					= @UserDefinedTrueValue THEN 1 
 					ELSE 0 
@@ -120,11 +122,11 @@ BEGIN
 				CASE 
 					WHEN
 						CASE 
-							WHEN @LookedAfterUserDefinedField = 1 THEN STU.UserDefined1
-							WHEN @LookedAfterUserDefinedField = 2 THEN STU.UserDefined2
-							WHEN @LookedAfterUserDefinedField = 3 THEN STU.UserDefined3
-							WHEN @LookedAfterUserDefinedField = 4 THEN STU.UserDefined4
-							WHEN @LookedAfterUserDefinedField = 5 THEN STU.UserDefined5
+							WHEN @LookedAfterStudentUserDefinedField = 1 THEN STU.UserDefined1
+							WHEN @LookedAfterStudentUserDefinedField = 2 THEN STU.UserDefined2
+							WHEN @LookedAfterStudentUserDefinedField = 3 THEN STU.UserDefined3
+							WHEN @LookedAfterStudentUserDefinedField = 4 THEN STU.UserDefined4
+							WHEN @LookedAfterStudentUserDefinedField = 5 THEN STU.UserDefined5
 						END
 					= @UserDefinedTrueValue THEN 1 
 					ELSE 0 
@@ -133,11 +135,11 @@ BEGIN
 				CASE 
 					WHEN
 						CASE 
-							WHEN @CareLeaverUserDefinedField = 1 THEN STU.UserDefined1
-							WHEN @CareLeaverUserDefinedField = 2 THEN STU.UserDefined2
-							WHEN @CareLeaverUserDefinedField = 3 THEN STU.UserDefined3
-							WHEN @CareLeaverUserDefinedField = 4 THEN STU.UserDefined4
-							WHEN @CareLeaverUserDefinedField = 5 THEN STU.UserDefined5
+							WHEN @CareLeaverStudentUserDefinedField = 1 THEN STU.UserDefined1
+							WHEN @CareLeaverStudentUserDefinedField = 2 THEN STU.UserDefined2
+							WHEN @CareLeaverStudentUserDefinedField = 3 THEN STU.UserDefined3
+							WHEN @CareLeaverStudentUserDefinedField = 4 THEN STU.UserDefined4
+							WHEN @CareLeaverStudentUserDefinedField = 5 THEN STU.UserDefined5
 						END
 					= @UserDefinedTrueValue THEN 1 
 					ELSE 0 
@@ -146,11 +148,11 @@ BEGIN
 				CASE 
 					WHEN
 						CASE 
-							WHEN @YoungCarerUserDefinedField = 1 THEN STU.UserDefined1
-							WHEN @YoungCarerUserDefinedField = 2 THEN STU.UserDefined2
-							WHEN @YoungCarerUserDefinedField = 3 THEN STU.UserDefined3
-							WHEN @YoungCarerUserDefinedField = 4 THEN STU.UserDefined4
-							WHEN @YoungCarerUserDefinedField = 5 THEN STU.UserDefined5
+							WHEN @YoungCarerStudentUserDefinedField = 1 THEN STU.UserDefined1
+							WHEN @YoungCarerStudentUserDefinedField = 2 THEN STU.UserDefined2
+							WHEN @YoungCarerStudentUserDefinedField = 3 THEN STU.UserDefined3
+							WHEN @YoungCarerStudentUserDefinedField = 4 THEN STU.UserDefined4
+							WHEN @YoungCarerStudentUserDefinedField = 5 THEN STU.UserDefined5
 						END
 					= @UserDefinedTrueValue THEN 1 
 					ELSE 0 
@@ -159,11 +161,11 @@ BEGIN
 				CASE 
 					WHEN
 						CASE 
-							WHEN @YoungParentUserDefinedField = 1 THEN STU.UserDefined1
-							WHEN @YoungParentUserDefinedField = 2 THEN STU.UserDefined2
-							WHEN @YoungParentUserDefinedField = 3 THEN STU.UserDefined3
-							WHEN @YoungParentUserDefinedField = 4 THEN STU.UserDefined4
-							WHEN @YoungParentUserDefinedField = 5 THEN STU.UserDefined5
+							WHEN @YoungParentStudentUserDefinedField = 1 THEN STU.UserDefined1
+							WHEN @YoungParentStudentUserDefinedField = 2 THEN STU.UserDefined2
+							WHEN @YoungParentStudentUserDefinedField = 3 THEN STU.UserDefined3
+							WHEN @YoungParentStudentUserDefinedField = 4 THEN STU.UserDefined4
+							WHEN @YoungParentStudentUserDefinedField = 5 THEN STU.UserDefined5
 						END
 					= @UserDefinedTrueValue THEN 1 
 					ELSE 0 
@@ -173,6 +175,26 @@ BEGIN
     SET @SQLString += 
         N'
 			CampusID = COALESCE ( STU.CampusID, ''-'' ),
+			CollegeCode = 
+				COALESCE ( 
+					CASE 
+						WHEN @CollegeStructureLevel = 1 THEN L1.GN_Structure1IYID
+						WHEN @CollegeStructureLevel = 2 THEN L2.GN_Structure2IYID
+						WHEN @CollegeStructureLevel = 3 THEN L3.GN_Structure3IYID
+						WHEN @CollegeStructureLevel = 4 THEN L4.GN_Structure4IYID
+					END,
+					''-''
+				),
+			CollegeName = 
+				COALESCE ( 
+					CASE 
+						WHEN @CollegeStructureLevel = 1 THEN L1.GN_Structure1IYName
+						WHEN @CollegeStructureLevel = 2 THEN L2.GN_Structure2IYName
+						WHEN @CollegeStructureLevel = 3 THEN L3.GN_Structure3IYName
+						WHEN @CollegeStructureLevel = 4 THEN L4.GN_Structure4IYName
+					END,
+					''-- Unknown --''
+				),
 			FacCode = 
 				COALESCE ( 
 					CASE 
@@ -577,15 +599,17 @@ BEGIN
 		@AcademicYear NVARCHAR(5),
 	    @CollegeType INT,
 		@OutputTableLocation NVARCHAR(200),
+		@CollegeStructureLevel INT,
 		@FacStructureLevel INT,
 		@TeamStructureLevel INT,
 		@CostCentreStructureLevel INT,
 		@UserDefinedTrueValue NVARCHAR(50),
-		@ALSUserDefinedField INT,
-		@LookedAfterUserDefinedField INT,
-		@CareLeaverUserDefinedField INT,
-		@YoungCarerUserDefinedField INT,
-		@YoungParentUserDefinedField INT';
+		@ALSStudentUserDefinedField INT,
+		@LookedAfterStudentUserDefinedField INT,
+		@CareLeaverStudentUserDefinedField INT,
+		@YoungCarerStudentUserDefinedField INT,
+		@YoungParentStudentUserDefinedField INT,
+		@GroupCodeEnrolmentUserDefinedField INT';
 
     EXECUTE sp_executesql 
         @SQLString, 
@@ -594,15 +618,17 @@ BEGIN
         @AcademicYear = @AcademicYear, 
         @CollegeType = @CollegeType,
 		@OutputTableLocation = @OutputTableLocation,
+		@CollegeStructureLevel = @CollegeStructureLevel,
 		@FacStructureLevel = @FacStructureLevel,
 		@TeamStructureLevel = @TeamStructureLevel,
 		@CostCentreStructureLevel = @CostCentreStructureLevel,
 		@UserDefinedTrueValue = @UserDefinedTrueValue,
-		@ALSUserDefinedField = @ALSUserDefinedField,
-		@LookedAfterUserDefinedField = @LookedAfterUserDefinedField,
-		@CareLeaverUserDefinedField = @CareLeaverUserDefinedField,
-		@YoungCarerUserDefinedField = @YoungCarerUserDefinedField,
-		@YoungParentUserDefinedField = @YoungParentUserDefinedField;
+		@ALSStudentUserDefinedField = @ALSStudentUserDefinedField,
+		@LookedAfterStudentUserDefinedField = @LookedAfterStudentUserDefinedField,
+		@CareLeaverStudentUserDefinedField = @CareLeaverStudentUserDefinedField,
+		@YoungCarerStudentUserDefinedField = @YoungCarerStudentUserDefinedField,
+		@YoungParentStudentUserDefinedField = @YoungParentStudentUserDefinedField,
+		@GroupCodeEnrolmentUserDefinedField = @GroupCodeEnrolmentUserDefinedField
 
     SET @NumRowsChanged = @@ROWCOUNT
 	SET @ErrorCode = @@ERROR
