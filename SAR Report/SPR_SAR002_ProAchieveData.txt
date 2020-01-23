@@ -1,11 +1,10 @@
-CREATE PROCEDURE [dbo].[SPR_SAR002_ProAchieveData]
+ALTER PROCEDURE [dbo].[SPR_SAR002_ProAchieveData]
 	@EndYear NVARCHAR(5),
-	@ProviderID INT,
 	@SummaryCourseType NVARCHAR(2),
 	@SummaryType NVARCHAR(20),
 	@SummaryMeasure NVARCHAR(20),
-	@Campus NVARCHAR(8),
-	@Faculty NVARCHAR(50),
+	@College NVARCHAR(50),
+	@Fac NVARCHAR(50),
 	@Team NVARCHAR(50),
 	@SubcontractedProvision BIT,
 	@DisplayHeadline BIT,
@@ -24,14 +23,13 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	--DECLARE @EndYear NVARCHAR(5) = '18/19'
-	--DECLARE @ProviderID INT = 10001475
+	--DECLARE @EndYear NVARCHAR(5) = '19/20'
 	--DECLARE @SummaryCourseType NVARCHAR(2) = 'CL'
 	--DECLARE @SummaryType NVARCHAR(20) = 'Overall'
 	--DECLARE @SummaryMeasure NVARCHAR(20) = 'RulesApplied'
-	--DECLARE @Campus NVARCHAR(8) = NULL
-	--DECLARE @Faculty NVARCHAR(50) = NULL
-	--DECLARE @Team NVARCHAR(50) = NULL
+	--DECLARE @College NVARCHAR(50) = '''ALL'''
+	--DECLARE @Fac NVARCHAR(50) = '''ALL'''
+	--DECLARE @Team NVARCHAR(50) = '''ALL'''
 	--DECLARE @SubcontractedProvision BIT = 1
 	--DECLARE @DisplayHeadline BIT = 1
 	--DECLARE @DisplayFaculty BIT = 1
@@ -53,7 +51,7 @@ BEGIN
 	--SET @NatAvgAllAgesDesc = 'Year'
 	--SET @NatAvgAge = 'Age'
 	--SET @NatAvgAgeDesc = 'Year + Age Group'
-	--SET @GroupBy = 'CASE WHEN PA.ProviderID > 0 THEN NULL ELSE PA.ProviderID END'
+	--SET @GroupBy = 'CASE WHEN PA.EndYear > ''0'' THEN PA.EndYear ELSE PA.EndYear END'
 	--SET @GroupByDesc = ''
 	--SET @WhereClause = ''
 
@@ -101,8 +99,8 @@ BEGIN
 					PA.EndYear BETWEEN 
 						CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
 						AND @EndYear
-					AND PA.ProviderID = COALESCE ( @ProviderID, PA.ProviderID )
 					AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
+					AND ( PA.CollegeCode IN ( ' + @College + ' ) OR ''ALL'' IN ( ' + @College + ' ) )
 				GROUP BY
 					PA.EndYear,
 					' + @GroupBy + ',
@@ -159,8 +157,8 @@ BEGIN
 					PA.EndYear BETWEEN 
 						CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
 						AND @EndYear
-					AND PA.ProviderID = COALESCE ( @ProviderID, PA.ProviderID )
 					AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
+					AND ( PA.CollegeCode IN ( ' + @College + ' ) OR ''ALL'' IN ( ' + @College + ' ) )
 				GROUP BY
 					PA.EndYear,
 					' + @GroupBy + ',
@@ -182,8 +180,6 @@ BEGIN
 			EndYear = @EndYear,
 			EndYearLastYear =  CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 1 AS VARCHAR(2) ),
 			EndYear2YearsAgo =  CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ),
-			ProviderID = PRA.ProviderID,
-			ProviderName = PRA.ProviderName,
 			CriteriaTitle = PRA.CriteriaTitle,
 			CriteriaOrder = PRA.CriteriaOrder,
 			Criteria = PRA.GroupByFields,
@@ -308,8 +304,6 @@ BEGIN
 			--Headline
 			SELECT
 				PA.EndYear,
-				ProviderID = CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderID ELSE 0 END,
-				ProviderName = CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderName ELSE ''COLLEGE GROUP'' END,
 				SortGroup = 0,
 				SortOrder = 0,
 				CriteriaTitle = @CriteriaTitle,
@@ -348,19 +342,10 @@ BEGIN
 				PA.EndYear BETWEEN 
 					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
 					AND @EndYear
-				AND PA.ProviderID = COALESCE ( @ProviderID, PA.ProviderID )
 				AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
-				AND 
-					CASE
-						WHEN @Campus IS NULL THEN 1
-						ELSE
-							CASE
-								WHEN @Campus = PA.CampusID THEN 1
-								ELSE 0
-							END
-					END = 1
-				--AND COALESCE ( PA.FacCode, ''-'' ) = COALESCE ( @Faculty, PA.FacCode, ''-'' )
-				--AND COALESCE ( PA.TeamCode, ''-'' ) = COALESCE ( @Team, PA.TeamCode, ''-'' )
+				AND ( PA.CollegeCode IN ( ' + @College + ' ) OR ''ALL'' IN ( ' + @College + ' ) )
+				--AND ( PA.FacCode IN ( ' + @Fac + ' ) OR ''ALL'' IN ( ' + @Fac + ' ) )
+				--AND ( PA.TeamCode IN ( ' + @Team + ' ) OR ''ALL'' IN ( ' + @Team + ' ) )
 				AND
 					CASE
 						WHEN @SubcontractedProvision IS NULL THEN 1
@@ -380,8 +365,6 @@ BEGIN
 				' + COALESCE ( @WhereClause, '' ) + '
 			GROUP BY
 				PA.EndYear,
-				CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderID ELSE 0 END,
-				CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderName ELSE ''COLLEGE GROUP'' END,
 				' + @GroupBy + ',
 				NR.RetPer,
 				NR.AchPer
@@ -393,8 +376,6 @@ BEGIN
 	
 			SELECT
 				EndYear = PA.EndYear,
-				ProviderID = CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderID ELSE 0 END,
-				ProviderName = CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderName ELSE ''COLLEGE GROUP'' END,
 				SortGroup = 0,
 				SortOrder = 1,
 				CriteriaTitle = @CriteriaTitle,
@@ -434,19 +415,10 @@ BEGIN
 				PA.EndYear BETWEEN 
 					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
 					AND @EndYear
-				AND PA.ProviderID = COALESCE ( @ProviderID, PA.ProviderID )
 				AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
-				AND 
-					CASE
-						WHEN @Campus IS NULL THEN 1
-						ELSE
-							CASE
-								WHEN @Campus = PA.CampusID THEN 1
-								ELSE 0
-							END
-					END = 1
-				--AND COALESCE ( PA.FacCode, ''-'' ) = COALESCE ( @Faculty, PA.FacCode, ''-'' )
-				--AND COALESCE ( PA.TeamCode, ''-'' ) = COALESCE ( @Team, PA.TeamCode, ''-'' )
+				AND ( PA.CollegeCode IN ( ' + @College + ' ) OR ''ALL'' IN ( ' + @College + ' ) )
+				--AND ( PA.FacCode IN ( ' + @Fac + ' ) OR ''ALL'' IN ( ' + @Fac + ' ) )
+				--AND ( PA.TeamCode IN ( ' + @Team + ' ) OR ''ALL'' IN ( ' + @Team + ' ) )
 				AND
 					CASE
 						WHEN @SubcontractedProvision IS NULL THEN 1
@@ -466,8 +438,6 @@ BEGIN
 				' + COALESCE ( @WhereClause, '' ) + '
 			GROUP BY
 				PA.EndYear,
-				CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderID ELSE 0 END,
-				CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderName ELSE ''COLLEGE GROUP'' END,
 				' + @GroupBy + ',
 				PA.AgeGroup,
 				NR.RetPer,
@@ -481,8 +451,6 @@ BEGIN
 			--Faculty
 			SELECT
 				PA.EndYear,
-				ProviderID = CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderID ELSE 0 END,
-				ProviderName = CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderName ELSE ''COLLEGE GROUP'' END,
 				SortGroup = 1,
 				SortOrder = 0,
 				CriteriaTitle = @CriteriaTitle,
@@ -521,19 +489,10 @@ BEGIN
 				PA.EndYear BETWEEN 
 					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
 					AND @EndYear
-				AND PA.ProviderID = COALESCE ( @ProviderID, PA.ProviderID )
 				AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
-				AND 
-					CASE
-						WHEN @Campus IS NULL THEN 1
-						ELSE
-							CASE
-								WHEN @Campus = PA.CampusID THEN 1
-								ELSE 0
-							END
-					END = 1
-				AND COALESCE ( PA.FacCode, ''-'' ) = COALESCE ( @Faculty, PA.FacCode, ''-'' )
-				AND COALESCE ( PA.TeamCode, ''-'' ) = COALESCE ( @Team, PA.TeamCode, ''-'' )
+				AND ( PA.CollegeCode IN ( ' + @College + ' ) OR ''ALL'' IN ( ' + @College + ' ) )
+				AND ( PA.FacCode IN ( ' + @Fac + ' ) OR ''ALL'' IN ( ' + @Fac + ' ) )
+				AND ( PA.TeamCode IN ( ' + @Team + ' ) OR ''ALL'' IN ( ' + @Team + ' ) )
 				AND
 					CASE
 						WHEN @SubcontractedProvision IS NULL THEN 1
@@ -553,8 +512,6 @@ BEGIN
 				' + COALESCE ( @WhereClause, '' ) + '
 			GROUP BY
 				PA.EndYear,
-				CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderID ELSE 0 END,
-				CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderName ELSE ''COLLEGE GROUP'' END,
 				' + @GroupBy + ',
 				NR.RetPer,
 				NR.AchPer,
@@ -567,8 +524,6 @@ BEGIN
 	
 			SELECT
 				EndYear = PA.EndYear,
-				ProviderID = CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderID ELSE 0 END,
-				ProviderName = CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderName ELSE ''COLLEGE GROUP'' END,
 				SortGroup = 1,
 				SortOrder = 1,
 				CriteriaTitle = @CriteriaTitle,
@@ -608,19 +563,10 @@ BEGIN
 				PA.EndYear BETWEEN 
 					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
 					AND @EndYear
-				AND PA.ProviderID = COALESCE ( @ProviderID, PA.ProviderID )
 				AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
-				AND 
-					CASE
-						WHEN @Campus IS NULL THEN 1
-						ELSE
-							CASE
-								WHEN @Campus = PA.CampusID THEN 1
-								ELSE 0
-							END
-					END = 1
-				AND COALESCE ( PA.FacCode, ''-'' ) = COALESCE ( @Faculty, PA.FacCode, ''-'' )
-				AND COALESCE ( PA.TeamCode, ''-'' ) = COALESCE ( @Team, PA.TeamCode, ''-'' )
+				AND ( PA.CollegeCode IN ( ' + @College + ' ) OR ''ALL'' IN ( ' + @College + ' ) )
+				AND ( PA.FacCode IN ( ' + @Fac + ' ) OR ''ALL'' IN ( ' + @Fac + ' ) )
+				AND ( PA.TeamCode IN ( ' + @Team + ' ) OR ''ALL'' IN ( ' + @Team + ' ) )
 				AND
 					CASE
 						WHEN @SubcontractedProvision IS NULL THEN 1
@@ -640,8 +586,6 @@ BEGIN
 				' + COALESCE ( @WhereClause, '' ) + '
 			GROUP BY
 				PA.EndYear,
-				CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderID ELSE 0 END,
-				CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderName ELSE ''COLLEGE GROUP'' END,
 				' + @GroupBy + ',
 				PA.AgeGroup,
 				NR.RetPer,
@@ -656,8 +600,6 @@ BEGIN
 			--Team
 			SELECT
 				PA.EndYear,
-				ProviderID = CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderID ELSE 0 END,
-				ProviderName = CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderName ELSE ''COLLEGE GROUP'' END,
 				SortGroup = 2,
 				SortOrder = 0,
 				CriteriaTitle = @CriteriaTitle,
@@ -696,19 +638,10 @@ BEGIN
 				PA.EndYear BETWEEN 
 					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
 					AND @EndYear
-				AND PA.ProviderID = COALESCE ( @ProviderID, PA.ProviderID )
 				AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
-				AND 
-					CASE
-						WHEN @Campus IS NULL THEN 1
-						ELSE
-							CASE
-								WHEN @Campus = PA.CampusID THEN 1
-								ELSE 0
-							END
-					END = 1
-				AND COALESCE ( PA.FacCode, ''-'' ) = COALESCE ( @Faculty, PA.FacCode, ''-'' )
-				AND COALESCE ( PA.TeamCode, ''-'' ) = COALESCE ( @Team, PA.TeamCode, ''-'' )
+				AND ( PA.CollegeCode IN ( ' + @College + ' ) OR ''ALL'' IN ( ' + @College + ' ) )
+				AND ( PA.FacCode IN ( ' + @Fac + ' ) OR ''ALL'' IN ( ' + @Fac + ' ) )
+				AND ( PA.TeamCode IN ( ' + @Team + ' ) OR ''ALL'' IN ( ' + @Team + ' ) )
 				AND
 					CASE
 						WHEN @SubcontractedProvision IS NULL THEN 1
@@ -728,8 +661,6 @@ BEGIN
 				' + COALESCE ( @WhereClause, '' ) + '
 			GROUP BY
 				PA.EndYear,
-				CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderID ELSE 0 END,
-				CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderName ELSE ''COLLEGE GROUP'' END,
 				' + @GroupBy + ',
 				NR.RetPer,
 				NR.AchPer,
@@ -743,8 +674,6 @@ BEGIN
 	
 			SELECT
 				EndYear = PA.EndYear,
-				ProviderID = CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderID ELSE 0 END,
-				ProviderName = CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderName ELSE ''COLLEGE GROUP'' END,
 				SortGroup = 2,
 				SortOrder = 1,
 				CriteriaTitle = @CriteriaTitle,
@@ -784,20 +713,10 @@ BEGIN
 				PA.EndYear BETWEEN 
 					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
 					AND @EndYear
-				AND PA.ProviderID = COALESCE ( @ProviderID, PA.ProviderID )
 				AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
-
-				AND 
-					CASE
-						WHEN @Campus IS NULL THEN 1
-						ELSE
-							CASE
-								WHEN @Campus = PA.CampusID THEN 1
-								ELSE 0
-							END
-					END = 1
-				AND COALESCE ( PA.FacCode, ''-'' ) = COALESCE ( @Faculty, PA.FacCode, ''-'' )
-				AND COALESCE ( PA.TeamCode, ''-'' ) = COALESCE ( @Team, PA.TeamCode, ''-'' )
+				AND ( PA.CollegeCode IN ( ' + @College + ' ) OR ''ALL'' IN ( ' + @College + ' ) )
+				AND ( PA.FacCode IN ( ' + @Fac + ' ) OR ''ALL'' IN ( ' + @Fac + ' ) )
+				AND ( PA.TeamCode IN ( ' + @Team + ' ) OR ''ALL'' IN ( ' + @Team + ' ) )
 				AND
 					CASE
 						WHEN @SubcontractedProvision IS NULL THEN 1
@@ -817,8 +736,6 @@ BEGIN
 				' + COALESCE ( @WhereClause, '' ) + '
 			GROUP BY
 				PA.EndYear,
-				CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderID ELSE 0 END,
-				CASE WHEN @ProviderID IS NOT NULL THEN PA.ProviderName ELSE ''COLLEGE GROUP'' END,
 				' + @GroupBy + ',
 				PA.AgeGroup,
 				NR.RetPer,
@@ -827,8 +744,6 @@ BEGIN
 				PA.TeamCode + '' - '' + PA.TeamName
 		) PRA
 		GROUP BY
-			PRA.ProviderID,
-			PRA.ProviderName,
 			PRA.CriteriaTitle,
 			PRA.CriteriaOrder,
 			PRA.GroupByFields,
@@ -839,7 +754,6 @@ BEGIN
 			PRA.Team,
 			PRA.AgeGroup
 		ORDER BY
-			PRA.ProviderID,
 			PRA.CriteriaOrder,
 			PRA.SortGroup,
 			PRA.Faculty,
@@ -852,12 +766,11 @@ BEGIN
 
 	SET @SQLParams = 
         N'@EndYear NVARCHAR(5),
-		@ProviderID INT,
 		@SummaryCourseType NVARCHAR(2),
 		@SummaryType NVARCHAR(20),
 		@SummaryMeasure NVARCHAR(20),
-		@Campus NVARCHAR(8),
-		@Faculty NVARCHAR(50),
+		@College NVARCHAR(50),
+		@Fac NVARCHAR(50),
 		@Team NVARCHAR(50),
 		@SubcontractedProvision BIT,
 		@DisplayHeadline BIT,
@@ -874,12 +787,11 @@ BEGIN
         @SQLString, 
         @SQLParams, 
 		@EndYear = @EndYear,
-        @ProviderID = @ProviderID, 
 		@SummaryCourseType = @SummaryCourseType,
         @SummaryType = @SummaryType,
 		@SummaryMeasure = @SummaryMeasure,
-		@Campus = @Campus,
-		@Faculty = @Faculty,
+		@College = @College,
+		@Fac = @Fac,
 		@Team = @Team,
 		@SubcontractedProvision = @SubcontractedProvision,
 		@DisplayHeadline = @DisplayHeadline,
