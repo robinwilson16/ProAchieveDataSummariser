@@ -1,5 +1,5 @@
 DECLARE @ProviderID INT = 10001475 --Provider Ref of the college
-DECLARE @ProviderRef NVARCHAR(50) = 'HS' --Reference to save into table in case title too long for charts etc.
+DECLARE @ProviderRef NVARCHAR(50) = 'EPNE' --Reference to save into table in case title too long for charts etc.
 DECLARE @AcademicYear NVARCHAR(5) = ''
 
 SET @AcademicYear = (SELECT CFG.Value FROM Config CFG WHERE CFG.ConfigID = 'PRA_AcademicYearID')

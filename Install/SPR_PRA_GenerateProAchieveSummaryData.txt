@@ -180,7 +180,7 @@ BEGIN
 					Grade NVARCHAR(8) NULL,
 					FundModelCode NVARCHAR(5) NOT NULL,
 					FundModelName NVARCHAR(16) NOT NULL,
-					FundStream NVARCHAR(2) NOT NULL,
+					FundStream NVARCHAR(2) NULL,
 					IsEFAFunded INT NOT NULL,
 					IsAdvLearnLoanFunded INT NULL,
 					IsStart INT NULL,
