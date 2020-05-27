@@ -35,6 +35,18 @@ BEGIN
 
     SET @SQLString = 
         N'
+		DECLARE @NatRateYear NVARCHAR(5) = NULL
+
+		SELECT
+			@NatRateYear = 
+				CASE
+					WHEN @AcademicYear >= MAX ( NR.PG_ExpEndYrID ) THEN MAX ( NR.PG_ExpEndYrID )
+					ELSE @AcademicYear
+				END
+		FROM besql05.ProAchieve.dbo.PG_NationalRates_CL_Qual_Timely NR
+		WHERE
+			NR.PG_CollegeTypeID = @CollegeType
+		
 		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData WITH (TABLOCKX)
 		SELECT
 			EndYear = CL.PG_ExpEndYrID,
@@ -404,6 +416,7 @@ BEGIN
 			IsRet = CL.PVCont + CL.P_Complete_TimelyQSRExclude,
 			IsAch = CL.P_Ach_TimelyQSRExclude,
 			IsAchBestCase = CL.P_Ach_Timely_BestCase,
+			IsPassHigh = CL.PVHigh,
 			IsPassAToC = CL.CLPassRateAC_Timely,
 			FrameworkStatusCode = NULL,
 			FrameworkStatusName = NULL,
@@ -654,118 +667,87 @@ BEGIN
         N'
 		LEFT JOIN (
 			SELECT
-				PG_ExpEndYrID = MAX ( NR.PG_ExpEndYrID )
-			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_Qual_Timely NR
-			WHERE
-				NR.PG_CollegeTypeID = @CollegeType
-		) NR_L
-			ON 1 = 1
-		LEFT JOIN (
-			SELECT
 				NR.PG_ExpEndYrID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_YR
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_YR.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_YR.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_YR.PG_ExpEndYrID = @NatRateYear
 		LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
-			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
-			GROUP BY
-				NR.PG_ExpEndYrID
-		) NR_YRA
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_YRA.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_YRA.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
-		LEFT JOIN (
-			SELECT
-				NR.PG_ExpEndYrID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 2
-			GROUP BY
-				NR.PG_ExpEndYrID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = 0
+				AND NR.PG_AgeLSCID IS NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
+		) NR_YRA
+			ON NR_YRA.PG_ExpEndYrID = @NatRateYear
+		LEFT JOIN (
+			SELECT
+				NR.PG_ExpEndYrID,
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
+			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
+			WHERE
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = 2
+				AND NR.PG_AgeLSCID IS NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_YRG
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_YRG.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_YRG.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_YRG.PG_ExpEndYrID = @NatRateYear
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_Qual_Timely NR_AIM
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_AIM.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_AIM.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_AIM.PG_ExpEndYrID = @NatRateYear
 			AND NR_AIM.PG_CollegeTypeID = @CollegeType
 			AND NR_AIM.PG_AimID = CL.PG_AimID
 			AND NR_AIM.PG_MapID IS NULL
@@ -778,77 +760,60 @@ BEGIN
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_QualSizeID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_QualSizeID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NOT NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_QS
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_QS.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_QS.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_QS.PG_ExpEndYrID = @NatRateYear
 			AND NR_QS.PG_QualSizeID = CL.PG_QualSizeID
 		LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_QualSizeID,
 				NR.PG_AgeLSCID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_QualSizeID,
-				NR.PG_AgeLSCID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NOT NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NOT NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_QSAGE
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_QSAGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_QSAGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_QSAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_QSAGE.PG_QualSizeID = CL.PG_QualSizeID
 			AND NR_QSAGE.PG_AgeLSCID = CL.PG_AgeLSCID
 	'
@@ -859,114 +824,89 @@ BEGIN
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_AgeLSCID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_AgeLSCID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NOT NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_AGE
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_AGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_AGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_AGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_AGE.PG_AgeLSCID = CL.PG_AgeLSCID
 		LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_SexID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_SexID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NOT NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_GEN
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_GEN.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_GEN.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_GEN.PG_ExpEndYrID = @NatRateYear
 			AND NR_GEN.PG_SexID = CL.PG_SexID
 		LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_AgeLSCID,
 				NR.PG_SexID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_AgeLSCID,
-				NR.PG_SexID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NOT NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NOT NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_GENAGE
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_GENAGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_GENAGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_GENAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_GENAGE.PG_AgeLSCID = CL.PG_AgeLSCID
 			AND NR_GENAGE.PG_SexID = CL.PG_SexID
     '
@@ -977,77 +917,60 @@ BEGIN
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_NVQLevelCPRID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_NVQLevelCPRID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NULL
+				AND NR.PG_NVQLevelCPRID IS NOT NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_LEV
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_LEV.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_LEV.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_LEV.PG_ExpEndYrID = @NatRateYear
 			AND NR_LEV.PG_NVQLevelCPRID = CL.PG_NVQLevelCPRID
         LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_NVQLevelCPRID,
                 NR.PG_AgeLSCID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_NVQLevelCPRID,
-                NR.PG_AgeLSCID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NOT NULL
+				AND NR.PG_NVQLevelCPRID IS NOT NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_LEVAGE
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_LEVAGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_LEVAGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_LEVAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_LEVAGE.PG_NVQLevelCPRID = CL.PG_NVQLevelCPRID
             AND NR_LEVAGE.PG_AgeLSCID = CL.PG_AgeLSCID
 	'
@@ -1058,78 +981,60 @@ BEGIN
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_NVQLevelGroupID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_NVQLevelGroupID
-
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NOT NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_LEVG
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_LEVG.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_LEVG.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_LEVG.PG_ExpEndYrID = @NatRateYear
 			AND NR_LEVG.PG_NVQLevelGroupID = CL.PG_NVQLevelGroupID
         LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_NVQLevelGroupID,
                 NR.PG_AgeLSCID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_NVQLevelGroupID,
-                NR.PG_AgeLSCID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NOT NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NOT NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_LEVGAGE
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_LEVGAGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_LEVGAGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_LEVGAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_LEVGAGE.PG_NVQLevelGroupID = CL.PG_NVQLevelGroupID
             AND NR_LEVGAGE.PG_AgeLSCID = CL.PG_AgeLSCID
     '
@@ -1140,77 +1045,60 @@ BEGIN
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_EthnicityID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_EthnicityID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NOT NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_ETH
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_ETH.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_ETH.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_ETH.PG_ExpEndYrID = @NatRateYear
 			AND NR_ETH.PG_EthnicityID = CL.PG_EthnicityID
         LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_EthnicityID,
                 NR.PG_AgeLSCID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_EthnicityID,
-                NR.PG_AgeLSCID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NOT NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NOT NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_ETHAGE
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_ETHAGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_ETHAGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_ETHAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_ETHAGE.PG_EthnicityID = CL.PG_EthnicityID
             AND NR_ETHAGE.PG_AgeLSCID = CL.PG_AgeLSCID
 	'
@@ -1221,77 +1109,60 @@ BEGIN
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_EthnicGroupID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_EthnicGroupID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NOT NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_ETHG
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_ETHG.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_ETHG.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_ETHG.PG_ExpEndYrID = @NatRateYear
 			AND NR_ETHG.PG_EthnicGroupID = CL.PG_EthnicGroupID
         LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_EthnicGroupID,
                 NR.PG_AgeLSCID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_EthnicGroupID,
-                NR.PG_AgeLSCID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NOT NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NOT NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_ETHGAGE
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_ETHGAGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_ETHGAGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_ETHGAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_ETHGAGE.PG_EthnicGroupID = CL.PG_EthnicGroupID
             AND NR_ETHGAGE.PG_AgeLSCID = CL.PG_AgeLSCID
 	'
@@ -1302,77 +1173,60 @@ BEGIN
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_SSA1ID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_SSA1ID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NOT NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_SSA1
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_SSA1.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_SSA1.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_SSA1.PG_ExpEndYrID = @NatRateYear
 			AND NR_SSA1.PG_SSA1ID = CL.PG_SSA1ID
 		LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_SSA1ID,
 				NR.PG_AgeLSCID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_SSA1ID,
-				NR.PG_AgeLSCID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NOT NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NOT NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_SSA1AGE
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_SSA1AGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_SSA1AGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_SSA1AGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_SSA1AGE.PG_SSA1ID = CL.PG_SSA1ID
 			AND NR_SSA1AGE.PG_AgeLSCID = CL.PG_AgeLSCID
 	'
@@ -1383,77 +1237,60 @@ BEGIN
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_SSA2ID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_SSA2ID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NOT NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_SSA2
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_SSA2.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_SSA2.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_SSA2.PG_ExpEndYrID = @NatRateYear
 			AND NR_SSA2.PG_SSA2ID = CL.PG_SSA2ID
 		LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_SSA2ID,
 				NR.PG_AgeLSCID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_SSA2ID,
-				NR.PG_AgeLSCID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NOT NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NOT NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_SSA2AGE
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_SSA2AGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_SSA2AGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_SSA2AGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_SSA2AGE.PG_SSA2ID = CL.PG_SSA2ID
 			AND NR_SSA2AGE.PG_AgeLSCID = CL.PG_AgeLSCID
     '
@@ -1464,77 +1301,60 @@ BEGIN
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_DifficultyOrDisabilityID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_DifficultyOrDisabilityID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NOT NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_DIF
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_DIF.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_DIF.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_DIF.PG_ExpEndYrID = @NatRateYear
 			AND NR_DIF.PG_DifficultyOrDisabilityID = CL.PG_DifficultyOrDisabilityID
         LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
 				NR.PG_DifficultyOrDisabilityID,
                 NR.PG_AgeLSCID,
-				Leave = SUM ( NR.BM_Count_Timely ),
-				Ach = SUM ( NR.BM_Ach_Timely ),
-				AchPer = 
-					CASE
-						WHEN SUM ( NR.BM_Count_Timely ) = 0 THEN 0
-						ELSE 
-							ROUND ( CAST ( SUM ( NR.BM_Ach_Timely ) AS FLOAT ) / CAST ( SUM ( NR.BM_Count_Timely ) AS FLOAT ), 3 )
-					END
+				Leave = NR.BM_Count_Timely / 100,
+				Ach = NULL,
+				AchPer = NR.BM_AchCount_Timely / 100
 			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_High_Timely NR
 			WHERE
-				NR.PG_CollegeTypeID = 
-					CASE
-						WHEN @CollegeType = 0 THEN NR.PG_CollegeTypeID 
-						ELSE @CollegeType
-					END
-			GROUP BY
-				NR.PG_ExpEndYrID,
-				NR.PG_DifficultyOrDisabilityID,
-                NR.PG_AgeLSCID
+				NR.PG_ExpEndYrID = @NatRateYear
+				AND NR.PG_CollegeTypeID = @CollegeType
+				AND NR.PG_AgeLSCID IS NOT NULL
+				AND NR.PG_NVQLevelCPRID IS NULL
+				AND NR.PG_NVQLevelGroupID IS NULL
+				AND NR.PM_MS_GroupID IS NULL
+				AND NR.PG_QualSizeID IS NULL
+				AND NR.PG_SSA1ID IS NULL
+				AND NR.PG_SSA2ID IS NULL
+				AND NR.PG_SexID IS NULL
+				AND NR.PG_EthnicityID IS NULL
+				AND NR.PG_EthnicGroupID IS NULL
+				AND NR.PG_DisabilityID IS NULL
+				AND NR.PG_LearningDifficultyID IS NULL
+				AND NR.PG_DifficultyOrDisabilityID IS NOT NULL
+				AND NR.GN_FullLevelCategoryID IS NULL
+				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_DIFAGE
-			ON
-				CASE
-					WHEN CL.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_DIFAGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN CL.PG_ExpEndYrID = NR_DIFAGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_DIFAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_DIFAGE.PG_DifficultyOrDisabilityID = CL.PG_DifficultyOrDisabilityID
             AND NR_DIFAGE.PG_AgeLSCID = CL.PG_AgeLSCID
 

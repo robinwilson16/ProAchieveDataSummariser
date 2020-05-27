@@ -354,6 +354,7 @@ BEGIN
 				HE.P_Ach_OverallQSRExclude
 				+
 				HE.PVCont,
+			IsPassHigh = HE.PVHigh,
 			IsPassAToC = 0,
 			FrameworkStatusCode = NULL,
 			FrameworkStatusName = NULL,

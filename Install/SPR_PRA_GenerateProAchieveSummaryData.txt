@@ -204,6 +204,7 @@ BEGIN
 					IsRet INT NULL,
 					IsAch INT NULL,
 					IsAchBestCase INT NULL,
+					IsPassHigh INT NULL,
 					IsPassAToC INT NULL,
 					FrameworkStatusCode INT NULL,
 					FrameworkStatusName NVARCHAR(128),

@@ -35,6 +35,14 @@ BEGIN
 
     SET @SQLString = 
         N'
+		DECLARE @NatRateYear NVARCHAR(5) = NULL
+
+		SELECT
+			@NatRateYear = MAX ( NR.PG_ExpEndYrID )
+		FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR
+		WHERE
+			NR.PG_CollegeTypeID = @CollegeType
+		
 		INSERT INTO ' + @OutputTableLocation + 'PRA_ProAchieveSummaryData WITH (TABLOCKX)
 		SELECT
 			EndYear = ER.PG_ExpEndYrID,
@@ -450,6 +458,7 @@ BEGIN
 					WHEN ER.WB_FrameworkStatusID = 3 THEN ER.WBLeave
 					ELSE 0
 				END,
+			IsPassHigh = 0,
 			IsPassAToC = 0,
 			FrameworkStatusCode = ER.WB_FrameworkStatusID,
 			FrameworkStatusName = FWKS.WB_FrameworkStatusName,
@@ -695,28 +704,8 @@ BEGIN
 
     SET @SQLString += 
         N'
-		LEFT JOIN (
-			SELECT
-				PG_ExpEndYrID = MAX ( NR.PG_ExpEndYrID )
-			FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR
-			WHERE
-				NR.PG_CollegeTypeID = @CollegeType
-		) NR_L
-			ON 1 = 1
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_YR
-			ON 
-				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_YR.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_YR.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_YR.PG_ExpEndYrID = @NatRateYear
 			AND NR_YR.PG_CollegeTypeID = @CollegeType
 			AND NR_YR.PG_WBLFundAgeGroupID IS NULL
 			AND NR_YR.PG_SSA1ID IS NULL
@@ -728,19 +717,7 @@ BEGIN
 			AND NR_YR.PG_DifficultyorDisabilityID IS NULL
 			AND NR_YR.PG_LearningDifficultyID IS NULL
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_YRA
-			ON 
-				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_YRA.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_YRA.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_YRA.PG_ExpEndYrID = @NatRateYear
 			AND NR_YRA.PG_CollegeTypeID = 0
 			AND NR_YRA.PG_WBLFundAgeGroupID IS NULL
 			AND NR_YRA.PG_SSA1ID IS NULL
@@ -752,19 +729,7 @@ BEGIN
 			AND NR_YRA.PG_DifficultyorDisabilityID IS NULL
 			AND NR_YRA.PG_LearningDifficultyID IS NULL
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_YRG
-			ON 
-				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_YRG.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_YRG.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_YRG.PG_ExpEndYrID = @NatRateYear
 			AND NR_YRG.PG_CollegeTypeID = 2
 			AND NR_YRG.PG_WBLFundAgeGroupID IS NULL
 			AND NR_YRG.PG_SSA1ID IS NULL
@@ -776,18 +741,7 @@ BEGIN
 			AND NR_YRG.PG_DifficultyorDisabilityID IS NULL
 			AND NR_YRG.PG_LearningDifficultyID IS NULL
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_FW
-			ON CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_FW.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_FW.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_FW.PG_ExpEndYrID = @NatRateYear
 			AND NR_FW.PG_CollegeTypeID = @CollegeType
 			AND NR_FW.PG_WBLFundAgeGroupID IS NULL
 			AND NR_FW.PG_SSA1ID IS NULL
@@ -800,18 +754,7 @@ BEGIN
     SET @SQLString += 
         N'
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Fwrk_Timely NR_FWPGSSA 
-			ON CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_FWPGSSA.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_FWPGSSA.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_FWPGSSA.PG_ExpEndYrID = @NatRateYear
 			AND NR_FWPGSSA.PG_CollegeTypeID = @CollegeType
 			AND NR_FWPGSSA.PG_WBLFundAgeGroupID IS NULL
 			AND NR_FWPGSSA.PG_SSA1ID = ER.PG_SSA1ID
@@ -820,19 +763,7 @@ BEGIN
 			AND NR_FWPGSSA.PG_FrameworkID = ER.PG_FrameworkID
 			AND NR_FWPGSSA.PG_AppStandardID IS NULL
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_AGE
-			ON 
-				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_AGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_AGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_AGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_AGE.PG_CollegeTypeID = @CollegeType
 			AND NR_AGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 			AND NR_AGE.PG_SSA1ID IS NULL
@@ -844,19 +775,7 @@ BEGIN
 			AND NR_AGE.PG_DifficultyorDisabilityID IS NULL
 			AND NR_AGE.PG_LearningDifficultyID IS NULL
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_GEN
-			ON 
-				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_GEN.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_GEN.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_GEN.PG_ExpEndYrID = @NatRateYear
 			AND NR_GEN.PG_CollegeTypeID = @CollegeType
 			AND NR_GEN.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 			AND NR_GEN.PG_SSA1ID IS NULL
@@ -868,19 +787,7 @@ BEGIN
 			AND NR_GEN.PG_DifficultyorDisabilityID IS NULL
 			AND NR_GEN.PG_LearningDifficultyID IS NULL
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_GENAGE
-			ON 
-				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_GENAGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_GENAGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_GENAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_GENAGE.PG_CollegeTypeID = @CollegeType
 			AND NR_GENAGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 			AND NR_GENAGE.PG_SSA1ID IS NULL
@@ -896,19 +803,7 @@ BEGIN
     SET @SQLString += 
         N'
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_SSA1
-			ON 
-				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_SSA1.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_SSA1.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_SSA1.PG_ExpEndYrID = @NatRateYear
 			AND NR_SSA1.PG_CollegeTypeID = @CollegeType
 			AND NR_SSA1.PG_WBLFundAgeGroupID IS NULL
 			AND NR_SSA1.PG_SSA1ID = ER.PG_SSA1ID
@@ -920,19 +815,7 @@ BEGIN
 			AND NR_SSA1.PG_DifficultyorDisabilityID IS NULL
 			AND NR_SSA1.PG_LearningDifficultyID IS NULL
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_SSA1AGE
-			ON 
-				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_SSA1AGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_SSA1AGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_SSA1AGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_SSA1AGE.PG_CollegeTypeID = @CollegeType
 			AND NR_SSA1AGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 			AND NR_SSA1AGE.PG_SSA1ID = ER.PG_SSA1ID
@@ -948,19 +831,7 @@ BEGIN
     SET @SQLString += 
         N'
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_SSA2
-			ON 
-				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_SSA2.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_SSA2.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_SSA2.PG_ExpEndYrID = @NatRateYear
 			AND NR_SSA2.PG_CollegeTypeID = @CollegeType
 			AND NR_SSA2.PG_WBLFundAgeGroupID IS NULL
 			AND NR_SSA2.PG_SSA1ID IS NULL
@@ -972,19 +843,7 @@ BEGIN
 			AND NR_SSA2.PG_DifficultyorDisabilityID IS NULL
 			AND NR_SSA2.PG_LearningDifficultyID IS NULL
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_SSA2AGE
-			ON 
-				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_SSA2AGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_SSA2AGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_SSA2AGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_SSA2AGE.PG_CollegeTypeID = @CollegeType
 			AND NR_SSA2AGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 			AND NR_SSA2AGE.PG_SSA1ID IS NULL
@@ -1000,19 +859,7 @@ BEGIN
     SET @SQLString += 
         N'
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_LEV
-			ON 
-				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_LEV.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_LEV.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_LEV.PG_ExpEndYrID = @NatRateYear
 			AND NR_LEV.PG_CollegeTypeID = @CollegeType
 			AND NR_LEV.PG_WBLFundAgeGroupID IS NULL
 			AND NR_LEV.PG_SSA1ID IS NULL
@@ -1024,19 +871,7 @@ BEGIN
 			AND NR_LEV.PG_DifficultyorDisabilityID IS NULL
 			AND NR_LEV.PG_LearningDifficultyID IS NULL
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_LEVAGE
-			ON 
-				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_LEVAGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_LEVAGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_LEVAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_LEVAGE.PG_CollegeTypeID = @CollegeType
 			AND NR_LEVAGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 			AND NR_LEVAGE.PG_SSA1ID IS NULL
@@ -1052,19 +887,7 @@ BEGIN
     SET @SQLString += 
         N'
         LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_ETH
-			ON 
-				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_ETH.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_ETH.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_ETH.PG_ExpEndYrID = @NatRateYear
 			AND NR_ETH.PG_CollegeTypeID = @CollegeType
 			AND NR_ETH.PG_WBLFundAgeGroupID IS NULL
 			AND NR_ETH.PG_SSA1ID IS NULL
@@ -1076,19 +899,7 @@ BEGIN
 			AND NR_ETH.PG_DifficultyorDisabilityID IS NULL
 			AND NR_ETH.PG_LearningDifficultyID IS NULL
         LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_ETHAGE
-			ON 
-				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_ETHAGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_ETHAGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_ETHAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_ETHAGE.PG_CollegeTypeID = @CollegeType
 			AND NR_ETHAGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 			AND NR_ETHAGE.PG_SSA1ID IS NULL
@@ -1104,19 +915,7 @@ BEGIN
     SET @SQLString += 
         N'
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_DIF
-			ON 
-				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_DIF.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_DIF.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_DIF.PG_ExpEndYrID = @NatRateYear
 			AND NR_DIF.PG_CollegeTypeID = @CollegeType
 			AND NR_DIF.PG_WBLFundAgeGroupID IS NULL
 			AND NR_DIF.PG_SSA1ID IS NULL
@@ -1128,19 +927,7 @@ BEGIN
 			AND NR_DIF.PG_DifficultyorDisabilityID = ER.PG_DifficultyorDisabilityID
 			AND NR_DIF.PG_LearningDifficultyID IS NULL
         LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_DIFAGE
-			ON 
-				CASE
-					WHEN ER.PG_ExpEndYrID >= NR_L.PG_ExpEndYrID THEN
-						CASE
-							WHEN NR_DIFAGE.PG_ExpEndYrID = NR_L.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-					ELSE 
-						CASE
-							WHEN ER.PG_ExpEndYrID = NR_DIFAGE.PG_ExpEndYrID THEN 1
-							ELSE 0 
-						END
-				END = 1
+			ON NR_DIFAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_DIFAGE.PG_CollegeTypeID = @CollegeType
 			AND NR_DIFAGE.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
 			AND NR_DIFAGE.PG_SSA1ID IS NULL

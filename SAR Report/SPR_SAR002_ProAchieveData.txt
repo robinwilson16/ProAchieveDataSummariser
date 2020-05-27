@@ -1,4 +1,4 @@
-ALTER PROCEDURE [dbo].[SPR_SAR002_ProAchieveData]
+CREATE PROCEDURE [dbo].[SPR_SAR002_ProAchieveData]
 	@EndYear NVARCHAR(5),
 	@SummaryCourseType NVARCHAR(2),
 	@SummaryType NVARCHAR(20),

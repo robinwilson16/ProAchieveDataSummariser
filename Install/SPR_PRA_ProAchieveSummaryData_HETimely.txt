@@ -348,6 +348,7 @@ BEGIN
 			IsRet = HE.PVCont + HE.P_Complete_TimelyQSRExclude,
 			IsAch = HE.P_Ach_TimelyQSRExclude,
 			IsAchBestCase = HE.P_Ach_TimelyQSRExclude,
+			IsPassHigh = HE.PVHigh,
 			IsPassAToC = 0,
 			FrameworkStatusCode = NULL,
 			FrameworkStatusName = NULL,
