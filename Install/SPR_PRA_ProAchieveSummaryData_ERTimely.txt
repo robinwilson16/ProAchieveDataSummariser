@@ -777,13 +777,13 @@ BEGIN
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_GEN
 			ON NR_GEN.PG_ExpEndYrID = @NatRateYear
 			AND NR_GEN.PG_CollegeTypeID = @CollegeType
-			AND NR_GEN.PG_WBLFundAgeGroupID = ER.PG_WBLFundAgeGroupID
+			AND NR_GEN.PG_WBLFundAgeGroupID IS NULL
 			AND NR_GEN.PG_SSA1ID IS NULL
 			AND NR_GEN.PG_SSA2ID IS NULL
 			AND NR_GEN.PG_ProgTypeID IS NULL
 			AND NR_GEN.PG_EthnicityID IS NULL
 			AND NR_GEN.PG_EthnicityGroupQARID IS NULL
-			AND NR_GEN.PG_SexID IS NULL
+			AND NR_GEN.PG_SexID = ER.PG_SexID
 			AND NR_GEN.PG_DifficultyorDisabilityID IS NULL
 			AND NR_GEN.PG_LearningDifficultyID IS NULL
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_APP_Demo_Timely NR_GENAGE

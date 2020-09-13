@@ -8,6 +8,7 @@ CREATE PROCEDURE [dbo].[SPR_SAR002_ProAchieveData]
 	@Team NVARCHAR(50),
 	@SubcontractedProvision BIT,
 	@DisplayHeadline BIT,
+	@DisplayCollege BIT,
 	@DisplayFaculty BIT,
 	@DisplayTeam BIT,
 	@CriteriaTitle NVARCHAR(255),
@@ -27,11 +28,12 @@ BEGIN
 	--DECLARE @SummaryCourseType NVARCHAR(2) = 'CL'
 	--DECLARE @SummaryType NVARCHAR(20) = 'Overall'
 	--DECLARE @SummaryMeasure NVARCHAR(20) = 'RulesApplied'
-	--DECLARE @College NVARCHAR(50) = '''ALL'''
-	--DECLARE @Fac NVARCHAR(50) = '''ALL'''
-	--DECLARE @Team NVARCHAR(50) = '''ALL'''
+	--DECLARE @College NVARCHAR(50) = 'ALL'
+	--DECLARE @Fac NVARCHAR(50) = 'ALL'
+	--DECLARE @Team NVARCHAR(50) = 'ALL'
 	--DECLARE @SubcontractedProvision BIT = 1
 	--DECLARE @DisplayHeadline BIT = 1
+	--DECLARE @DisplayCollege BIT = 1
 	--DECLARE @DisplayFaculty BIT = 1
 	--DECLARE @DisplayTeam BIT = 1
 
@@ -58,123 +60,11 @@ BEGIN
 	DECLARE @SQLString NVARCHAR(MAX);
 	DECLARE @SQLParams NVARCHAR(MAX);
 
+	SET @College = REPLACE ( @College, ' ', '' )
+	SET @Fac = REPLACE ( @Fac, ' ', '' )
+	SET @Team = REPLACE ( @Team, ' ', '' )
+
 	SET @SQLString = 
-		N'
-		;WITH NatRatesAll AS (
-			SELECT
-				NR.EndYear,
-				NR.Grp,
-				Leave = SUM ( NR.Leave ),
-				Comp = SUM ( NR.Comp ),
-				Ach = SUM ( NR.Ach ),
-				RetPer = 
-					ROUND (
-						CASE
-							WHEN SUM ( NR.Leave ) = 0 THEN 0
-							ELSE
-								CAST ( SUM ( NR.Comp ) AS FLOAT )
-								/
-								CAST ( SUM ( NR.Leave ) AS FLOAT )
-						END
-					, 3 ),
-				AchPer = 
-					ROUND (
-						CASE
-							WHEN SUM ( NR.Leave ) = 0 THEN 0
-							ELSE
-								CAST ( SUM ( NR.Ach ) AS FLOAT )
-								/
-								CAST ( SUM ( NR.Leave ) AS FLOAT )
-						END
-					, 3 )
-			FROM (
-				SELECT
-					EndYear = PA.EndYear,
-					Grp = ' + @GroupBy + ',
-					Leave = PA.NatRate_' + @NatAvgAllAges + '_Leave,
-					Comp = PA.NatRate_' + @NatAvgAllAges + '_Comp,
-					Ach = PA.NatRate_' + @NatAvgAllAges + '_Ach
-				FROM PRA_ProAchieveSummaryData PA
-				WHERE
-					PA.EndYear BETWEEN 
-						CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
-						AND @EndYear
-					AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
-					AND ( PA.CollegeCode IN ( ' + @College + ' ) OR ''ALL'' IN ( ' + @College + ' ) )
-				GROUP BY
-					PA.EndYear,
-					' + @GroupBy + ',
-					PA.NatRate_' + @NatAvgAllAges + '_Leave,
-					PA.NatRate_' + @NatAvgAllAges + '_Comp,
-					PA.NatRate_' + @NatAvgAllAges + '_Ach
-			) NR
-			GROUP BY
-				NR.EndYear,
-				NR.Grp
-		),
-	'
-
-	SET @SQLString += 
-		N'
-		NatRates AS (
-			SELECT
-				NR.EndYear,
-				NR.Grp,
-				NR.AgeGroup,
-				Leave = SUM ( NR.Leave ),
-				Comp = SUM ( NR.Comp ),
-				Ach = SUM ( NR.Ach ),
-				RetPer = 
-					ROUND (
-						CASE
-							WHEN SUM ( NR.Leave ) = 0 THEN 0
-							ELSE
-								CAST ( SUM ( NR.Comp ) AS FLOAT )
-								/
-								CAST ( SUM ( NR.Leave ) AS FLOAT )
-						END
-					, 3 ),
-				AchPer = 
-					ROUND (
-						CASE
-							WHEN SUM ( NR.Leave ) = 0 THEN 0
-							ELSE
-								CAST ( SUM ( NR.Ach ) AS FLOAT )
-								/
-								CAST ( SUM ( NR.Leave ) AS FLOAT )
-						END
-					, 3 )
-			FROM (
-				SELECT
-					EndYear = PA.EndYear,
-					Grp = ' + @GroupBy + ',
-					AgeGroup = PA.AgeGroup,
-					Leave = PA.NatRate_' + @NatAvgAge + '_Leave,
-					Comp = PA.NatRate_' + @NatAvgAge + '_Comp,
-					Ach = PA.NatRate_' + @NatAvgAge + '_Ach
-				FROM PRA_ProAchieveSummaryData PA
-				WHERE
-					PA.EndYear BETWEEN 
-						CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
-						AND @EndYear
-					AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
-					AND ( PA.CollegeCode IN ( ' + @College + ' ) OR ''ALL'' IN ( ' + @College + ' ) )
-				GROUP BY
-					PA.EndYear,
-					' + @GroupBy + ',
-					PA.AgeGroup,
-					PA.NatRate_' + @NatAvgAge + '_Leave,
-					PA.NatRate_' + @NatAvgAge + '_Comp,
-					PA.NatRate_' + @NatAvgAge + '_Ach
-			) NR
-			GROUP BY
-				NR.EndYear,
-				NR.Grp,
-				NR.AgeGroup
-		)
-	'
-
-	SET @SQLString += 
         N'
 		SELECT
 			EndYear = @EndYear,
@@ -186,6 +76,7 @@ BEGIN
 			SortGroup = PRA.SortGroup,
 			SortOrder = PRA.SortOrder,
 			Title = PRA.Title,
+			College = PRA.College,
 			Faculty = PRA.Faculty,
 			Team = PRA.Team,
 			AgeGroup = PRA.AgeGroup,
@@ -304,12 +195,13 @@ BEGIN
 			--Headline
 			SELECT
 				PA.EndYear,
-				SortGroup = 0,
-				SortOrder = 0,
+				SortGroup = 1,
+				SortOrder = 1,
 				CriteriaTitle = @CriteriaTitle,
 				CriteriaOrder = @CriteriaOrder,
 				GroupByFields = ' + @GroupBy + ',
 				Title = ''College Level'',
+				College = NULL,
 				Faculty = NULL,
 				Team = NULL,
 				AgeGroup = ''All Ages'',
@@ -332,20 +224,17 @@ BEGIN
 						WHEN SUM ( PA.IsComp ) = 0 THEN 0
 						ELSE ROUND ( CAST ( SUM ( PA.IsAch ) AS FLOAT ) / CAST ( SUM ( PA.IsComp ) AS FLOAT ), 3 )
 					END,
-				NatRetRate = NR.RetPer,
-				NatAchRate = NR.AchPer
+				NatRetRate = PA.NatRate_' + @NatAvgAllAges + '_RetPer,
+				NatAchRate = PA.NatRate_' + @NatAvgAllAges + '_AchPer
 			FROM PRA_ProAchieveSummaryData PA
-			INNER JOIN NatRatesAll NR
-				ON NR.EndYear = PA.EndYear
-				AND NR.Grp = ' + @GroupBy + '
 			WHERE
 				PA.EndYear BETWEEN 
 					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
 					AND @EndYear
 				AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
-				AND ( PA.CollegeCode IN ( ' + @College + ' ) OR ''ALL'' IN ( ' + @College + ' ) )
-				--AND ( PA.FacCode IN ( ' + @Fac + ' ) OR ''ALL'' IN ( ' + @Fac + ' ) )
-				--AND ( PA.TeamCode IN ( ' + @Team + ' ) OR ''ALL'' IN ( ' + @Team + ' ) )
+				--AND ( PA.CollegeCode IN ( SELECT Value FROM STRING_SPLIT ( @College, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @College, '','' ) ) )
+				--AND ( PA.FacCode IN ( SELECT Value FROM STRING_SPLIT ( @Fac, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @Fac, '','' ) ) )
+				--AND ( PA.TeamCode IN ( SELECT Value FROM STRING_SPLIT ( @Team, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @Team, '','' ) ) )
 				AND
 					CASE
 						WHEN @SubcontractedProvision IS NULL THEN 1
@@ -366,8 +255,8 @@ BEGIN
 			GROUP BY
 				PA.EndYear,
 				' + @GroupBy + ',
-				NR.RetPer,
-				NR.AchPer
+				PA.NatRate_' + @NatAvgAllAges + '_RetPer,
+				PA.NatRate_' + @NatAvgAllAges + '_AchPer
 	'
 
     SET @SQLString += 
@@ -376,12 +265,13 @@ BEGIN
 	
 			SELECT
 				EndYear = PA.EndYear,
-				SortGroup = 0,
-				SortOrder = 1,
+				SortGroup = 1,
+				SortOrder = 2,
 				CriteriaTitle = @CriteriaTitle,
 				CriteriaOrder = @CriteriaOrder,
 				GroupByFields = ' + @GroupBy + ',
 				Title = ''College Level'',
+				College = NULL,
 				Faculty = NULL,
 				Team = NULL,
 				AgeGroup = PA.AgeGroup,
@@ -404,21 +294,17 @@ BEGIN
 						WHEN SUM ( PA.IsComp ) = 0 THEN 0
 						ELSE ROUND ( CAST ( SUM ( PA.IsAch ) AS FLOAT ) / CAST ( SUM ( PA.IsComp ) AS FLOAT ), 3 )
 					END,
-				NatRetRate = NR.RetPer,
-				NatAchRate = NR.AchPer
+				NatRetRate = PA.NatRate_' + @NatAvgAge + '_RetPer,
+				NatAchRate = PA.NatRate_' + @NatAvgAge + '_AchPer
 			FROM PRA_ProAchieveSummaryData PA
-			INNER JOIN NatRates NR
-				ON NR.EndYear = PA.EndYear
-				AND NR.Grp = ' + @GroupBy + '
-				AND NR.AgeGroup = PA.AgeGroup
 			WHERE
 				PA.EndYear BETWEEN 
 					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
 					AND @EndYear
 				AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
-				AND ( PA.CollegeCode IN ( ' + @College + ' ) OR ''ALL'' IN ( ' + @College + ' ) )
-				--AND ( PA.FacCode IN ( ' + @Fac + ' ) OR ''ALL'' IN ( ' + @Fac + ' ) )
-				--AND ( PA.TeamCode IN ( ' + @Team + ' ) OR ''ALL'' IN ( ' + @Team + ' ) )
+				--AND ( PA.CollegeCode IN ( SELECT Value FROM STRING_SPLIT ( @College, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @College, '','' ) ) )
+				--AND ( PA.FacCode IN ( SELECT Value FROM STRING_SPLIT ( @Fac, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @Fac, '','' ) ) )
+				--AND ( PA.TeamCode IN ( SELECT Value FROM STRING_SPLIT ( @Team, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @Team, '','' ) ) )
 				AND
 					CASE
 						WHEN @SubcontractedProvision IS NULL THEN 1
@@ -440,8 +326,152 @@ BEGIN
 				PA.EndYear,
 				' + @GroupBy + ',
 				PA.AgeGroup,
-				NR.RetPer,
-				NR.AchPer
+				PA.NatRate_' + @NatAvgAge + '_RetPer,
+				PA.NatRate_' + @NatAvgAge + '_AchPer
+	'
+
+	SET @SQLString += 
+		N'
+			UNION ALL
+
+			--College
+			SELECT
+				PA.EndYear,
+				SortGroup = 2,
+				SortOrder = 1,
+				CriteriaTitle = @CriteriaTitle,
+				CriteriaOrder = @CriteriaOrder,
+				GroupByFields = ' + @GroupBy + ',
+				Title = ''College Level'',
+				College = PA.CollegeCode + '' - '' + PA.CollegeName,
+				Faculty = NULL,
+				Team = NULL,
+				AgeGroup = ''All Ages'',
+				Leavers = SUM ( PA.IsLeaver ),
+				Retained = SUM ( PA.IsRet ),
+				RetainedPer = 
+					CASE
+						WHEN SUM ( PA.IsLeaver ) = 0 THEN 0
+						ELSE ROUND ( CAST ( SUM ( PA.IsComp ) AS FLOAT ) / CAST ( SUM ( PA.IsLeaver ) AS FLOAT ), 3 )
+					END,
+				Completed = SUM ( PA.IsComp ),
+				Achieved = SUM ( PA.IsAch ),
+				AchievedPer = 
+					CASE
+						WHEN SUM ( PA.IsLeaver ) = 0 THEN 0
+						ELSE ROUND ( CAST ( SUM ( PA.IsAch ) AS FLOAT ) / CAST ( SUM ( PA.IsLeaver ) AS FLOAT ), 3 )
+					END,
+				PassedPer = 
+					CASE
+						WHEN SUM ( PA.IsComp ) = 0 THEN 0
+						ELSE ROUND ( CAST ( SUM ( PA.IsAch ) AS FLOAT ) / CAST ( SUM ( PA.IsComp ) AS FLOAT ), 3 )
+					END,
+				NatRetRate = PA.NatRate_' + @NatAvgAllAges + '_RetPer,
+				NatAchRate = PA.NatRate_' + @NatAvgAllAges + '_AchPer
+			FROM PRA_ProAchieveSummaryData PA
+			WHERE
+				PA.EndYear BETWEEN 
+					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
+					AND @EndYear
+				AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
+				AND ( PA.CollegeCode IN ( SELECT Value FROM STRING_SPLIT ( @College, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @College, '','' ) ) )
+				--AND ( PA.FacCode IN ( SELECT Value FROM STRING_SPLIT ( @Fac, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @Fac, '','' ) ) )
+				--AND ( PA.TeamCode IN ( SELECT Value FROM STRING_SPLIT ( @Team, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @Team, '','' ) ) )
+				AND
+					CASE
+						WHEN @SubcontractedProvision IS NULL THEN 1
+						WHEN @SubcontractedProvision = ''1'' THEN
+							CASE
+								WHEN PA.SubcontractorCode = ''00000000'' THEN 0
+								ELSE 1
+							END
+						WHEN @SubcontractedProvision = ''0'' THEN
+							CASE
+								WHEN PA.SubcontractorCode = ''00000000'' THEN 1
+								ELSE 0
+							END
+						ELSE 0
+					END = 1
+				AND @DisplayCollege = 1
+				' + COALESCE ( @WhereClause, '' ) + '
+			GROUP BY
+				PA.EndYear,
+				' + @GroupBy + ',
+				PA.NatRate_' + @NatAvgAllAges + '_RetPer,
+				PA.NatRate_' + @NatAvgAllAges + '_AchPer,
+				PA.CollegeCode + '' - '' + PA.CollegeName
+	'
+
+    SET @SQLString += 
+		N'
+			UNION ALL
+	
+			SELECT
+				EndYear = PA.EndYear,
+				SortGroup = 2,
+				SortOrder = 2,
+				CriteriaTitle = @CriteriaTitle,
+				CriteriaOrder = @CriteriaOrder,
+				GroupByFields = ' + @GroupBy + ',
+				Title = ''College Level'',
+				College = PA.CollegeCode + '' - '' + PA.CollegeName,
+				Faculty = NULL,
+				Team = NULL,
+				AgeGroup = PA.AgeGroup,
+				Leavers = SUM ( PA.IsLeaver ),
+				Retained = SUM ( PA.IsRet ),
+				RetainedPer = 
+					CASE
+						WHEN SUM ( PA.IsLeaver ) = 0 THEN 0
+						ELSE ROUND ( CAST ( SUM ( PA.IsComp ) AS FLOAT ) / CAST ( SUM ( PA.IsLeaver ) AS FLOAT ), 3 )
+					END,
+				Completed = SUM ( PA.IsComp ),
+				Achieved = SUM ( PA.IsAch ),
+				AchievedPer = 
+					CASE
+						WHEN SUM ( PA.IsLeaver ) = 0 THEN 0
+						ELSE ROUND ( CAST ( SUM ( PA.IsAch ) AS FLOAT ) / CAST ( SUM ( PA.IsLeaver ) AS FLOAT ), 3 )
+					END,
+				PassedPer = 
+					CASE
+						WHEN SUM ( PA.IsComp ) = 0 THEN 0
+						ELSE ROUND ( CAST ( SUM ( PA.IsAch ) AS FLOAT ) / CAST ( SUM ( PA.IsComp ) AS FLOAT ), 3 )
+					END,
+				NatRetRate = PA.NatRate_' + @NatAvgAge + '_RetPer,
+				NatAchRate = PA.NatRate_' + @NatAvgAge + '_AchPer
+			FROM PRA_ProAchieveSummaryData PA
+			WHERE
+				PA.EndYear BETWEEN 
+					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
+					AND @EndYear
+				AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
+				AND ( PA.CollegeCode IN ( SELECT Value FROM STRING_SPLIT ( @College, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @College, '','' ) ) )
+				--AND ( PA.FacCode IN ( SELECT Value FROM STRING_SPLIT ( @Fac, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @Fac, '','' ) ) )
+				--AND ( PA.TeamCode IN ( SELECT Value FROM STRING_SPLIT ( @Team, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @Team, '','' ) ) )
+				AND
+					CASE
+						WHEN @SubcontractedProvision IS NULL THEN 1
+						WHEN @SubcontractedProvision = ''1'' THEN
+							CASE
+								WHEN PA.SubcontractorCode = ''00000000'' THEN 0
+								ELSE 1
+							END
+						WHEN @SubcontractedProvision = ''0'' THEN
+							CASE
+								WHEN PA.SubcontractorCode = ''00000000'' THEN 1
+								ELSE 0
+							END
+						ELSE 0
+					END = 1
+				AND @DisplayFaculty = 1
+				' + COALESCE ( @WhereClause, '' ) + '
+			GROUP BY
+				PA.EndYear,
+				' + @GroupBy + ',
+				PA.AgeGroup,
+				PA.NatRate_' + @NatAvgAge + '_RetPer,
+				PA.NatRate_' + @NatAvgAge + '_AchPer,
+				PA.CollegeCode + '' - '' + PA.CollegeName
 	'
 
     SET @SQLString += 
@@ -451,12 +481,13 @@ BEGIN
 			--Faculty
 			SELECT
 				PA.EndYear,
-				SortGroup = 1,
-				SortOrder = 0,
+				SortGroup = 3,
+				SortOrder = 1,
 				CriteriaTitle = @CriteriaTitle,
 				CriteriaOrder = @CriteriaOrder,
 				GroupByFields = ' + @GroupBy + ',
 				Title = ''Faculty Level'',
+				College = PA.CollegeCode + '' - '' + PA.CollegeName,
 				Faculty = PA.FacCode + '' - '' + PA.FacName,
 				Team = NULL,
 				AgeGroup = ''All Ages'',
@@ -479,20 +510,17 @@ BEGIN
 						WHEN SUM ( PA.IsComp ) = 0 THEN 0
 						ELSE ROUND ( CAST ( SUM ( PA.IsAch ) AS FLOAT ) / CAST ( SUM ( PA.IsComp ) AS FLOAT ), 3 )
 					END,
-				NatRetRate = NR.RetPer,
-				NatAchRate = NR.AchPer
+				NatRetRate = PA.NatRate_' + @NatAvgAllAges + '_RetPer,
+				NatAchRate = PA.NatRate_' + @NatAvgAllAges + '_AchPer
 			FROM PRA_ProAchieveSummaryData PA
-			INNER JOIN NatRatesAll NR
-				ON NR.EndYear = PA.EndYear
-				AND NR.Grp = ' + @GroupBy + '
 			WHERE
 				PA.EndYear BETWEEN 
 					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
 					AND @EndYear
 				AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
-				AND ( PA.CollegeCode IN ( ' + @College + ' ) OR ''ALL'' IN ( ' + @College + ' ) )
-				AND ( PA.FacCode IN ( ' + @Fac + ' ) OR ''ALL'' IN ( ' + @Fac + ' ) )
-				AND ( PA.TeamCode IN ( ' + @Team + ' ) OR ''ALL'' IN ( ' + @Team + ' ) )
+				AND ( PA.CollegeCode IN ( SELECT Value FROM STRING_SPLIT ( @College, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @College, '','' ) ) )
+				AND ( PA.FacCode IN ( SELECT Value FROM STRING_SPLIT ( @Fac, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @Fac, '','' ) ) )
+				--AND ( PA.TeamCode IN ( SELECT Value FROM STRING_SPLIT ( @Team, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @Team, '','' ) ) )
 				AND
 					CASE
 						WHEN @SubcontractedProvision IS NULL THEN 1
@@ -513,8 +541,9 @@ BEGIN
 			GROUP BY
 				PA.EndYear,
 				' + @GroupBy + ',
-				NR.RetPer,
-				NR.AchPer,
+				PA.NatRate_' + @NatAvgAllAges + '_RetPer,
+				PA.NatRate_' + @NatAvgAllAges + '_AchPer,
+				PA.CollegeCode + '' - '' + PA.CollegeName,
 				PA.FacCode + '' - '' + PA.FacName
 	'
 
@@ -524,12 +553,13 @@ BEGIN
 	
 			SELECT
 				EndYear = PA.EndYear,
-				SortGroup = 1,
-				SortOrder = 1,
+				SortGroup = 3,
+				SortOrder = 2,
 				CriteriaTitle = @CriteriaTitle,
 				CriteriaOrder = @CriteriaOrder,
 				GroupByFields = ' + @GroupBy + ',
 				Title = ''Faculty Level'',
+				College = PA.CollegeCode + '' - '' + PA.CollegeName,
 				Faculty = PA.FacCode + '' - '' + PA.FacName,
 				Team = NULL,
 				AgeGroup = PA.AgeGroup,
@@ -552,21 +582,17 @@ BEGIN
 						WHEN SUM ( PA.IsComp ) = 0 THEN 0
 						ELSE ROUND ( CAST ( SUM ( PA.IsAch ) AS FLOAT ) / CAST ( SUM ( PA.IsComp ) AS FLOAT ), 3 )
 					END,
-				NatRetRate = NR.RetPer,
-				NatAchRate = NR.AchPer
+				NatRetRate = PA.NatRate_' + @NatAvgAge + '_RetPer,
+				NatAchRate = PA.NatRate_' + @NatAvgAge + '_AchPer
 			FROM PRA_ProAchieveSummaryData PA
-			INNER JOIN NatRates NR
-				ON NR.EndYear = PA.EndYear
-				AND NR.Grp = ' + @GroupBy + '
-				AND NR.AgeGroup = PA.AgeGroup
 			WHERE
 				PA.EndYear BETWEEN 
 					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
 					AND @EndYear
 				AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
-				AND ( PA.CollegeCode IN ( ' + @College + ' ) OR ''ALL'' IN ( ' + @College + ' ) )
-				AND ( PA.FacCode IN ( ' + @Fac + ' ) OR ''ALL'' IN ( ' + @Fac + ' ) )
-				AND ( PA.TeamCode IN ( ' + @Team + ' ) OR ''ALL'' IN ( ' + @Team + ' ) )
+				AND ( PA.CollegeCode IN ( SELECT Value FROM STRING_SPLIT ( @College, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @College, '','' ) ) )
+				AND ( PA.FacCode IN ( SELECT Value FROM STRING_SPLIT ( @Fac, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @Fac, '','' ) ) )
+				--AND ( PA.TeamCode IN ( SELECT Value FROM STRING_SPLIT ( @Team, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @Team, '','' ) ) )
 				AND
 					CASE
 						WHEN @SubcontractedProvision IS NULL THEN 1
@@ -588,8 +614,9 @@ BEGIN
 				PA.EndYear,
 				' + @GroupBy + ',
 				PA.AgeGroup,
-				NR.RetPer,
-				NR.AchPer,
+				PA.NatRate_' + @NatAvgAge + '_RetPer,
+				PA.NatRate_' + @NatAvgAge + '_AchPer,
+				PA.CollegeCode + '' - '' + PA.CollegeName,
 				PA.FacCode + '' - '' + PA.FacName
 	'
 
@@ -600,12 +627,13 @@ BEGIN
 			--Team
 			SELECT
 				PA.EndYear,
-				SortGroup = 2,
-				SortOrder = 0,
+				SortGroup = 4,
+				SortOrder = 1,
 				CriteriaTitle = @CriteriaTitle,
 				CriteriaOrder = @CriteriaOrder,
 				GroupByFields = ' + @GroupBy + ',
 				Title = ''Team Level'',
+				College = PA.CollegeCode + '' - '' + PA.CollegeName,
 				Faculty = PA.FacCode + '' - '' + PA.FacName,
 				Team = PA.TeamCode + '' - '' + PA.TeamName,
 				AgeGroup = ''All Ages'',
@@ -628,20 +656,17 @@ BEGIN
 						WHEN SUM ( PA.IsComp ) = 0 THEN 0
 						ELSE ROUND ( CAST ( SUM ( PA.IsAch ) AS FLOAT ) / CAST ( SUM ( PA.IsComp ) AS FLOAT ), 3 )
 					END,
-				NatRetRate = NR.RetPer,
-				NatAchRate = NR.AchPer
+				NatRetRate = PA.NatRate_' + @NatAvgAllAges + '_RetPer,
+				NatAchRate = PA.NatRate_' + @NatAvgAllAges + '_AchPer
 			FROM PRA_ProAchieveSummaryData PA
-			INNER JOIN NatRatesAll NR
-				ON NR.EndYear = PA.EndYear
-				AND NR.Grp = ' + @GroupBy + '
 			WHERE
 				PA.EndYear BETWEEN 
 					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
 					AND @EndYear
 				AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
-				AND ( PA.CollegeCode IN ( ' + @College + ' ) OR ''ALL'' IN ( ' + @College + ' ) )
-				AND ( PA.FacCode IN ( ' + @Fac + ' ) OR ''ALL'' IN ( ' + @Fac + ' ) )
-				AND ( PA.TeamCode IN ( ' + @Team + ' ) OR ''ALL'' IN ( ' + @Team + ' ) )
+				AND ( PA.CollegeCode IN ( SELECT Value FROM STRING_SPLIT ( @College, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @College, '','' ) ) )
+				AND ( PA.FacCode IN ( SELECT Value FROM STRING_SPLIT ( @Fac, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @Fac, '','' ) ) )
+				AND ( PA.TeamCode IN ( SELECT Value FROM STRING_SPLIT ( @Team, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @Team, '','' ) ) )
 				AND
 					CASE
 						WHEN @SubcontractedProvision IS NULL THEN 1
@@ -662,8 +687,9 @@ BEGIN
 			GROUP BY
 				PA.EndYear,
 				' + @GroupBy + ',
-				NR.RetPer,
-				NR.AchPer,
+				PA.NatRate_' + @NatAvgAllAges + '_RetPer,
+				PA.NatRate_' + @NatAvgAllAges + '_AchPer,
+				PA.CollegeCode + '' - '' + PA.CollegeName,
 				PA.FacCode + '' - '' + PA.FacName,
 				PA.TeamCode + '' - '' + PA.TeamName
 	'
@@ -674,12 +700,13 @@ BEGIN
 	
 			SELECT
 				EndYear = PA.EndYear,
-				SortGroup = 2,
-				SortOrder = 1,
+				SortGroup = 4,
+				SortOrder = 2,
 				CriteriaTitle = @CriteriaTitle,
 				CriteriaOrder = @CriteriaOrder,
 				GroupByFields = ' + @GroupBy + ',
 				Title = ''Team Level'',
+				College = PA.CollegeCode + '' - '' + PA.CollegeName,
 				Faculty = PA.FacCode + '' - '' + PA.FacName,
 				Team = PA.TeamCode + '' - '' + PA.TeamName,
 				AgeGroup = PA.AgeGroup,
@@ -702,21 +729,17 @@ BEGIN
 						WHEN SUM ( PA.IsComp ) = 0 THEN 0
 						ELSE ROUND ( CAST ( SUM ( PA.IsAch ) AS FLOAT ) / CAST ( SUM ( PA.IsComp ) AS FLOAT ), 3 )
 					END,
-				NatRetRate = NR.RetPer,
-				NatAchRate = NR.AchPer
+				NatRetRate = PA.NatRate_' + @NatAvgAge + '_RetPer,
+				NatAchRate = PA.NatRate_' + @NatAvgAge + '_AchPer
 			FROM PRA_ProAchieveSummaryData PA
-			INNER JOIN NatRates NR
-				ON NR.EndYear = PA.EndYear
-				AND NR.Grp = ' + @GroupBy + '
-				AND NR.AgeGroup = PA.AgeGroup
 			WHERE
 				PA.EndYear BETWEEN 
 					CAST ( CAST ( LEFT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) + ''/'' + CAST ( CAST ( RIGHT ( @EndYear, 2 ) AS INT ) - 2 AS VARCHAR(2) ) 
 					AND @EndYear
 				AND PA.SummaryType = @SummaryCourseType + ''_'' + @SummaryType + ''_'' + @SummaryMeasure
-				AND ( PA.CollegeCode IN ( ' + @College + ' ) OR ''ALL'' IN ( ' + @College + ' ) )
-				AND ( PA.FacCode IN ( ' + @Fac + ' ) OR ''ALL'' IN ( ' + @Fac + ' ) )
-				AND ( PA.TeamCode IN ( ' + @Team + ' ) OR ''ALL'' IN ( ' + @Team + ' ) )
+				AND ( PA.CollegeCode IN ( SELECT Value FROM STRING_SPLIT ( @College, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @College, '','' ) ) )
+				AND ( PA.FacCode IN ( SELECT Value FROM STRING_SPLIT ( @Fac, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @Fac, '','' ) ) )
+				AND ( PA.TeamCode IN ( SELECT Value FROM STRING_SPLIT ( @Team, '','' ) ) OR ''ALL'' IN ( SELECT Value FROM STRING_SPLIT ( @Team, '','' ) ) )
 				AND
 					CASE
 						WHEN @SubcontractedProvision IS NULL THEN 1
@@ -738,8 +761,9 @@ BEGIN
 				PA.EndYear,
 				' + @GroupBy + ',
 				PA.AgeGroup,
-				NR.RetPer,
-				NR.AchPer,
+				PA.NatRate_' + @NatAvgAge + '_RetPer,
+				PA.NatRate_' + @NatAvgAge + '_AchPer,
+				PA.CollegeCode + '' - '' + PA.CollegeName,
 				PA.FacCode + '' - '' + PA.FacName,
 				PA.TeamCode + '' - '' + PA.TeamName
 		) PRA
@@ -750,12 +774,14 @@ BEGIN
 			PRA.SortGroup,
 			PRA.SortOrder,
 			PRA.Title,
+			PRA.College,
 			PRA.Faculty,
 			PRA.Team,
 			PRA.AgeGroup
 		ORDER BY
 			PRA.CriteriaOrder,
 			PRA.SortGroup,
+			PRA.College,
 			PRA.Faculty,
 			PRA.Team,
 			PRA.SortOrder,
@@ -774,6 +800,7 @@ BEGIN
 		@Team NVARCHAR(50),
 		@SubcontractedProvision BIT,
 		@DisplayHeadline BIT,
+		@DisplayCollege BIT,
 		@DisplayFaculty BIT,
 		@DisplayTeam BIT,
 		@CriteriaTitle NVARCHAR(255),
@@ -795,6 +822,7 @@ BEGIN
 		@Team = @Team,
 		@SubcontractedProvision = @SubcontractedProvision,
 		@DisplayHeadline = @DisplayHeadline,
+		@DisplayCollege = @DisplayCollege,
 		@DisplayFaculty = @DisplayFaculty,
 		@DisplayTeam = @DisplayTeam,
 		@CriteriaTitle = @CriteriaTitle,
