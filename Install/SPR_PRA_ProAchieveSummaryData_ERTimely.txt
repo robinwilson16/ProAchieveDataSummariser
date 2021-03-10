@@ -16,19 +16,40 @@ CREATE PROCEDURE SPR_PRA_ProAchieveSummaryData_ERTimely
 	@YoungCarerStudentUserDefinedField INT,
 	@YoungParentStudentUserDefinedField INT,
 	@GroupCodeEnrolmentUserDefinedField INT,
-    @NumRowsChanged INT OUTPUT, 
+	@NumRowsChanged INT OUTPUT, 
 	@ErrorCode INT OUTPUT
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	--DECLARE @AcademicYear NVARCHAR(7) = '18/19'
-	--DECLARE @CollegeType INT = 2
-	--DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
-	--DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProAchieve.dbo.'
-	--DECLARE @FacStructureLevel INT = 2
-	--DECLARE @TeamStructureLevel INT = 3
-	--DECLARE @CostCentreStructureLevel INT = 4
+	--DECLARE @ProviderID INT = 10001475 --Provider Ref of the college
+	--DECLARE @ProviderRef NVARCHAR(50) = 'EPNE' --Reference to save into table in case title too long for charts etc.
+	--DECLARE @AcademicYear NVARCHAR(5) = ''
+	--SET @AcademicYear = (SELECT CFG.Value FROM Config CFG WHERE CFG.ConfigID = 'PRA_AcademicYearID')
+	----SET @AcademicYear = '19/20' --Override
+
+	--DECLARE @CollegeType INT = 0 --Type of national averages - 2=GFE, 0=All Institutions
+	--DECLARE @Mode CHAR(1) = 'I' --I=Insert new yearly ProAchieve data leaving data for other years, R=Replace table
+	--DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'besql05.ProGeneral.dbo.' --Database/Linked Server location
+	--DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'besql05.ProAchieve.dbo.' --Database/Linked Server location
+	--DECLARE @OutputTableLocation NVARCHAR(200) = 'EPNE.dbo.' --Location where the resulting ProAchieve Summary Data table will be created
+	--DECLARE @CollegeStructureLevel INT = 1 --Level of hierarchy for College
+	--DECLARE @FacStructureLevel INT = 2 --Level of hierarchy for Faculty
+	--DECLARE @TeamStructureLevel INT = 3 --Level of hierarchy for Team
+	--DECLARE @CostCentreStructureLevel INT = 4 --Level of hierarchy for Cost Centre
+	--DECLARE @UserDefinedTrueValue NVARCHAR(50) = 'Y' --The value that indicates ALS is provided - e.g. Y/True
+	--DECLARE @ALSStudentUserDefinedField INT = 1 --UDF where ALS is imported as Y/N
+	--DECLARE @LookedAfterStudentUserDefinedField INT = 3
+	--DECLARE @CareLeaverStudentUserDefinedField INT = 2
+	--DECLARE @YoungCarerStudentUserDefinedField INT = 4
+	--DECLARE @YoungParentStudentUserDefinedField INT = 5
+	--DECLARE @GroupCodeEnrolmentUserDefinedField INT = 1 --UDF where the course group code is stored
+
+	--DECLARE @NumRowsChanged INT
+	--DECLARE @ErrorCode INT
+
+
+
 
 	DECLARE @SQLString NVARCHAR(MAX);
 	DECLARE @SQLParams NVARCHAR(MAX);
@@ -77,7 +98,10 @@ BEGIN
 			LastAcademicYear = MYS.LastAcademicYearID,
 			RulesApplied = MYS.RulesApplied,
 			LastUpdated = MYS.LastUpdated,
-
+	'
+    
+    SET @SQLString += 
+        N'
 			LearnerRef = ER.PG_StudentID,
 			LearnerName = STU.Surname + '', '' + STU.Forenames,
 			Gender = ER.PG_SexID,
@@ -86,6 +110,9 @@ BEGIN
 					WHEN AGE.PG_WBLFundAgeGroupName = ''24+'' THEN ''24 +''
 					ELSE AGE.PG_WBLFundAgeGroupName
 				END,
+			PostCodeUpliftCode = NULL,
+			PostCodeUpliftName = NULL,
+			PostCodeIsDisadvantaged = NULL,
 			PostCodeHome = ER.HomePostcode,
 			PostCodeCurrent = ER.CurrentPostcode,
 			PostCodeDelivery = ER.DeliveryPostcode,
@@ -277,6 +304,10 @@ BEGIN
 					END,
 					''-- Unknown --''
 				),
+	'
+
+    SET @SQLString += 
+        N'
 			SSA1Code = ER.PG_SSA1ID,
 			SSA1Name = SSA1.SSA_Tier1_Desc,
 			SSA2Code = ER.PG_SSA2ID,
@@ -288,9 +319,23 @@ BEGIN
 			StandardName = STD.PG_AppStandardName,
 			FrameworkCode = ER.PG_FrameworkID,
 			FrameworkName = FWK.PG_FrameworkName,
+			PathwayCode = PWAY.OriginalAppPathwayID,
+			PathwayName = PWAY.AppPathwayName,
 			CourseCode = ER.PG_AggCourseID,
 			CourseName = CRS.PG_AggCourseName,
 			GroupCode = ER.EnrolmentUserDefined1,
+			StartDate = ER.StartDate,
+			ExpEndDate = ER.PlannedEndDate,
+			ExpEndDatePlus90Days = NULL,
+			ActEndDate = ER.ActualEndDate,
+			AchDate = ER.AchievementDate,
+			StartPeriodID = ER.StartPeriodID,
+			ExpEndPeriodID = ER.PG_PlannedEndMonthID,
+			ActEndPeriodID = ER.LeavePeriodID,
+			CompletionCode = ER.PG_CompletionID,
+			CompletionName = CMP.ShortDescription,
+			OutcomeCode = ER.PG_OutcomeID,
+			OutcomeName = OC.ShortDescription,
 			SubcontractorCode = ER.PG_SubContractorID,
 			SubcontractorName = NULL,
 			MinimumStandardThreshold = 62,
@@ -401,6 +446,7 @@ BEGIN
 					WHEN ER.WBWithdrawnFlag - ER.WBWithdrawnin6Wks > 0 THEN 1
 					ELSE 0
 				END,
+			IsPlannedBreak = ER.WBPlannedBreak,
 			IsOutOfFunding30 = 
 				CASE
 					WHEN ER.WBContinBeyondEndTimely = 1 THEN
@@ -645,10 +691,16 @@ BEGIN
 			ON PG.WB_ProgGroupID = PT.WB_ProgGroupID
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'WB_FrameworkStatus FWKS
 			ON FWKS.WB_FrameworkStatusID = ER.WB_FrameworkStatusID
+		INNER JOIN ' + @ProGeneralDatabaseLocation + 'Completion CMP
+			ON CMP.CompletionID = ER.PG_CompletionID
+		LEFT JOIN ' + @ProGeneralDatabaseLocation + 'Outcome OC
+			ON OC.OutcomeID = ER.PG_OutcomeID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_AppStandard STD
 			ON STD.PG_AppStandardID = ER.PG_AppStandardID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_Framework FWK
 			ON FWK.PG_FrameworkID = ER.PG_FrameworkID
+		LEFT JOIN ' + @ProGeneralDatabaseLocation + 'AppPathway PWAY
+			ON PWAY.AppPathwayID = ER.PG_AppPathwayID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'Minimum_Standards_Group MSTD
 			ON MSTD.Minimum_Standards_GroupID = ER.Minimum_Standards_GroupID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_WBLFundAgeGroup AGE 

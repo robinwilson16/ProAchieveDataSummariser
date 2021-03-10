@@ -25,17 +25,34 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	--DECLARE @AcademicYear NVARCHAR(5) = '18/19'
-	--DECLARE @CollegeType INT = 0
-	--DECLARE @Mode CHAR(1) = 'I' --I=Insert/R=Replace
-	--DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
-	--DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProAchieve.dbo.'
-	--DECLARE @OutputTableLocation NVARCHAR(200) = 'ProSolutionReports.dbo.'
-	--DECLARE @FacStructureLevel INT = 2
-	--DECLARE @TeamStructureLevel INT = 3
-	--DECLARE @CostCentreStructureLevel INT = 4
+	--DECLARE @ProviderID INT = 10001475 --Provider Ref of the college
+	--DECLARE @ProviderRef NVARCHAR(50) = 'EPNE' --Reference to save into table in case title too long for charts etc.
+	--DECLARE @AcademicYear NVARCHAR(5) = ''
+	--SET @AcademicYear = (SELECT CFG.Value FROM Config CFG WHERE CFG.ConfigID = 'PRA_AcademicYearID')
+	----SET @AcademicYear = '19/20' --Override
+
+	--DECLARE @CollegeType INT = 0 --Type of national averages - 2=GFE, 0=All Institutions
+	--DECLARE @Mode CHAR(1) = 'I' --I=Insert new yearly ProAchieve data leaving data for other years, R=Replace table
+	--DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'besql05.ProGeneral.dbo.' --Database/Linked Server location
+	--DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'besql05.ProAchieve.dbo.' --Database/Linked Server location
+	--DECLARE @OutputTableLocation NVARCHAR(200) = 'EPNE.dbo.' --Location where the resulting ProAchieve Summary Data table will be created
+	--DECLARE @CollegeStructureLevel INT = 1 --Level of hierarchy for College
+	--DECLARE @FacStructureLevel INT = 2 --Level of hierarchy for Faculty
+	--DECLARE @TeamStructureLevel INT = 3 --Level of hierarchy for Team
+	--DECLARE @CostCentreStructureLevel INT = 4 --Level of hierarchy for Cost Centre
+	--DECLARE @UserDefinedTrueValue NVARCHAR(50) = 'Y' --The value that indicates ALS is provided - e.g. Y/True
+	--DECLARE @ALSStudentUserDefinedField INT = 1 --UDF where ALS is imported as Y/N
+	--DECLARE @LookedAfterStudentUserDefinedField INT = 3
+	--DECLARE @CareLeaverStudentUserDefinedField INT = 2
+	--DECLARE @YoungCarerStudentUserDefinedField INT = 4
+	--DECLARE @YoungParentStudentUserDefinedField INT = 5
+	--DECLARE @GroupCodeEnrolmentUserDefinedField INT = 1 --UDF where the course group code is stored
+
 	--DECLARE @NumRowsChanged INT
 	--DECLARE @ErrorCode INT
+
+
+
 
 	DECLARE @TableExists bit = 1;
 	DECLARE @NumExistingRecords INT = 0;
@@ -68,7 +85,7 @@ BEGIN
 					EndYear NCHAR(5) NULL,
 					AcademicYear NVARCHAR(5) NOT NULL,
 					SummaryType NVARCHAR(23) NOT NULL,
-					DefaultSummary bit NULL,
+					DefaultSummary INT NULL,
 					ProviderID NVARCHAR(8) NOT NULL,
 					ProviderRef NVARCHAR(50) NULL,
 					ProviderName NVARCHAR(255) NULL,
@@ -77,12 +94,15 @@ BEGIN
 					AcademicYears NVARCHAR(50) NULL,
 					NumYears INT NULL,
 					LastAcademicYear NVARCHAR(5) NULL,
-					RulesApplied bit NULL,
+					RulesApplied INT NULL,
 					LastUpdated NVARCHAR(20) NULL,
 					LearnerRef NVARCHAR(12) NOT NULL,
 					LearnerName NVARCHAR(255) NULL,
 					Gender NCHAR(1) NULL,
 					AgeGroup NVARCHAR(32) NULL,
+					PostCodeUpliftCode NVARCHAR(2) NULL,
+					PostCodeUpliftName NVARCHAR(50) NULL,
+					PostCodeIsDisadvantaged INT NULL,
 					PostCodeHome NVARCHAR(8) NULL,
 					PostCodeCurrent NVARCHAR(8) NULL,
 					PostCodeDelivery NVARCHAR(8) NULL,
@@ -112,13 +132,15 @@ BEGIN
 					DiffDissName NVARCHAR(40) NULL,
 					IsHighNeeds INT NULL,
 					IsFreeMealsEligible INT NOT NULL,
-
                     IsALSRequired INT NULL,
 					IsLookedAfter INT NULL,
                     IsCareLeaver INT NULL,
                     IsYoungCarer INT NULL,
                     IsYoungParent INT NULL,
-                    
+			'
+
+			SET @SQLString += 
+				N'
 					CampusID NVARCHAR(8) NULL,
 					CollegeCode NVARCHAR(24) NULL,
 					CollegeName NVARCHAR(150) NULL,
@@ -139,9 +161,23 @@ BEGIN
 					StandardName NVARCHAR(750) NULL,
 					FrameworkCode NVARCHAR(3) NULL,
 					FrameworkName NVARCHAR(163) NULL,
+					PathwayCode INT NULL,
+					PathwayName NVARCHAR(255) NULL,
 					CourseCode NVARCHAR(40) NULL,
 					CourseName NVARCHAR(255) NULL,
 					GroupCode NVARCHAR(255) NULL,
+					StartDate DATETIME NULL,
+					ExpEndDate DATETIME NULL,
+					ExpEndDatePlus90Days DATETIME NULL,
+					ActEndDate DATETIME NULL,
+					AchDate DATETIME NULL,
+					StartPeriodID INT NULL,
+					ExpEndPeriodID INT NULL,
+					ActEndPeriodID INT NULL,
+					CompletionCode NVARCHAR(1) NULL,
+					CompletionName NVARCHAR(40) NULL,
+					OutcomeCode NVARCHAR(1) NULL,
+					OutcomeName NVARCHAR(40) NULL,
 					SubcontractorCode NVARCHAR(8) NULL,
 					SubcontractorName NVARCHAR(255) NULL,
 					MinimumStandardThreshold INT,
@@ -149,7 +185,10 @@ BEGIN
 					MinimumStandardGroupCode NVARCHAR(1) NULL,
 					MinimumStandardsGroupName NVARCHAR(1) NULL,
 					SequenceNo INT NOT NULL,
+			'
 
+			SET @SQLString += 
+				N'
 					AimRef NVARCHAR(8) NULL,
 					AimName NVARCHAR(254) NULL,
 					QualTypeCode NVARCHAR(4) NULL,
@@ -196,6 +235,7 @@ BEGIN
 					IsWdr INT NULL,
 					IsWdrInQualifyingPeriod INT NULL,
 					IsWdrAfterQualifyingPeriod INT NULL,
+					IsPlannedBreak INT NOT NULL,
 					IsOutOfFunding30 INT NOT NULL,
 					IsOutOfFunding60 INT NOT NULL,
 					IsOutOfFunding90 INT NOT NULL,
@@ -209,7 +249,7 @@ BEGIN
 					FrameworkStatusCode INT NULL,
 					FrameworkStatusName NVARCHAR(128),
 					IsCompAwaitAch INT NULL,
-				'
+			'
 
 			SET @SQLString += 
 				N'

@@ -16,7 +16,7 @@ CREATE PROCEDURE SPR_PRA_ProAchieveSummaryData_CLOverall
 	@YoungCarerStudentUserDefinedField INT,
 	@YoungParentStudentUserDefinedField INT,
 	@GroupCodeEnrolmentUserDefinedField INT,
-    @NumRowsChanged INT OUTPUT, 
+	@NumRowsChanged INT OUTPUT, 
 	@ErrorCode INT OUTPUT
 AS
 BEGIN
@@ -107,7 +107,10 @@ BEGIN
 			LastAcademicYear = MYS.LastAcademicYearID,
 			RulesApplied = MYS.RulesApplied,
 			LastUpdated = MYS.LastUpdated,
-
+	'
+    
+    SET @SQLString += 
+        N'
 			LearnerRef = CL.PG_StudentID,
 			LearnerName = CL.StudentName,
 			Gender = CL.PG_SexID,
@@ -117,6 +120,9 @@ BEGIN
 					WHEN AGE.PG_AgeLSCName = ''19+'' THEN ''19 +''
 					ELSE AGE.PG_AgeLSCName
 				END,
+			PostCodeUpliftCode = CL.PG_UpliftID,
+			PostCodeUpliftName = UPL.ShortDescription,
+			PostCodeIsDisadvantaged = CASE WHEN UPL.Disadvantaged = ''Y'' THEN 1 ELSE 0 END,
 			PostCodeHome = CL.HomePostcode,
 			PostCodeCurrent = CL.CurrentPostcode,
 			PostCodeDelivery = CL.DeliveryPostcode,
@@ -306,6 +312,10 @@ BEGIN
 					END,
 					''-- Unknown --''
 				),
+	'
+    
+    SET @SQLString += 
+        N'
 			SSA1Code = CL.PG_SSA1ID,
 			SSA1Name = SSA1.SSA_Tier1_Desc,
 			SSA2Code = CL.PG_SSA2ID,
@@ -317,9 +327,23 @@ BEGIN
 			StandardName = NULL,
 			FrameworkCode = NULL,
 			FrameworkName = NULL,
+			PathwayCode = NULL,
+			PathwayName = NULL,
 			CourseCode = CL.PG_AggCourseID,
 			CourseName = CRS.PG_AggCourseName,
 			GroupCode = CL.EnrolmentUserDefined1,
+			StartDate = CL.StartDate,
+			ExpEndDate = CL.PlannedEndDate,
+			ExpEndDatePlus90Days = CL.PlannedEndDate_Plus90Days,
+			ActEndDate = CL.ActualEndDate,
+			AchDate = NULL,
+			StartPeriodID = NULL,
+			ExpEndPeriodID = NULL,
+			ActEndPeriodID = NULL,
+			CompletionCode = CL.PG_CompletionID,
+			CompletionName = CMP.ShortDescription,
+			OutcomeCode = CL.PG_OutcomeID,
+			OutcomeName = OC.ShortDescription,
 			SubcontractorCode = CL.PG_SubContractorID,
 			SubcontractorName = NULL,
 			MinimumStandardThreshold = MINS.ThresholdValue,
@@ -448,6 +472,7 @@ BEGIN
 					ELSE 
 						CASE WHEN CL.IsWithdrawnAfterQualPeriod = ''Y'' THEN 1 ELSE 0 END
 				END,
+			IsPlannedBreak = CL.P_Plan_Break_Overall,
 			IsOutOfFunding30 = 
 				CASE
 					WHEN CL.ContinBeyondEnd = 1 THEN
@@ -669,6 +694,8 @@ BEGIN
 			ON ETHG.PG_EthnicGroupID = CL.PG_EthnicGroupID
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_EthnicGroupSimple ETHGS
 			ON ETHGS.PG_EthnicGroupSimpleID = ETHG.PG_EthnicGroupSimpleID
+		INNER JOIN ' + @ProGeneralDatabaseLocation + 'WideningParticipation UPL 
+			ON UPL.WideningParticipationID = CL.PG_UpliftID
 		INNER JOIN ' + @ProGeneralDatabaseLocation + 'SSA1 SSA1 
 			ON SSA1.SSA_Tier1_code = CL.PG_SSA1ID
 		INNER JOIN ' + @ProGeneralDatabaseLocation + 'SSA2 SSA2 
@@ -694,6 +721,10 @@ BEGIN
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PM_MS_ThresholdValue MINS
 			ON MINS.PG_QualSizeID = CL.PG_QualSizeID
 			AND MINS.ThresholdID = 1
+		INNER JOIN ' + @ProGeneralDatabaseLocation + 'Completion CMP
+			ON CMP.CompletionID = CL.PG_CompletionID
+		LEFT JOIN ' + @ProGeneralDatabaseLocation + 'Outcome OC
+			ON OC.OutcomeID = CL.PG_OutcomeID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'Minimum_Standards_Group MSTD
 			ON MSTD.Minimum_Standards_GroupID = CL.Minimum_Standards_GroupID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_AgeLSC AGE

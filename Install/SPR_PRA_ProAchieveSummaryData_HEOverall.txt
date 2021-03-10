@@ -22,13 +22,34 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- DECLARE @AcademicYear NVARCHAR(7) = '18/19'
-	-- DECLARE @CollegeType INT = 2
-	-- DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
-	-- DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProAchieve.dbo.'
-	--DECLARE @FacStructureLevel INT = 2
-	--DECLARE @TeamStructureLevel INT = 3
-	--DECLARE @CostCentreStructureLevel INT = 4
+	--DECLARE @ProviderID INT = 10001475 --Provider Ref of the college
+	--DECLARE @ProviderRef NVARCHAR(50) = 'EPNE' --Reference to save into table in case title too long for charts etc.
+	--DECLARE @AcademicYear NVARCHAR(5) = ''
+	--SET @AcademicYear = (SELECT CFG.Value FROM Config CFG WHERE CFG.ConfigID = 'PRA_AcademicYearID')
+	----SET @AcademicYear = '19/20' --Override
+
+	--DECLARE @CollegeType INT = 0 --Type of national averages - 2=GFE, 0=All Institutions
+	--DECLARE @Mode CHAR(1) = 'I' --I=Insert new yearly ProAchieve data leaving data for other years, R=Replace table
+	--DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'besql05.ProGeneral.dbo.' --Database/Linked Server location
+	--DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'besql05.ProAchieve.dbo.' --Database/Linked Server location
+	--DECLARE @OutputTableLocation NVARCHAR(200) = 'EPNE.dbo.' --Location where the resulting ProAchieve Summary Data table will be created
+	--DECLARE @CollegeStructureLevel INT = 1 --Level of hierarchy for College
+	--DECLARE @FacStructureLevel INT = 2 --Level of hierarchy for Faculty
+	--DECLARE @TeamStructureLevel INT = 3 --Level of hierarchy for Team
+	--DECLARE @CostCentreStructureLevel INT = 4 --Level of hierarchy for Cost Centre
+	--DECLARE @UserDefinedTrueValue NVARCHAR(50) = 'Y' --The value that indicates ALS is provided - e.g. Y/True
+	--DECLARE @ALSStudentUserDefinedField INT = 1 --UDF where ALS is imported as Y/N
+	--DECLARE @LookedAfterStudentUserDefinedField INT = 3
+	--DECLARE @CareLeaverStudentUserDefinedField INT = 2
+	--DECLARE @YoungCarerStudentUserDefinedField INT = 4
+	--DECLARE @YoungParentStudentUserDefinedField INT = 5
+	--DECLARE @GroupCodeEnrolmentUserDefinedField INT = 1 --UDF where the course group code is stored
+
+	--DECLARE @NumRowsChanged INT
+	--DECLARE @ErrorCode INT
+
+
+
 
     DECLARE @SQLString NVARCHAR(MAX);
     DECLARE @SQLParams NVARCHAR(MAX);
@@ -61,11 +82,17 @@ BEGIN
 			LastAcademicYear = MYS.LastAcademicYearID,
 			RulesApplied = MYS.RulesApplied,
 			LastUpdated = MYS.LastUpdated,
-
+	'
+    
+    SET @SQLString += 
+        N'
 			LearnerRef = HE.PG_StudentID,
 			LearnerName = HE.StudentName,
 			Gender = HE.PG_SexID,
 			AgeGroup = AGE.HE_AgeGroupName,
+			PostCodeUpliftCode = NULL,
+			PostCodeUpliftName = NULL,
+			PostCodeIsDisadvantaged = NULL,
 			PostCodeHome = MP.HomePostcode,
 			PostCodeCurrent = MP.CurrentPostcode,
 			PostCodeDelivery = MP.DeliveryPostcode,
@@ -255,6 +282,10 @@ BEGIN
 					END,
 					''-- Unknown --''
 				),
+	'
+
+    SET @SQLString += 
+        N'
 			SSA1Code = HE.PG_SSA1ID,
 			SSA1Name = SSA1.SSA_Tier1_Desc,
 			SSA2Code = HE.PG_SSA2ID,
@@ -266,9 +297,23 @@ BEGIN
 			StandardName = NULL,
 			FrameworkCode = NULL,
 			FrameworkName = NULL,
+			PathwayCode = NULL,
+			PathwayName = NULL,
 			CourseCode = HE.PG_AggCourseID,
 			CourseName = CRS.PG_AggCourseName,
 			GroupCode = HE.EnrolmentUserDefined1,
+			StartDate = HE.StartDate,
+			ExpEndDate = HE.PlannedEndDate,
+			ExpEndDatePlus90Days = HE.PlannedEndDate_Plus90Days,
+			ActEndDate = HE.ActualEndDate,
+			AchDate = NULL,
+			StartPeriodID = NULL,
+			ExpEndPeriodID = NULL,
+			ActEndPeriodID = NULL,
+			CompletionCode = HE.PG_CompletionID,
+			CompletionName = CMP.ShortDescription,
+			OutcomeCode = HE.PG_OutcomeID,
+			OutcomeName = OC.ShortDescription,
 			SubcontractorCode = NULL,
 			SubcontractorName = NULL,
 			MinimumStandardThreshold = NULL,
@@ -343,6 +388,7 @@ BEGIN
 			IsWdr = HE.PVWithdrawn + HE.PVWithdrawn1stNov,
 			IsWdrInQualifyingPeriod = HE.PVWithdrawn,
 			IsWdrAfterQualifyingPeriod = HE.PVWithdrawn1stNov,
+			IsPlannedBreak = HE.P_Plan_Break_Overall,
 			OutOfFunding30 = 0,
 			OutOfFunding60 = 0,
 			OutOfFunding90 = 0,
@@ -543,6 +589,10 @@ BEGIN
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PM_MS_ThresholdValue MINS
 			ON MINS.PG_QualSizeID = HE.PG_QualSizeID
 			AND MINS.ThresholdID = 1
+		INNER JOIN ' + @ProGeneralDatabaseLocation + 'Completion CMP
+			ON CMP.CompletionID = HE.PG_CompletionID
+		LEFT JOIN ' + @ProGeneralDatabaseLocation + 'Outcome OC
+			ON OC.OutcomeID = HE.PG_OutcomeID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'HE_AgeGroup AGE 
 			ON AGE.HE_AgeGroupID = HE.HE_AgeGroupID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_Learner_FAM_Pivoted FAM

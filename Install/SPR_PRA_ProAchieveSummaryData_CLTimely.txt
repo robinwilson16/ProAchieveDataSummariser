@@ -16,19 +16,40 @@ CREATE PROCEDURE SPR_PRA_ProAchieveSummaryData_CLTimely
 	@YoungCarerStudentUserDefinedField INT,
 	@YoungParentStudentUserDefinedField INT,
 	@GroupCodeEnrolmentUserDefinedField INT,
-    @NumRowsChanged INT OUTPUT, 
+	@NumRowsChanged INT OUTPUT, 
 	@ErrorCode INT OUTPUT
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- DECLARE @AcademicYear NVARCHAR(7) = '18/19'
-	-- DECLARE @CollegeType INT = 2
-	-- DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'ussql01.ProGeneral.dbo.'
-	-- DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'ussql01.ProAchieve.dbo.'
-	--DECLARE @FacStructureLevel INT = 2
-	--DECLARE @TeamStructureLevel INT = 3
-	--DECLARE @CostCentreStructureLevel INT = 4
+	--DECLARE @ProviderID INT = 10001475 --Provider Ref of the college
+	--DECLARE @ProviderRef NVARCHAR(50) = 'EPNE' --Reference to save into table in case title too long for charts etc.
+	--DECLARE @AcademicYear NVARCHAR(5) = ''
+	--SET @AcademicYear = (SELECT CFG.Value FROM Config CFG WHERE CFG.ConfigID = 'PRA_AcademicYearID')
+	----SET @AcademicYear = '19/20' --Override
+
+	--DECLARE @CollegeType INT = 0 --Type of national averages - 2=GFE, 0=All Institutions
+	--DECLARE @Mode CHAR(1) = 'I' --I=Insert new yearly ProAchieve data leaving data for other years, R=Replace table
+	--DECLARE @ProGeneralDatabaseLocation NVARCHAR(200) = 'besql05.ProGeneral.dbo.' --Database/Linked Server location
+	--DECLARE @ProAchieveDatabaseLocation NVARCHAR(200) = 'besql05.ProAchieve.dbo.' --Database/Linked Server location
+	--DECLARE @OutputTableLocation NVARCHAR(200) = 'EPNE.dbo.' --Location where the resulting ProAchieve Summary Data table will be created
+	--DECLARE @CollegeStructureLevel INT = 1 --Level of hierarchy for College
+	--DECLARE @FacStructureLevel INT = 2 --Level of hierarchy for Faculty
+	--DECLARE @TeamStructureLevel INT = 3 --Level of hierarchy for Team
+	--DECLARE @CostCentreStructureLevel INT = 4 --Level of hierarchy for Cost Centre
+	--DECLARE @UserDefinedTrueValue NVARCHAR(50) = 'Y' --The value that indicates ALS is provided - e.g. Y/True
+	--DECLARE @ALSStudentUserDefinedField INT = 1 --UDF where ALS is imported as Y/N
+	--DECLARE @LookedAfterStudentUserDefinedField INT = 3
+	--DECLARE @CareLeaverStudentUserDefinedField INT = 2
+	--DECLARE @YoungCarerStudentUserDefinedField INT = 4
+	--DECLARE @YoungParentStudentUserDefinedField INT = 5
+	--DECLARE @GroupCodeEnrolmentUserDefinedField INT = 1 --UDF where the course group code is stored
+
+	--DECLARE @NumRowsChanged INT
+	--DECLARE @ErrorCode INT
+
+
+
 
     DECLARE @SQLString NVARCHAR(MAX);
     DECLARE @SQLParams NVARCHAR(MAX);
@@ -43,7 +64,7 @@ BEGIN
 					WHEN @AcademicYear >= MAX ( NR.PG_ExpEndYrID ) THEN MAX ( NR.PG_ExpEndYrID )
 					ELSE @AcademicYear
 				END
-		FROM besql05.ProAchieve.dbo.PG_NationalRates_CL_Qual_Timely NR
+		FROM ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_Qual_Timely NR
 		WHERE
 			NR.PG_CollegeTypeID = @CollegeType
 		
@@ -88,7 +109,10 @@ BEGIN
 			LastAcademicYear = MYS.LastAcademicYearID,
 			RulesApplied = MYS.RulesApplied,
 			LastUpdated = MYS.LastUpdated,
-
+	'
+    
+    SET @SQLString += 
+        N'
 			LearnerRef = CL.PG_StudentID,
 			LearnerName = CL.StudentName,
 			Gender = CL.PG_SexID,
@@ -98,6 +122,9 @@ BEGIN
 					WHEN AGE.PG_AgeLSCName = ''19+'' THEN ''19 +''
 					ELSE AGE.PG_AgeLSCName
 				END,
+			PostCodeUpliftCode = CL.PG_UpliftID,
+			PostCodeUpliftName = UPL.ShortDescription,
+			PostCodeIsDisadvantaged = CASE WHEN UPL.Disadvantaged = ''Y'' THEN 1 ELSE 0 END,
 			PostCodeHome = CL.HomePostcode,
 			PostCodeCurrent = CL.CurrentPostcode,
 			PostCodeDelivery = CL.DeliveryPostcode,
@@ -287,6 +314,10 @@ BEGIN
 					END,
 					''-- Unknown --''
 				),
+	'
+
+    SET @SQLString += 
+        N'
 			SSA1Code = CL.PG_SSA1ID,
 			SSA1Name = SSA1.SSA_Tier1_Desc,
 			SSA2Code = CL.PG_SSA2ID,
@@ -298,9 +329,23 @@ BEGIN
 			StandardName = NULL,
 			FrameworkCode = NULL,
 			FrameworkName = NULL,
+			PathwayCode = NULL,
+			PathwayName = NULL,
 			CourseCode = CL.PG_AggCourseID,
 			CourseName = CRS.PG_AggCourseName,
 			GroupCode = CL.EnrolmentUserDefined1,
+			StartDate = CL.StartDate,
+			ExpEndDate = CL.PlannedEndDate,
+			ExpEndDatePlus90Days = CL.PlannedEndDate_Plus90Days,
+			ActEndDate = CL.ActualEndDate,
+			AchDate = NULL,
+			StartPeriodID = NULL,
+			ExpEndPeriodID = NULL,
+			ActEndPeriodID = NULL,
+			CompletionCode = CL.PG_CompletionID,
+			CompletionName = CMP.ShortDescription,
+			OutcomeCode = CL.PG_OutcomeID,
+			OutcomeName = OC.ShortDescription,
 			SubcontractorCode = CL.PG_SubContractorID,
 			SubcontractorName = NULL,
 			MinimumStandardThreshold = MINS.ThresholdValue,
@@ -384,6 +429,7 @@ BEGIN
 			IsWdr = CASE WHEN CL.IsWithdrawnAll = ''Y'' THEN 1 ELSE 0 END,
 			IsWdrInQualifyingPeriod = CASE WHEN CL.IsWithdrawnInQualPeriod = ''Y'' THEN 1 ELSE 0 END,
 			IsWdrAfterQualifyingPeriod = CASE WHEN CL.IsWithdrawnAfterQualPeriod = ''Y'' THEN 1 ELSE 0 END,
+			IsPlannedBreak = CL.P_Plan_Break_Timely,
 			IsOutOfFunding30 = 
 				CASE
 					WHEN CL.ContinBeyondEnd = 1 THEN
@@ -587,6 +633,8 @@ BEGIN
 			ON ETHG.PG_EthnicGroupID = CL.PG_EthnicGroupID
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PG_EthnicGroupSimple ETHGS
 			ON ETHGS.PG_EthnicGroupSimpleID = ETHG.PG_EthnicGroupSimpleID
+		INNER JOIN ' + @ProGeneralDatabaseLocation + 'WideningParticipation UPL 
+			ON UPL.WideningParticipationID = CL.PG_UpliftID
 		INNER JOIN ' + @ProGeneralDatabaseLocation + 'SSA1 SSA1 
 			ON SSA1.SSA_Tier1_code = CL.PG_SSA1ID
 		INNER JOIN ' + @ProGeneralDatabaseLocation + 'SSA2 SSA2 
@@ -612,6 +660,10 @@ BEGIN
 		INNER JOIN ' + @ProAchieveDatabaseLocation + 'PM_MS_ThresholdValue MINS
 			ON MINS.PG_QualSizeID = CL.PG_QualSizeID
 			AND MINS.ThresholdID = 1
+		INNER JOIN ' + @ProGeneralDatabaseLocation + 'Completion CMP
+			ON CMP.CompletionID = CL.PG_CompletionID
+		LEFT JOIN ' + @ProGeneralDatabaseLocation + 'Outcome OC
+			ON OC.OutcomeID = CL.PG_OutcomeID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'Minimum_Standards_Group MSTD
 			ON MSTD.Minimum_Standards_GroupID = CL.Minimum_Standards_GroupID
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_AgeLSC AGE
