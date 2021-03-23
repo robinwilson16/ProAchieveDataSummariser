@@ -728,20 +728,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_YR
 			ON NR_YR.PG_ExpEndYrID = @NatRateYear
 		LEFT JOIN (
@@ -755,20 +748,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = 0
 				AND NR.PG_AgeLSCID IS NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_YRA
 			ON NR_YRA.PG_ExpEndYrID = @NatRateYear
 		LEFT JOIN (
@@ -782,20 +768,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = 2
 				AND NR.PG_AgeLSCID IS NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_YRG
 			ON NR_YRG.PG_ExpEndYrID = @NatRateYear
 		LEFT JOIN ' + @ProAchieveDatabaseLocation + 'PG_NationalRates_CL_Qual_Timely NR_AIM
@@ -820,20 +799,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NOT NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_QS
 			ON NR_QS.PG_ExpEndYrID = @NatRateYear
 			AND NR_QS.PG_QualSizeID = CL.PG_QualSizeID
@@ -850,20 +822,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NOT NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NOT NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_QSAGE
 			ON NR_QSAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_QSAGE.PG_QualSizeID = CL.PG_QualSizeID
@@ -884,20 +849,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NOT NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_AGE
 			ON NR_AGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_AGE.PG_AgeLSCID = CL.PG_AgeLSCID
@@ -913,20 +871,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NOT NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_GEN
 			ON NR_GEN.PG_ExpEndYrID = @NatRateYear
 			AND NR_GEN.PG_SexID = CL.PG_SexID
@@ -943,20 +894,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NOT NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NOT NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_GENAGE
 			ON NR_GENAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_GENAGE.PG_AgeLSCID = CL.PG_AgeLSCID
@@ -968,7 +912,7 @@ BEGIN
 		LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
-				NR.PG_NVQLevelCPRID,
+				PG_NVQLevelCPRID = NULL,
 				Leave = NR.BM_Count_Timely / 100,
 				Ach = NULL,
 				AchPer = NR.BM_AchCount_Timely / 100
@@ -977,27 +921,20 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NULL
-				AND NR.PG_NVQLevelCPRID IS NOT NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_LEV
 			ON NR_LEV.PG_ExpEndYrID = @NatRateYear
 			AND NR_LEV.PG_NVQLevelCPRID = CL.PG_NVQLevelCPRID
         LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
-				NR.PG_NVQLevelCPRID,
+				PG_NVQLevelCPRID = NULL,
                 NR.PG_AgeLSCID,
 				Leave = NR.BM_Count_Timely / 100,
 				Ach = NULL,
@@ -1007,20 +944,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NOT NULL
-				AND NR.PG_NVQLevelCPRID IS NOT NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_LEVAGE
 			ON NR_LEVAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_LEVAGE.PG_NVQLevelCPRID = CL.PG_NVQLevelCPRID
@@ -1041,20 +971,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NOT NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_LEVG
 			ON NR_LEVG.PG_ExpEndYrID = @NatRateYear
 			AND NR_LEVG.PG_NVQLevelGroupID = CL.PG_NVQLevelGroupID
@@ -1071,20 +994,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NOT NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NOT NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_LEVGAGE
 			ON NR_LEVGAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_LEVGAGE.PG_NVQLevelGroupID = CL.PG_NVQLevelGroupID
@@ -1105,20 +1021,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NOT NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_ETH
 			ON NR_ETH.PG_ExpEndYrID = @NatRateYear
 			AND NR_ETH.PG_EthnicityID = CL.PG_EthnicityID
@@ -1135,20 +1044,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NOT NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NOT NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_ETHAGE
 			ON NR_ETHAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_ETHAGE.PG_EthnicityID = CL.PG_EthnicityID
@@ -1160,7 +1062,7 @@ BEGIN
 		LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
-				NR.PG_EthnicGroupID,
+				PG_EthnicGroupID = NULL,
 				Leave = NR.BM_Count_Timely / 100,
 				Ach = NULL,
 				AchPer = NR.BM_AchCount_Timely / 100
@@ -1169,27 +1071,20 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NOT NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_ETHG
 			ON NR_ETHG.PG_ExpEndYrID = @NatRateYear
 			AND NR_ETHG.PG_EthnicGroupID = CL.PG_EthnicGroupID
         LEFT JOIN (
 			SELECT
 				NR.PG_ExpEndYrID,
-				NR.PG_EthnicGroupID,
+				PG_EthnicGroupID = NULL,
                 NR.PG_AgeLSCID,
 				Leave = NR.BM_Count_Timely / 100,
 				Ach = NULL,
@@ -1199,20 +1094,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NOT NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NOT NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_ETHGAGE
 			ON NR_ETHGAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_ETHGAGE.PG_EthnicGroupID = CL.PG_EthnicGroupID
@@ -1233,20 +1121,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NOT NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_SSA1
 			ON NR_SSA1.PG_ExpEndYrID = @NatRateYear
 			AND NR_SSA1.PG_SSA1ID = CL.PG_SSA1ID
@@ -1263,20 +1144,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NOT NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NOT NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_SSA1AGE
 			ON NR_SSA1AGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_SSA1AGE.PG_SSA1ID = CL.PG_SSA1ID
@@ -1297,20 +1171,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NOT NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_SSA2
 			ON NR_SSA2.PG_ExpEndYrID = @NatRateYear
 			AND NR_SSA2.PG_SSA2ID = CL.PG_SSA2ID
@@ -1327,20 +1194,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NOT NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NOT NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_SSA2AGE
 			ON NR_SSA2AGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_SSA2AGE.PG_SSA2ID = CL.PG_SSA2ID
@@ -1361,20 +1221,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NOT NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_DIF
 			ON NR_DIF.PG_ExpEndYrID = @NatRateYear
 			AND NR_DIF.PG_DifficultyOrDisabilityID = CL.PG_DifficultyOrDisabilityID
@@ -1391,20 +1244,13 @@ BEGIN
 				NR.PG_ExpEndYrID = @NatRateYear
 				AND NR.PG_CollegeTypeID = @CollegeType
 				AND NR.PG_AgeLSCID IS NOT NULL
-				AND NR.PG_NVQLevelCPRID IS NULL
 				AND NR.PG_NVQLevelGroupID IS NULL
-				AND NR.PM_MS_GroupID IS NULL
 				AND NR.PG_QualSizeID IS NULL
 				AND NR.PG_SSA1ID IS NULL
 				AND NR.PG_SSA2ID IS NULL
 				AND NR.PG_SexID IS NULL
 				AND NR.PG_EthnicityID IS NULL
-				AND NR.PG_EthnicGroupID IS NULL
-				AND NR.PG_DisabilityID IS NULL
-				AND NR.PG_LearningDifficultyID IS NULL
 				AND NR.PG_DifficultyOrDisabilityID IS NOT NULL
-				AND NR.GN_FullLevelCategoryID IS NULL
-				AND NR.PG_EthnicityGroupQARID IS NULL
 		) NR_DIFAGE
 			ON NR_DIFAGE.PG_ExpEndYrID = @NatRateYear
 			AND NR_DIFAGE.PG_DifficultyOrDisabilityID = CL.PG_DifficultyOrDisabilityID
